@@ -1,82 +1,54 @@
 {
   "kind": "build_request",
-  "title": "Advance rollout: Execute Step 9.5 (Rollout 21.7) build/upgrade + smoke test evidence",
+  "title": "Advance rollout guidance to Step 10 (Deployment and Launch)",
   "projectName": "Higgins Music Hub",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-106",
-      "text": "Execute Rollout Step 9.5 (“Rollout 21.7 Build/Upgrade Execution”) as documented in `frontend/ROLLOUT_STEPS.md`, including the pre-deployment frontend sanity checks (`npm run typescript-check` and `npm run build` from the `frontend/` directory), and ensure the deployment is a canister **upgrade** (not reinstall) that preserves all existing canister state.",
-      "target": "unknown",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Yes"
-        ]
-      },
-      "acceptanceCriteria": [
-        "`npm run typescript-check` completes with zero TypeScript errors.",
-        "`npm run build` completes successfully from the `frontend/` directory.",
-        "Backend build completes with no Motoko compiler errors.",
-        "Deployment is performed as an **upgrade** (not reinstall) and existing canister state is preserved (no data loss).",
-        "Deployment pipeline completes successfully with no platform error \"Unable to create your app\".",
-        "Application starts after upgrade with no runtime traps on startup.",
-        "Build/upgrade evidence is recorded in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` (timestamps, command outputs, and any error messages)."
-      ]
-    },
-    {
-      "id": "REQ-107",
-      "text": "After the Rollout 21.7 canister upgrade completes, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` for both (1) an admin user and (2) a non-admin approved member user, covering landing page load (`/`), authentication/portal access (AuthGate + ApprovalGate), all five portal detail routes, and opening the \"Edit Links\" dialog on each detail page.",
-      "target": "unknown",
-      "source": {
-        "messageIds": [
-          "msg-4"
-        ],
-        "quotes": [
-          "Yes"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Smoke test is executed twice: once as an admin user and once as a non-admin approved member user.",
-        "Landing page `/` loads without errors for both test runs.",
-        "AuthGate blocks unauthenticated access and allows authenticated access; ApprovalGate allows admin and approved member access as expected.",
-        "All five portal detail routes load without runtime errors for both roles: `/portal/memberships/$id`, `/portal/publishing/$id`, `/portal/releases/$id`, `/portal/recordings/$id`, `/portal/artists/$id`.",
-        "The \"Edit Links\" dialog opens successfully on all five detail routes for both roles.",
-        "Browser console is reviewed during testing and any errors are captured (exact error text and stack trace when available).",
-        "Router-level error handling is verified per checklist (invalid entity ID shows an in-app error screen, not a full SPA crash)."
-      ]
-    },
-    {
-      "id": "REQ-108",
-      "text": "Record Rollout 21.7 QA outcomes and execution evidence in the existing templates: (1) fill in the “Rollout 21.7 Smoke Test Results” section in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` and (2) fill in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` with build/upgrade artifacts; include principals used, entity IDs tested, and clear English notes for any failures (route, user role, exact error text, stack trace when available).",
+      "id": "REQ-109",
+      "text": "Update `frontend/ROLLOUT_STEPS.md` so the \"Next Step to Execute\" section advances from Step 9.5 (Rollout 21.7 Build/Upgrade Execution) to Step 10 (Deployment and Launch), using clear English instructions and referencing any relevant existing checklists/log templates where appropriate.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-1"
         ],
         "quotes": [
-          "Yes"
+          "Yes, move on to the next rollout step"
         ]
       },
       "acceptanceCriteria": [
-        "`frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` has the “Rollout 21.7 Smoke Test Results” section completed (PASS or FAIL) with: environment, admin principal, member principal, and entity IDs used per route.",
-        "Any failures are documented with route, user role, exact error text, stack trace (when available), and reproducible steps.",
-        "`frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` includes the executed commands, timestamps, and outputs for the pre-deployment checks and upgrade execution."
+        "`frontend/ROLLOUT_STEPS.md` \"Next Step to Execute\" no longer lists Step 9.5 as the current step.",
+        "The new \"Current Step\" is Step 10 — Deployment and Launch.",
+        "The \"Action Required\" text is clear, concrete, and written in English, and it references existing project documents when applicable (e.g., existing smoke test and results templates)."
+      ]
+    },
+    {
+      "id": "REQ-110",
+      "text": "Create a new Step 10 post-deployment smoke-test checklist document (Markdown) that can be used to validate the deployed app on mainnet/production, covering: landing page load (`/`), authentication/portal access (AuthGate + ApprovalGate), all five portal detail routes, and opening the \"Edit Links\" dialog on each detail page for both an Admin user and a non-admin approved Member user.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Yes, move on to the next rollout step"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A new Markdown checklist file exists under `frontend/` with a name that clearly indicates Step 10 and smoke testing (e.g., includes \"STEP_10\" and/or \"SMOKE_TEST\").",
+        "The checklist is written entirely in English and mirrors the coverage expectations used in the existing rollout smoke-test documents (landing page, AuthGate/ApprovalGate, five detail routes, and \"Edit Links\" dialog for both roles).",
+        "The checklist includes explicit places to record the principals used and the entity IDs tested (similar to the Rollout 21.7 smoke test format)."
       ]
     }
   ],
   "constraints": [
-    "Preserve all existing canister state: perform an upgrade, not a reinstall.",
-    "Follow the Rollout 21.7 process and checklists exactly as written in `frontend/ROLLOUT_STEPS.md` Step 9.5 and `frontend/SMOKE_TEST_21_7.md`.",
-    "Use English for any user-facing text recorded in logs/results (error notes, observations, pass/fail comments).",
-    "Do not edit frontend immutable paths listed in SYSTEM_CONTEXT."
+    "Do not edit files under `frontend/src/components/ui` (read-only UI component sources must be composed, not edited).",
+    "Do not edit any files listed in `frontend.immutablePaths` in SYSTEM_CONTEXT.",
+    "Use English for any user-facing text."
   ],
   "nonGoals": [
-    "Do not add new product features as part of this rollout step.",
-    "Do not refactor unrelated frontend/backend code unless required to unblock build/upgrade success or smoke-test completion.",
-    "Do not change backend stable state schema or migrations unless a new build failure explicitly requires it."
+    "Do not add or change application features beyond rollout documentation/checklists.",
+    "Do not change backend state, Motoko schema, or migration behavior as part of this step."
   ],
   "imageRequirements": {
     "required": [],

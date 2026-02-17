@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-execute-rollout-step-9-5-rollout-21-7-build-upgrade-execution-as-documented-in-frontend-rollout-steps-md-including-the-pre-deployment-frontend-sanity-checks-npm-run-typescript-check-and-npm-run-build-from-the-frontend-directory-and-ensure-the-deployment-is-a-canister-upgrade-not-reinstall-that-preserves-all-existing-canister-state",
-      "featureTitle": "Execute Rollout Step 9.5 (“Rollout 21.7 Build/Upgrade Execution”) as documented in `frontend/ROLLOUT_STEPS.md`, including the pre-deployment frontend sanity checks (`npm run typescript-check` and `npm run build` from the `frontend/` directory), and ensure the deployment is a canister **upgrade** (not reinstall) that preserves all existing canister state.",
+      "featureId": "feature-update-frontend-rollout-steps-md-so-the-next-step-to-execute-section-advances-from-step-9-5-rollout-21-7-build-upgrade-execution-to-step-10-deployment-and-launch-using-clear-english-instructions-and-referencing-any-relevant-existing-checklists-log-templates-where-appropriate",
+      "featureTitle": "Update `frontend/ROLLOUT_STEPS.md` so the \"Next Step to Execute\" section advances from Step 9.5 (Rollout 21.7 Build/Upgrade Execution) to Step 10 (Deployment and Launch), using clear English instructions and referencing any relevant existing checklists/log templates where appropriate.",
       "files": [
-        "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
-        "frontend/ROLL_OUT_21_7_STEP_9_5_ARTIFACTS.md"
+        "frontend/ROLLOUT_STEPS.md"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,15 +17,15 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-106"
+        "REQ-109"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-after-the-rollout-21-7-canister-upgrade-completes-execute-the-post-upgrade-smoke-test-checklist-in-frontend-smoke-test-21-7-md-for-both-1-an-admin-user-and-2-a-non-admin-approved-member-user-covering-landing-page-load-authentication-portal-access-authgate-approvalgate-all-five-portal-detail-routes-and-opening-the-edit-links-dialog-on-each-detail-page",
-      "featureTitle": "After the Rollout 21.7 canister upgrade completes, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` for both (1) an admin user and (2) a non-admin approved member user, covering landing page load (`/`), authentication/portal access (AuthGate + ApprovalGate), all five portal detail routes, and opening the \"Edit Links\" dialog on each detail page.",
+      "featureId": "feature-create-a-new-step-10-post-deployment-smoke-test-checklist-document-markdown-that-can-be-used-to-validate-the-deployed-app-on-mainnet-production-covering-landing-page-load-authentication-portal-access-authgate-approvalgate-all-five-portal-detail-routes-and-opening-the-edit-links-dialog-on-each-detail-page-for-both-an-admin-user-and-a-non-admin-approved-member-user",
+      "featureTitle": "Create a new Step 10 post-deployment smoke-test checklist document (Markdown) that can be used to validate the deployed app on mainnet/production, covering: landing page load (`/`), authentication/portal access (AuthGate + ApprovalGate), all five portal detail routes, and opening the \"Edit Links\" dialog on each detail page for both an Admin user and a non-admin approved Member user.",
       "files": [
-        "frontend/SMOKE_TEST_21_7_SESSION_LOG.md"
+        "frontend/SMOKE_TEST_STEP_10_MAINNET.md"
       ],
       "components": [
         "authorization@4.0.0",
@@ -38,28 +37,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-107"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-record-rollout-21-7-qa-outcomes-and-execution-evidence-in-the-existing-templates-1-fill-in-the-rollout-21-7-smoke-test-results-section-in-frontend-upgrade-linking-verification-results-md-and-2-fill-in-frontend-roll-out-21-7-execution-log-md-with-build-upgrade-artifacts-include-principals-used-entity-ids-tested-and-clear-english-notes-for-any-failures-route-user-role-exact-error-text-stack-trace-when-available",
-      "featureTitle": "Record Rollout 21.7 QA outcomes and execution evidence in the existing templates: (1) fill in the “Rollout 21.7 Smoke Test Results” section in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` and (2) fill in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` with build/upgrade artifacts; include principals used, entity IDs tested, and clear English notes for any failures (route, user role, exact error text, stack trace when available).",
-      "files": [
-        "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
-        "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "user-approval@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-108"
+        "REQ-110"
       ],
       "confidence": "high"
     }

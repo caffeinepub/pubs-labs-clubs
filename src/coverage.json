@@ -1,66 +1,46 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T21:30:19.958Z",
+  "generatedAt": "2026-02-17T21:53:01.681Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
-        "id": "REQ-106",
-        "summary": "Execute Rollout Step 9.5 (“Rollout 21.7 Build/Upgrade Execution”) as documented in `frontend/ROLLOUT_STEPS.md`, including the pre-deployment frontend sanity checks (`npm run typescript-check` and `npm run build` from the `frontend/` directory), and ensure the deployment is a canister **upgrade** (not reinstall) that preserves all existing canister state.",
+        "id": "REQ-109",
+        "summary": "Update `frontend/ROLLOUT_STEPS.md` so the \"Next Step to Execute\" section advances from Step 9.5 (Rollout 21.7 Build/Upgrade Execution) to Step 10 (Deployment and Launch), using clear English instructions and referencing any relevant existing checklists/log templates where appropriate.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
-          "frontend/ROLL_OUT_21_7_STEP_9_5_ARTIFACTS.md"
+          "frontend/ROLLOUT_STEPS.md"
         ],
         "matchedFiles": [
-          "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
-          "frontend/ROLL_OUT_21_7_STEP_9_5_ARTIFACTS.md"
+          "frontend/ROLLOUT_STEPS.md"
         ]
       },
       {
-        "id": "REQ-107",
-        "summary": "After the Rollout 21.7 canister upgrade completes, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` for both (1) an admin user and (2) a non-admin approved member user, covering landing page load (`/`), authentication/portal access (AuthGate + ApprovalGate), all five portal detail routes, and opening the \"Edit Links\" dialog on each detail page.",
+        "id": "REQ-110",
+        "summary": "Create a new Step 10 post-deployment smoke-test checklist document (Markdown) that can be used to validate the deployed app on mainnet/production, covering: landing page load (`/`), authentication/portal access (AuthGate + ApprovalGate), all five portal detail routes, and opening the \"Edit Links\" dialog on each detail page for both an Admin user and a non-admin approved Member user.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/SMOKE_TEST_21_7_SESSION_LOG.md",
-          "frontend/SMOKE_TEST_21_7.md"
+          "frontend/SMOKE_TEST_STEP_10_MAINNET.md"
         ],
         "matchedFiles": [
-          "frontend/SMOKE_TEST_21_7_SESSION_LOG.md"
-        ]
-      },
-      {
-        "id": "REQ-108",
-        "summary": "Record Rollout 21.7 QA outcomes and execution evidence in the existing templates: (1) fill in the “Rollout 21.7 Smoke Test Results” section in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` and (2) fill in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` with build/upgrade artifacts; include principals used, entity IDs tested, and clear English notes for any failures (route, user role, exact error text, stack trace when available).",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md",
-          "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md"
-        ],
-        "matchedFiles": [
-          "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md",
-          "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md"
+          "frontend/SMOKE_TEST_STEP_10_MAINNET.md"
         ]
       }
     ]
   },
   "changedFiles": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
-    "frontend/ROLL_OUT_21_7_STEP_9_5_ARTIFACTS.md",
-    "frontend/SMOKE_TEST_21_7_SESSION_LOG.md",
-    "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md",
+    "frontend/ROLLOUT_STEPS.md",
+    "frontend/SMOKE_TEST_STEP_10_MAINNET.md",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

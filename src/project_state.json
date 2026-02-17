@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 67,
+  "projectStateVersion": 69,
   "summary": "Website/platform for Higgins Music to manage publishing, label operations, recordings/productions, and artist development with a co-op style membership model for artists/clients.",
   "architectural_notes": [
     "User requested adding an admin-only Role Assignment UI to grant Admin privileges to additional signed-in principals (role assignment stored in backend user profiles).",
@@ -653,6 +653,22 @@
       "title": "Record Rollout 21.7 QA outcomes and execution evidence in the existing templates: (1) fill in the “Rollout 21.7 Smoke Test Results” section in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` and (2) fill in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` with build/upgrade artifacts; include principals used, entity IDs tested, and clear English notes for any failures (route, user role, exact error text, stack trace when available).",
       "reqIds": [
         "REQ-108"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-rollout-steps-md-so-the-next-step-to-execute-section-advances-from-step-9-5-rollout-21-7-build-upgrade-execution-to-step-10-deployment-and-launch-using-clear-english-instructions-and-referencing-any-relevant-existing-checklists-log-templates-where-appropriate",
+      "title": "Update `frontend/ROLLOUT_STEPS.md` so the \"Next Step to Execute\" section advances from Step 9.5 (Rollout 21.7 Build/Upgrade Execution) to Step 10 (Deployment and Launch), using clear English instructions and referencing any relevant existing checklists/log templates where appropriate.",
+      "reqIds": [
+        "REQ-109"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-new-step-10-post-deployment-smoke-test-checklist-document-markdown-that-can-be-used-to-validate-the-deployed-app-on-mainnet-production-covering-landing-page-load-authentication-portal-access-authgate-approvalgate-all-five-portal-detail-routes-and-opening-the-edit-links-dialog-on-each-detail-page-for-both-an-admin-user-and-a-non-admin-approved-member-user",
+      "title": "Create a new Step 10 post-deployment smoke-test checklist document (Markdown) that can be used to validate the deployed app on mainnet/production, covering: landing page load (`/`), authentication/portal access (AuthGate + ApprovalGate), all five portal detail routes, and opening the \"Edit Links\" dialog on each detail page for both an Admin user and a non-admin approved Member user.",
+      "reqIds": [
+        "REQ-110"
       ],
       "version": 1
     }

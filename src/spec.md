@@ -1,13 +1,10 @@
 # Specification
 
 ## Summary
-**Goal:** Execute Rollout 21.7 Step 9.5 build/upgrade process and capture evidence, then complete the post-upgrade smoke test for admin and approved member roles and record results in the provided templates.
+**Goal:** Advance rollout documentation to Step 10 (Deployment and Launch) and add a production/mainnet post-deployment smoke-test checklist for Step 10.
 
 **Planned changes:**
-- Run pre-deployment frontend sanity checks from `frontend/` (`npm run typescript-check`, `npm run build`) and ensure they complete successfully.
-- Build the backend with no Motoko compiler errors.
-- Perform a canister **upgrade** (not reinstall) per `frontend/ROLLOUT_STEPS.md` Step 9.5, preserving all existing canister state and completing the deployment pipeline successfully.
-- Execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` twice (admin + non-admin approved member), covering `/`, AuthGate/ApprovalGate behavior, all five portal detail routes, and opening the “Edit Links” dialog on each.
-- Record build/upgrade evidence and QA outcomes in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` and the “Rollout 21.7 Smoke Test Results” section of `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`, including principals, entity IDs tested, timestamps, command outputs, and any error details (exact text/stack trace when available).
+- Update `frontend/ROLLOUT_STEPS.md` so the "Next Step to Execute" section sets Step 10 (Deployment and Launch) as the current step, with clear English "Action Required" instructions and references to relevant existing checklists/log templates where applicable.
+- Add a new Step 10 post-deployment smoke-test checklist Markdown file under `frontend/` that covers: landing page load (`/`), AuthGate + ApprovalGate access, all five portal detail routes, and opening the "Edit Links" dialog on each detail page for both an Admin user and a non-admin approved Member user, including fields to record principals and entity IDs tested.
 
-**User-visible outcome:** The application is upgraded to Rollout 21.7 without data loss, starts cleanly, and the key portal routes and “Edit Links” dialogs are verified to work for both admin and approved member users with documented execution evidence and smoke test results.
+**User-visible outcome:** The rollout guide points to Step 10 with concrete deployment/launch guidance, and the team has a ready-to-use Step 10 production smoke-test checklist to validate the deployed app for both Admin and Member roles.

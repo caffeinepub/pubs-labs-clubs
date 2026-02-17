@@ -1,77 +1,47 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T21:30:19.952Z",
-  "summary": "Diff adds a Motoko migration module and multiple frontend hardening changes, plus new rollout/smoke-test logging documents. However, the requested execution evidence in the existing templates is not shown as completed for Rollout 21.7, and the main execution log appears incomplete/truncated (no actual command outputs / upgrade evidence visible). Several new docs/components appear beyond the explicitly requested files for Step 9.5 evidence recording.",
+  "generatedAt": "2026-02-17T21:53:01.676Z",
+  "summary": "Step 10 smoke test checklist file was added and ROLLOUT_STEPS.md was updated to include a Step 10 section with references to the new checklist. However, the diff evidence does not show the required \"Next Step to Execute\" section being advanced, and the smoke-test checklist evidence is truncated before confirming full coverage (all five routes + opening Edit Links dialog for both roles). Additionally, unrequested metadata/state files were modified.",
   "missing_requirements": [
     {
-      "id": "REQ-106",
-      "requirement": "Execute Rollout Step 9.5 as documented (including `npm run typescript-check` and `npm run build` from `frontend/`), backend build with no Motoko errors, and perform a canister upgrade (not reinstall) preserving state; record evidence.",
-      "reason": "The diff shows a new execution log file, but the included content is incomplete/truncated and does not show the actual outputs/results for `npm run typescript-check`, `npm run build`, backend Motoko build, or explicit upgrade command/output confirming upgrade (not reinstall) and successful startup/no traps.",
+      "id": "REQ-109",
+      "requirement": "Update `frontend/ROLLOUT_STEPS.md` so the \"Next Step to Execute\" section advances from Step 9.5 to Step 10 (Deployment and Launch), with clear English instructions and references to relevant checklists/log templates.",
+      "reason": "The provided excerpt of `frontend/ROLLOUT_STEPS.md` shows a \"Remaining Steps\" section with \"Step 10 — Deployment and Launch\" and references, but it does not show any \"Next Step to Execute\" section or explicit advancement of that section from Step 9.5 to Step 10. With truncated content, this specific required section/wording cannot be verified.",
       "evidence": [
-        "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
-        "frontend/ROLL_OUT_21_7_STEP_9_5_ARTIFACTS.md"
+        "frontend/ROLLOUT_STEPS.md (truncated excerpt shows Step 10 under \"Remaining Steps\" but no \"Next Step to Execute\" section is visible)"
       ]
     },
     {
-      "id": "REQ-107",
-      "requirement": "Execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` for both an admin and a non-admin approved member user, covering `/`, AuthGate/ApprovalGate, five detail routes, and opening the \"Edit Links\" dialog on each; capture console errors.",
-      "reason": "A new smoke test session log file is added, but the diff content is truncated and does not provide evidence that all required routes and the \"Edit Links\" dialog were tested for both roles, nor that console errors (if any) were fully captured per checklist.",
+      "id": "REQ-110",
+      "requirement": "Create a new Step 10 post-deployment smoke-test checklist (Markdown) covering landing page `/`, AuthGate + ApprovalGate access, all five portal detail routes, and opening the \"Edit Links\" dialog on each detail page for both an Admin and a non-admin approved Member; include places to record principals and entity IDs tested.",
+      "reason": "The new checklist file exists and includes fields to record principals and entity IDs, and it includes at least some route coverage (membership, publishing, release). But the file content is truncated before confirming it covers all five portal detail routes and explicitly includes steps to open the \"Edit Links\" dialog on each detail page for both roles (admin + non-admin member). The visible steps mention \"Edit Links\" button visibility, not dialog opening, and only show admin route testing section in the excerpt.",
       "evidence": [
-        "frontend/SMOKE_TEST_21_7_SESSION_LOG.md"
-      ]
-    },
-    {
-      "id": "REQ-108",
-      "requirement": "Record Rollout 21.7 QA outcomes and execution evidence in the existing templates: fill the “Rollout 21.7 Smoke Test Results” section in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` and fill `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` with build/upgrade artifacts including principals and entity IDs tested.",
-      "reason": "`frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` shown in the diff still contains unchecked placeholders for earlier rollouts (21.1–21.2, 21.3–21.4, etc.) and does not show a completed Rollout 21.7 section (PASS/FAIL, environment, principals, entity IDs). The execution log also lacks visible embedded artifacts/outputs in the shown portion.",
-      "evidence": [
-        "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md",
-        "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md"
+        "frontend/SMOKE_TEST_STEP_10_MAINNET.md (truncated; shows principals section and some routes, but not full five-route + dialog-opening coverage for both roles)"
       ]
     }
   ],
   "hallucinated_features": [
     {
-      "description": "Introduced a new backend migration module and enabled migration via `(with migration = Migration.run)` in the main actor.",
-      "reason": "The BuildRequest emphasizes executing rollout Step 9.5 and recording evidence; it explicitly cautions against changing backend stable state schema/migrations unless required by a new build failure. The diff adds `backend/migration.mo` and wires it into `backend/main.mo`, which is a substantive backend change not requested in the rollout execution/evidence tasks.",
+      "description": "Modified `project_state.json` (projectStateVersion bumped and content updated) even though the BuildRequest only asked for rollout documentation/checklists changes.",
+      "reason": "No requirement requested changes to `project_state.json`; this appears to be unrelated project metadata/state modification beyond the specified documentation tasks.",
       "evidence": [
-        "backend/migration.mo",
-        "backend/main.mo"
+        "project_state.json (modified; shows projectStateVersion: 69 and other content)"
       ]
     },
     {
-      "description": "Added new rollout artifacts/session-log documents beyond the requested evidence templates.",
-      "reason": "REQ-108 specifies recording evidence in two existing templates (`frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` and `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md`). The diff adds additional documents for artifacts and smoke test session logging that were not requested.",
+      "description": "Updated `frontend-file-summaries.txt` with extensive descriptions of frontend code hardening/normalization changes.",
+      "reason": "The BuildRequest does not request updating this summary file; it only requests updating `frontend/ROLLOUT_STEPS.md` and adding a new Step 10 smoke test checklist markdown file.",
       "evidence": [
-        "frontend/ROLL_OUT_21_7_STEP_9_5_ARTIFACTS.md",
-        "frontend/SMOKE_TEST_21_7_SESSION_LOG.md"
-      ]
-    },
-    {
-      "description": "Implemented/introduced multiple frontend components/hooks changes (e.g., new Edit Links button, multi-select list, query guarding/normalization) that appear to be product/code changes rather than rollout execution evidence.",
-      "reason": "The BuildRequest is focused on executing the rollout and documenting build/upgrade + smoke test evidence, with a non-goal of not adding new product features or refactoring unrelated code. The diff summary indicates broad frontend behavior changes and new reusable UI components.",
-      "evidence": [
-        "frontend-file-summaries.txt"
-      ]
-    },
-    {
-      "description": "Updated `frontend/UPGRADE_LINKING_VERIFICATION.md` (manual QA checklist doc).",
-      "reason": "REQ-108 requires updating `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` (results) and `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` (execution log). Updating a separate checklist document is not requested.",
-      "evidence": [
-        "frontend-file-summaries.txt"
+        "frontend-file-summaries.txt (modified; includes descriptions of many frontend source files/behaviors)"
       ]
     }
   ],
-  "confidence": 0.74,
+  "confidence": 0.66,
   "changed_files": [
-    "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
-    "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
-    "frontend/ROLL_OUT_21_7_STEP_9_5_ARTIFACTS.md",
-    "frontend/SMOKE_TEST_21_7_SESSION_LOG.md",
-    "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md",
+    "frontend/ROLLOUT_STEPS.md",
+    "frontend/SMOKE_TEST_STEP_10_MAINNET.md",
     "project_state.json"
   ]
 }

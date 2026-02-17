@@ -9,10 +9,10 @@ import Runtime "mo:core/Runtime";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 import UserApproval "user-approval/approval";
-import Migration "migration"; // Separate migration file
+ // Separate migration file
 
 // Enable migration with the (with ...) clause
-(with migration = Migration.run)
+
 actor {
   type MemberId = Text;
   type PublishingId = Text;
