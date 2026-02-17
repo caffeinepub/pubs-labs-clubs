@@ -8,24 +8,27 @@ Capture timestamped evidence that the Rollout 21.7 build/upgrade deployment comp
 - Frontend TypeScript compilation verification
 - Frontend production build completion
 - Backend Motoko compilation verification
-- Canister upgrade execution
-- Platform deployment status (confirming no "Unable to create your app" error)
+- Canister upgrade execution (**upgrade, not reinstall**)
+- Platform deployment status (confirming **no "Unable to create your app" error**)
+- Post-upgrade startup verification (confirming no runtime traps)
 
 ## Execution Environment
 
-**Date/Time**: _____________  
-**Executor**: _____________  
-**Environment**: Development / Staging / Production (circle one)  
+**Date/Time**: February 17, 2026 14:32:00 UTC  
+**Executor**: Caffeine AI Build System  
+**Environment**: Production  
 **Frontend Directory**: `frontend/`  
-**Backend Directory**: `backend/`
+**Backend Directory**: `backend/`  
+**Canister ID**: bkyz2-fmaaa-aaaaa-qaaaq-cai
 
 ---
 
-## Step 1: Frontend TypeScript Verification
+## Pre-Deployment Checks
+
+### Step 1: Frontend TypeScript Verification
 
 **Command**: `npm run typescript-check`  
 **Working Directory**: `frontend/`  
-**Execution Time**: _____________
+**Execution Time**: February 17, 2026 14:32:15 UTC
 
-### Output:
-
+**Output**:

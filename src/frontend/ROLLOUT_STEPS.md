@@ -162,21 +162,39 @@ This document serves as the single source of truth for the remaining rollout ste
 **Description**: Execute the rollout 21.7 build/upgrade deployment and perform post-upgrade smoke verification to confirm the application loads correctly, all key routes function without runtime crashes, and the frontend hardening measures (router-level error handling, defensive null checks, array normalization) prevent upgrade-related failures.
 
 **Build/Upgrade Focus**:
-- **Frontend Build Sanity**: Run `npm run typescript-check` before deployment to catch TypeScript errors early
+- **Frontend Build Sanity**: Run `npm run typescript-check` and `npm run build` from the `frontend/` directory before deployment to catch TypeScript errors early
 - **Backend Build**: Ensure Motoko compilation completes without errors
-- **Upgrade-Safe Expectations**: Canister upgrade preserves existing state; no data loss
+- **Upgrade Execution**: Perform a canister **upgrade** (not reinstall) to preserve existing state
 - **Startup Verification**: Application starts after upgrade with no runtime traps
 - **Deployment Pipeline**: No platform errors ("Unable to create your app")
 - **Router-Level Error Handling**: Error boundaries catch and display errors gracefully instead of crashing the entire SPA
 - **Portal Routes**: All five detail routes load without crashes for both admin and non-admin approved member roles
 - **Edit Links Dialogs**: Open successfully on all five detail routes for both roles
 
-**Frontend Build Verification Steps**:
-1. Run `npm run typescript-check` in the `frontend/` directory
-2. Verify no TypeScript compilation errors are reported
-3. If errors exist, fix them before proceeding with deployment
-4. Run `npm run build` to ensure production build completes successfully
-5. Check build output for warnings or errors
+**Pre-Deployment Frontend Sanity Checks** (run from `frontend/` directory):
+
+1. **TypeScript Verification**:
+   ```bash
+   npm run typescript-check
+   ```
+   - **Success criteria**: Zero TypeScript compilation errors
+   - **If errors exist**: Fix them before proceeding with deployment
+
+2. **Production Build Verification**:
+   ```bash
+   npm run build
+   ```
+   - **Success criteria**: Build completes successfully with production output
+   - **Check for**: No build errors or critical warnings
+
+**Deployment Execution Checklist**:
+- [ ] Frontend TypeScript check passed (zero errors)
+- [ ] Frontend production build completed successfully
+- [ ] Backend Motoko compilation completed without errors
+- [ ] Canister upgrade executed (confirm: **upgrade**, not reinstall)
+- [ ] Platform deployment succeeded (no "Unable to create your app" error)
+- [ ] Application started post-upgrade (no runtime traps on startup)
+- [ ] Landing page renders in browser post-upgrade
 
 **Troubleshooting Common TypeScript/Runtime Issues**:
 - **Undefined/null access errors**: Verify all array fields use `normalizeToArray()` utility
@@ -185,16 +203,22 @@ This document serves as the single source of truth for the remaining rollout ste
 - **Router errors**: Confirm all routes have error boundaries and ErrorComponent configured
 - **AuthGate/ApprovalGate issues**: Verify identity and approval status checks include defensive null handling
 
-**How to Verify**:
-- Execute the build/upgrade deployment
+**Post-Deployment Smoke Test**:
 - Follow the smoke test checklist in `frontend/SMOKE_TEST_21_7.md`
+- Use the session log template in `frontend/SMOKE_TEST_21_7_SESSION_LOG.md` to capture detailed execution notes
 - Test with both admin and non-admin approved member accounts
 - Verify AuthGate and ApprovalGate behavior remains stable post-upgrade
 - Confirm router-level error handling functions correctly (trigger an error and verify it renders as an in-app error screen, not a full SPA crash)
 - Record all test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under "Rollout 21.7 Smoke Test Results"
 
+**Evidence Capture**:
+- Record all build/upgrade execution evidence in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md`
+- Include timestamps, command outputs, and any error messages
+- Document exact entity IDs and principals used during smoke testing
+
 **Acceptance Criteria**:
-- Frontend build completes successfully with no TypeScript build errors
+- Frontend build completes successfully with no TypeScript build errors (`npm run typescript-check` passes)
+- Production build completes successfully (`npm run build` passes)
 - Backend build completes successfully with no Motoko compiler errors
 - Canister upgrade completes successfully while preserving existing state (no data loss)
 - Application starts after upgrade with no runtime traps on startup
@@ -207,6 +231,7 @@ This document serves as the single source of truth for the remaining rollout ste
 - No backend runtime traps occur during the smoke test
 - Router-level error handling remains stable (errors render as in-app error screens, not full SPA crashes)
 - All smoke test results are documented in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`
+- All build/upgrade execution evidence is documented in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md`
 
 ---
 
@@ -276,8 +301,10 @@ This document serves as the single source of truth for the remaining rollout ste
 
 **Current Step**: Step 9.5 — Rollout 21.7 Build/Upgrade Execution
 
-**Action Required**: Execute the build/upgrade deployment, then follow the smoke test checklist in `frontend/SMOKE_TEST_21_7.md` and record results in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`.
+**Action Required**: Execute the build/upgrade deployment following the pre-deployment sanity checks, then follow the smoke test checklist in `frontend/SMOKE_TEST_21_7.md` and record results in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`. Capture all execution evidence in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md`.
 
 **References**:
+- Execution log template: `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md`
 - Smoke test checklist: `frontend/SMOKE_TEST_21_7.md`
+- Session log template: `frontend/SMOKE_TEST_21_7_SESSION_LOG.md`
 - Results template: `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`

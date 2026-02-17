@@ -1,17 +1,18 @@
 import Array "mo:core/Array";
-import Text "mo:core/Text";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
 import Principal "mo:core/Principal";
+import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Order "mo:core/Order";
 import Runtime "mo:core/Runtime";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 import UserApproval "user-approval/approval";
+import Migration "migration"; // Separate migration file
 
 // Enable migration with the (with ...) clause
-
+(with migration = Migration.run)
 actor {
   type MemberId = Text;
   type PublishingId = Text;
@@ -925,7 +926,4 @@ actor {
     ];
   };
 };
-
-
-
 

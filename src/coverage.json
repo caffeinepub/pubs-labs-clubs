@@ -1,55 +1,66 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T20:34:54.109Z",
+  "generatedAt": "2026-02-17T21:30:19.958Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 3,
-    "implemented": 1,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-93",
-        "summary": "Execute Rollout 21.7 build/upgrade deployment as described in `frontend/ROLLOUT_STEPS.md` Step 9.5, preserving all existing canister state and ensuring the build/deploy pipeline completes successfully (no platform error \"Unable to create your app\").",
+        "id": "REQ-106",
+        "summary": "Execute Rollout Step 9.5 (“Rollout 21.7 Build/Upgrade Execution”) as documented in `frontend/ROLLOUT_STEPS.md`, including the pre-deployment frontend sanity checks (`npm run typescript-check` and `npm run build` from the `frontend/` directory), and ensure the deployment is a canister **upgrade** (not reinstall) that preserves all existing canister state.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
-          "frontend/ROLLOUT_STEPS.md"
+          "frontend/ROLL_OUT_21_7_STEP_9_5_ARTIFACTS.md"
         ],
         "matchedFiles": [
-          "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md"
+          "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
+          "frontend/ROLL_OUT_21_7_STEP_9_5_ARTIFACTS.md"
         ]
       },
       {
-        "id": "REQ-94",
-        "summary": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user.",
-        "status": "missing",
+        "id": "REQ-107",
+        "summary": "After the Rollout 21.7 canister upgrade completes, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` for both (1) an admin user and (2) a non-admin approved member user, covering landing page load (`/`), authentication/portal access (AuthGate + ApprovalGate), all five portal detail routes, and opening the \"Edit Links\" dialog on each detail page.",
+        "status": "implemented",
         "plannedFiles": [
-          "frontend/SMOKE_TEST_21_7.md",
-          "frontend/SMOKE_TEST_21_7_SESSION_LOG.md"
+          "frontend/SMOKE_TEST_21_7_SESSION_LOG.md",
+          "frontend/SMOKE_TEST_21_7.md"
         ],
-        "matchedFiles": []
+        "matchedFiles": [
+          "frontend/SMOKE_TEST_21_7_SESSION_LOG.md"
+        ]
       },
       {
-        "id": "REQ-95",
-        "summary": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section, using clear English notes for any failures (include route, user role, and observed error text).",
-        "status": "missing",
+        "id": "REQ-108",
+        "summary": "Record Rollout 21.7 QA outcomes and execution evidence in the existing templates: (1) fill in the “Rollout 21.7 Smoke Test Results” section in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` and (2) fill in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` with build/upgrade artifacts; include principals used, entity IDs tested, and clear English notes for any failures (route, user role, exact error text, stack trace when available).",
+        "status": "implemented",
         "plannedFiles": [
-          "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md"
+          "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md",
+          "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md"
         ],
-        "matchedFiles": []
+        "matchedFiles": [
+          "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md",
+          "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md"
+        ]
       }
     ]
   },
   "changedFiles": [
     "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
+    "frontend/ROLL_OUT_21_7_STEP_9_5_ARTIFACTS.md",
+    "frontend/SMOKE_TEST_21_7_SESSION_LOG.md",
+    "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

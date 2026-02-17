@@ -1,9 +1,8 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 59,
+  "projectStateVersion": 67,
   "summary": "Website/platform for Higgins Music to manage publishing, label operations, recordings/productions, and artist development with a co-op style membership model for artists/clients.",
   "architectural_notes": [
-    "User requested proceeding to the next items and to break the work into manageable portions to ensure error-free processing.",
     "User requested adding an admin-only Role Assignment UI to grant Admin privileges to additional signed-in principals (role assignment stored in backend user profiles).",
     "User requested proceeding to the next step and asked that each step be explicitly named.",
     "User approved proceeding and requested the next named rollout portion/step be presented for approval before code/deploy.",
@@ -12,7 +11,8 @@
     "User requested proceeding with the next build/deploy specifically for Step 21 sub-steps 21.3 and 21.4.",
     "User requested proceeding with the next build/deploy specifically for Step 21 sub-steps 21.5 and 21.6.",
     "User requested proceeding with the next build/deploy specifically for Step 21 sub-step 21.7 and to proceed with all subsequent steps.",
-    "User confirmed to proceed with the next rollout step/build after the assistant asked to move ahead."
+    "User confirmed to proceed with the next rollout step/build after the assistant asked to move ahead.",
+    "User confirmed to move to the next rollout step (assistant started the next build)."
   ],
   "known_issues": [
     "Build/deploy pipeline encountered an error when attempting to add UI linking controls; requires adjustment for error-free completion.",
@@ -558,6 +558,103 @@
         "REQ-93"
       ],
       "version": 2
+    },
+    {
+      "id": "feature-execute-rollout-21-7-build-upgrade-deployment-as-documented-in-frontend-rollout-steps-md-step-9-5-preserving-all-existing-canister-state-and-ensuring-the-deployment-pipeline-completes-successfully-no-platform-error-unable-to-create-your-app",
+      "title": "Execute Rollout 21.7 build/upgrade deployment as documented in `frontend/ROLLOUT_STEPS.md` Step 9.5, preserving all existing canister state and ensuring the deployment pipeline completes successfully (no platform error \"Unable to create your app\").",
+      "reqIds": [
+        "REQ-96"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-before-deploying-rollout-21-7-run-the-frontend-build-sanity-checks-described-in-frontend-rollout-steps-md-step-9-5-including-npm-run-typescript-check-and-a-production-npm-run-build-from-the-frontend-directory-and-ensure-they-complete-without-errors",
+      "title": "Before deploying Rollout 21.7, run the frontend build sanity checks described in `frontend/ROLLOUT_STEPS.md` Step 9.5, including `npm run typescript-check` and a production `npm run build` from the `frontend/` directory, and ensure they complete without errors.",
+      "reqIds": [
+        "REQ-97"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-the-rollout-21-7-canister-upgrade-execute-the-post-upgrade-smoke-test-checklist-in-frontend-smoke-test-21-7-md-using-both-1-an-admin-user-and-2-a-non-admin-approved-member-covering-landing-page-load-authentication-portal-access-authgate-approvalgate-all-five-portal-detail-routes-and-opening-the-edit-links-dialog-on-each-detail-page",
+      "title": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both (1) an admin user and (2) a non-admin approved member, covering landing page load (`/`), authentication/portal access (AuthGate + ApprovalGate), all five portal detail routes, and opening the \"Edit Links\" dialog on each detail page.",
+      "reqIds": [
+        "REQ-98"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-record-rollout-21-7-execution-evidence-and-qa-outcomes-by-filling-in-frontend-roll-out-21-7-execution-log-md-and-the-rollout-21-7-smoke-test-results-section-of-frontend-upgrade-linking-verification-results-md-including-principals-used-entity-ids-tested-and-clear-english-notes-for-any-failures-route-user-role-exact-error-text-stack-trace-when-available",
+      "title": "Record Rollout 21.7 execution evidence and QA outcomes by filling in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` and the \"Rollout 21.7 Smoke Test Results\" section of `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`, including principals used, entity IDs tested, and clear English notes for any failures (route, user role, exact error text, stack trace when available).",
+      "reqIds": [
+        "REQ-102",
+        "REQ-99"
+      ],
+      "version": 2
+    },
+    {
+      "id": "feature-execute-rollout-21-7-step-9-5-build-and-canister-upgrade-deployment-as-documented-in-frontend-rollout-steps-md-preserving-all-existing-canister-state-perform-an-upgrade-not-a-reinstall-and-ensure-the-deployment-pipeline-completes-successfully-without-the-platform-error-unable-to-create-your-app",
+      "title": "Execute Rollout 21.7 (Step 9.5) build and canister upgrade deployment as documented in `frontend/ROLLOUT_STEPS.md`, preserving all existing canister state (perform an upgrade, not a reinstall), and ensure the deployment pipeline completes successfully without the platform error \"Unable to create your app\".",
+      "reqIds": [
+        "REQ-100"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-run-the-rollout-21-7-post-upgrade-smoke-test-checklist-in-frontend-smoke-test-21-7-md-for-both-1-an-admin-user-and-2-a-non-admin-approved-member-covering-landing-page-load-authentication-portal-access-authgate-approvalgate-all-five-portal-detail-routes-and-opening-the-edit-links-dialog-on-each-detail-page",
+      "title": "Run the Rollout 21.7 post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` for both (1) an admin user and (2) a non-admin approved member, covering landing page load (`/`), authentication/portal access (AuthGate + ApprovalGate), all five portal detail routes, and opening the \"Edit Links\" dialog on each detail page.",
+      "reqIds": [
+        "REQ-101"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-execute-rollout-21-7-step-9-5-build-upgrade-deployment-as-documented-in-frontend-rollout-steps-md-including-the-pre-deployment-frontend-sanity-checks-while-preserving-all-existing-canister-state-perform-an-upgrade-not-a-reinstall",
+      "title": "Execute Rollout 21.7 (Step 9.5) build/upgrade deployment as documented in `frontend/ROLLOUT_STEPS.md` (including the pre-deployment frontend sanity checks) while preserving all existing canister state (perform an upgrade, not a reinstall).",
+      "reqIds": [
+        "REQ-103"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-the-rollout-21-7-upgrade-execute-the-post-upgrade-smoke-test-checklist-in-frontend-smoke-test-21-7-md-using-both-1-an-admin-user-and-2-a-non-admin-approved-member-user",
+      "title": "After the Rollout 21.7 upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both (1) an admin user and (2) a non-admin approved member user.",
+      "reqIds": [
+        "REQ-104"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-record-rollout-21-7-execution-evidence-and-qa-outcomes-by-filling-in-frontend-roll-out-21-7-execution-log-md-and-the-rollout-21-7-smoke-test-results-section-of-frontend-upgrade-linking-verification-results-md-including-principals-used-entity-ids-tested-and-clear-english-notes-for-any-failures",
+      "title": "Record Rollout 21.7 execution evidence and QA outcomes by filling in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` and the “Rollout 21.7 Smoke Test Results” section of `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` (including principals used, entity IDs tested, and clear English notes for any failures).",
+      "reqIds": [
+        "REQ-105"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-execute-rollout-step-9-5-rollout-21-7-build-upgrade-execution-as-documented-in-frontend-rollout-steps-md-including-the-pre-deployment-frontend-sanity-checks-npm-run-typescript-check-and-npm-run-build-from-the-frontend-directory-and-ensure-the-deployment-is-a-canister-upgrade-not-reinstall-that-preserves-all-existing-canister-state",
+      "title": "Execute Rollout Step 9.5 (“Rollout 21.7 Build/Upgrade Execution”) as documented in `frontend/ROLLOUT_STEPS.md`, including the pre-deployment frontend sanity checks (`npm run typescript-check` and `npm run build` from the `frontend/` directory), and ensure the deployment is a canister **upgrade** (not reinstall) that preserves all existing canister state.",
+      "reqIds": [
+        "REQ-106"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-the-rollout-21-7-canister-upgrade-completes-execute-the-post-upgrade-smoke-test-checklist-in-frontend-smoke-test-21-7-md-for-both-1-an-admin-user-and-2-a-non-admin-approved-member-user-covering-landing-page-load-authentication-portal-access-authgate-approvalgate-all-five-portal-detail-routes-and-opening-the-edit-links-dialog-on-each-detail-page",
+      "title": "After the Rollout 21.7 canister upgrade completes, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` for both (1) an admin user and (2) a non-admin approved member user, covering landing page load (`/`), authentication/portal access (AuthGate + ApprovalGate), all five portal detail routes, and opening the \"Edit Links\" dialog on each detail page.",
+      "reqIds": [
+        "REQ-107"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-record-rollout-21-7-qa-outcomes-and-execution-evidence-in-the-existing-templates-1-fill-in-the-rollout-21-7-smoke-test-results-section-in-frontend-upgrade-linking-verification-results-md-and-2-fill-in-frontend-roll-out-21-7-execution-log-md-with-build-upgrade-artifacts-include-principals-used-entity-ids-tested-and-clear-english-notes-for-any-failures-route-user-role-exact-error-text-stack-trace-when-available",
+      "title": "Record Rollout 21.7 QA outcomes and execution evidence in the existing templates: (1) fill in the “Rollout 21.7 Smoke Test Results” section in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` and (2) fill in `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` with build/upgrade artifacts; include principals used, entity IDs tested, and clear English notes for any failures (route, user role, exact error text, stack trace when available).",
+      "reqIds": [
+        "REQ-108"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
