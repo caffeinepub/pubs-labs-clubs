@@ -1,587 +1,389 @@
-# Step 9 — Manual QA Results: Upgrade-Safe Related-Record Linking
+# Upgrade Linking Verification Results
 
-This document records the results of manual QA testing performed after a canister upgrade to verify that the "Edit Links" functionality works correctly across all five entity detail pages for both admin and non-admin member roles.
+This document captures the results of manual QA testing for the upgrade-safe related-record linking functionality across all five entity detail pages.
 
-## Test Environment
+---
 
-- **Date of Testing**: _________________
-- **Tester Name**: _________________
-- **Canister Version**: _________________
-- **Upgrade Performed**: ☐ Yes ☐ No
-- **Upgrade Date/Time**: _________________
+## Rollout 21.1–21.2 Smoke Test Results
 
-## Test Users
+**Test Date**: _____________  
+**Tester**: _____________  
+**Environment**: _____________
 
-- **Admin User Principal**: _________________
-- **Non-Admin Member Principal**: _________________
-- **Non-Admin Member Approval Status**: ☐ Approved ☐ Pending ☐ Rejected
+### Build/Upgrade Status
 
-## Pre-Test Verification
+- [ ] Frontend build completed successfully (no TypeScript errors)
+- [ ] Backend build completed successfully (no Motoko errors)
+- [ ] Canister upgrade completed successfully (no data loss)
+- [ ] Application started after upgrade (no runtime traps on startup)
+- [ ] Deployment pipeline succeeded (no "Unable to create your app" error)
 
-- ☐ Canister upgrade completed successfully without runtime traps
-- ☐ Admin user can log in and access portal
-- ☐ Non-admin member can log in and access portal
-- ☐ Sample data exists for all five entity types
+### Landing Page
+
+- [ ] Landing page (`/`) loads without errors
+- [ ] No console errors or warnings
+
+### Authentication Flow
+
+- [ ] Login button visible and functional
+- [ ] Internet Identity authentication flow completes successfully
+- [ ] User redirected to portal after login
+- [ ] AuthGate allows authenticated user through
+- [ ] ApprovalGate allows approved user through
+
+### Portal Detail Routes (Admin User)
+
+- [ ] Membership Detail (`/portal/memberships/$id`) loads without errors
+- [ ] Publishing Work Detail (`/portal/publishing/$id`) loads without errors
+- [ ] Release Detail (`/portal/releases/$id`) loads without errors
+- [ ] Recording Project Detail (`/portal/recordings/$id`) loads without errors
+- [ ] Artist Development Detail (`/portal/artists/$id`) loads without errors
+
+### Edit Links Dialog (Admin User)
+
+- [ ] "Edit Links" dialog opens on Membership Detail
+- [ ] "Edit Links" dialog opens on Publishing Work Detail
+- [ ] "Edit Links" dialog opens on Release Detail
+- [ ] "Edit Links" dialog opens on Recording Project Detail
+- [ ] "Edit Links" dialog opens on Artist Development Detail
+
+### Portal Detail Routes (Non-Admin Approved Member)
+
+- [ ] Membership Detail loads without errors
+- [ ] Publishing Work Detail loads without errors
+- [ ] Release Detail loads without errors
+- [ ] Recording Project Detail loads without errors
+- [ ] Artist Development Detail loads without errors
+
+### Edit Links Dialog (Non-Admin Approved Member)
+
+- [ ] "Edit Links" dialog opens on Membership Detail
+- [ ] "Edit Links" dialog opens on Publishing Work Detail
+- [ ] "Edit Links" dialog opens on Release Detail
+- [ ] "Edit Links" dialog opens on Recording Project Detail
+- [ ] "Edit Links" dialog opens on Artist Development Detail
+
+### Issues/Failures
+
+**If any failures occurred, document them here:**
+
+_No failures_ OR:
+
+- **Route**: _____________
+- **User Role**: _____________
+- **Error**: _____________
+- **Steps to Reproduce**: _____________
 
 ---
 
 ## Rollout 21.3–21.4 Smoke Test Results
 
-### Test Environment
-- **Rollout Version**: 21.3–21.4
-- **Date of Smoke Test**: _________________
-- **Canister Version**: _________________
-- **Build Completed Successfully**: ☐ Yes ☐ No
-- **Upgrade Completed Successfully**: ☐ Yes ☐ No
-- **Platform Deployment Errors**: ☐ None ☐ Errors (describe below)
+**Test Date**: _____________  
+**Tester**: _____________  
+**Environment**: _____________
 
-### Test Users
-- **Admin User Principal**: _________________
-- **Non-Admin Member Principal**: _________________
-- **Non-Admin Member Approval Status**: ☐ Approved ☐ Pending ☐ Rejected
+### Build/Upgrade Status
 
-### 1. Landing Page Load
-- ☐ Landing page (`/`) loads without errors
-- ☐ No console errors or warnings
-- ☐ Login button visible and functional
+- [ ] Frontend build completed successfully (no TypeScript errors)
+- [ ] Backend build completed successfully (no Motoko errors)
+- [ ] Canister upgrade completed successfully (no data loss)
+- [ ] Application started after upgrade (no runtime traps on startup)
+- [ ] Deployment pipeline succeeded (no "Unable to create your app" error)
 
-**Issues/Notes**:
+### Landing Page
 
+- [ ] Landing page (`/`) loads without errors
+- [ ] No console errors or warnings
 
-### 2. Authentication & Portal Access
-- ☐ Internet Identity authentication completes successfully
-- ☐ User redirected to portal after login
-- ☐ AuthGate allows authenticated users through
-- ☐ ApprovalGate allows approved users through
-- ☐ Portal layout renders correctly
+### Authentication Flow
 
-**Issues/Notes**:
+- [ ] Login button visible and functional
+- [ ] Internet Identity authentication flow completes successfully
+- [ ] User redirected to portal after login
+- [ ] AuthGate allows authenticated user through
+- [ ] ApprovalGate allows approved user through
 
+### Portal Detail Routes (Admin User)
 
-### 3. Portal Detail Routes Load (Admin User)
-- ☐ Membership Detail (`/portal/memberships/$id`) renders without errors
-- ☐ Publishing Work Detail (`/portal/publishing/$id`) renders without errors
-- ☐ Release Detail (`/portal/releases/$id`) renders without errors
-- ☐ Recording Project Detail (`/portal/recordings/$id`) renders without errors
-- ☐ Artist Development Detail (`/portal/artists/$id`) renders without errors
+- [ ] Membership Detail (`/portal/memberships/$id`) loads without errors
+- [ ] Publishing Work Detail (`/portal/publishing/$id`) loads without errors
+- [ ] Release Detail (`/portal/releases/$id`) loads without errors
+- [ ] Recording Project Detail (`/portal/recordings/$id`) loads without errors
+- [ ] Artist Development Detail (`/portal/artists/$id`) loads without errors
 
-**Issues/Notes**:
+### Edit Links Dialog (Admin User)
 
+- [ ] "Edit Links" dialog opens on Membership Detail
+- [ ] "Edit Links" dialog opens on Publishing Work Detail
+- [ ] "Edit Links" dialog opens on Release Detail
+- [ ] "Edit Links" dialog opens on Recording Project Detail
+- [ ] "Edit Links" dialog opens on Artist Development Detail
 
-### 4. Edit Links Dialog Opens (Admin User)
-- ☐ "Edit Links" dialog opens on Membership Detail without errors
-- ☐ "Edit Links" dialog opens on Publishing Work Detail without errors
-- ☐ "Edit Links" dialog opens on Release Detail without errors
-- ☐ "Edit Links" dialog opens on Recording Project Detail without errors
-- ☐ "Edit Links" dialog opens on Artist Development Detail without errors
+### Portal Detail Routes (Non-Admin Approved Member)
 
-**Issues/Notes**:
+- [ ] Membership Detail loads without errors
+- [ ] Publishing Work Detail loads without errors
+- [ ] Release Detail loads without errors
+- [ ] Recording Project Detail loads without errors
+- [ ] Artist Development Detail loads without errors
 
+### Edit Links Dialog (Non-Admin Approved Member)
 
-### 5. Portal Detail Routes Load (Non-Admin Approved Member)
-- ☐ Own membership detail page loads without errors
-- ☐ Own publishing work detail page loads without errors
-- ☐ Own release detail page loads without errors
-- ☐ Own recording project detail page loads without errors
-- ☐ Own artist development detail page loads without errors
+- [ ] "Edit Links" dialog opens on Membership Detail
+- [ ] "Edit Links" dialog opens on Publishing Work Detail
+- [ ] "Edit Links" dialog opens on Release Detail
+- [ ] "Edit Links" dialog opens on Recording Project Detail
+- [ ] "Edit Links" dialog opens on Artist Development Detail
 
-**Issues/Notes**:
+### Router Error Handling
 
+- [ ] Router-level error boundaries configured in App.tsx
+- [ ] Errors render as in-app error screens (not full SPA crashes)
+- [ ] Error screens display helpful messages
 
-### 6. Edit Links Dialog Opens (Non-Admin Approved Member)
-- ☐ "Edit Links" dialog opens on own membership without errors
-- ☐ "Edit Links" dialog opens on own publishing work without errors
-- ☐ "Edit Links" dialog opens on own release without errors
-- ☐ "Edit Links" dialog opens on own recording project without errors
-- ☐ "Edit Links" dialog opens on own artist development without errors
+### Issues/Failures
 
-**Issues/Notes**:
+**If any failures occurred, document them here:**
 
+_No failures_ OR:
 
-### 7. No Runtime Traps or Crashes
-- ☐ No backend runtime traps occurred
-- ☐ No frontend console errors related to undefined/null array access
-- ☐ No "Cannot read property of undefined" errors
-- ☐ No infinite loading states or frozen UI
-- ☐ All React Query operations complete successfully
-
-**Issues/Notes**:
-
-
-### 8. Router-Level Error Handling
-- ☐ Router error boundaries are active
-- ☐ Errors display in-app error screens (not full app crashes)
-- ☐ Error messages are user-friendly and actionable
-- ☐ Can recover from errors using "Try Again" buttons
-
-**Issues/Notes**:
-
-
-### Overall Rollout 21.3–21.4 Result
-- ☐ **PASS** — All smoke test steps passed
-- ☐ **FAIL** — One or more smoke test steps failed (document issues above)
+- **Route**: _____________
+- **User Role**: _____________
+- **Error**: _____________
+- **Steps to Reproduce**: _____________
 
 ---
 
 ## Rollout 21.5–21.6 Smoke Test Results
 
-### Test Environment
-- **Rollout Version**: 21.5–21.6
-- **Date of Smoke Test**: _________________
-- **Canister Version**: _________________
-- **Build Completed Successfully**: ☐ Yes ☐ No
-- **Upgrade Completed Successfully**: ☐ Yes ☐ No
-- **Platform Deployment Errors**: ☐ None ☐ Errors (describe below)
+**Test Date**: _____________  
+**Tester**: _____________  
+**Environment**: _____________
 
-### Test Users
-- **Admin User Principal**: _________________
-- **Non-Admin Member Principal**: _________________
-- **Non-Admin Member Approval Status**: ☐ Approved ☐ Pending ☐ Rejected
+### Build/Upgrade Status
 
-### 1. Landing Page Load
-- ☐ Landing page (`/`) loads without errors
-- ☐ No console errors or warnings
-- ☐ Login button visible and functional
+- [ ] Frontend build completed successfully (no TypeScript errors)
+- [ ] Backend build completed successfully (no Motoko errors)
+- [ ] Canister upgrade completed successfully (no data loss)
+- [ ] Application started after upgrade (no runtime traps on startup)
+- [ ] Deployment pipeline succeeded (no "Unable to create your app" error)
 
-**Issues/Notes**:
+### Landing Page
 
+- [ ] Landing page (`/`) loads without errors
+- [ ] No console errors or warnings
 
-### 2. Authentication & Portal Access
-- ☐ Internet Identity authentication completes successfully
-- ☐ User redirected to portal after login
-- ☐ AuthGate allows authenticated users through
-- ☐ ApprovalGate allows approved users through
-- ☐ Portal layout renders correctly
+### Authentication Flow
 
-**Issues/Notes**:
+- [ ] Login button visible and functional
+- [ ] Internet Identity authentication flow completes successfully
+- [ ] User redirected to portal after login
+- [ ] AuthGate allows authenticated user through
+- [ ] ApprovalGate allows approved user through
 
+### Portal Detail Routes (Admin User)
 
-### 3. Portal Detail Routes Load (Admin User)
-- ☐ Membership Detail (`/portal/memberships/$id`) renders without errors
-- ☐ Publishing Work Detail (`/portal/publishing/$id`) renders without errors
-- ☐ Release Detail (`/portal/releases/$id`) renders without errors
-- ☐ Recording Project Detail (`/portal/recordings/$id`) renders without errors
-- ☐ Artist Development Detail (`/portal/artists/$id`) renders without errors
+- [ ] Membership Detail (`/portal/memberships/$id`) loads without errors
+- [ ] Publishing Work Detail (`/portal/publishing/$id`) loads without errors
+- [ ] Release Detail (`/portal/releases/$id`) loads without errors
+- [ ] Recording Project Detail (`/portal/recordings/$id`) loads without errors
+- [ ] Artist Development Detail (`/portal/artists/$id`) loads without errors
 
-**Issues/Notes**:
+### Edit Links Dialog (Admin User)
 
+- [ ] "Edit Links" dialog opens on Membership Detail
+- [ ] "Edit Links" dialog opens on Publishing Work Detail
+- [ ] "Edit Links" dialog opens on Release Detail
+- [ ] "Edit Links" dialog opens on Recording Project Detail
+- [ ] "Edit Links" dialog opens on Artist Development Detail
 
-### 4. Edit Links Dialog Opens (Admin User)
-- ☐ "Edit Links" dialog opens on Membership Detail without errors
-- ☐ "Edit Links" dialog opens on Publishing Work Detail without errors
-- ☐ "Edit Links" dialog opens on Release Detail without errors
-- ☐ "Edit Links" dialog opens on Recording Project Detail without errors
-- ☐ "Edit Links" dialog opens on Artist Development Detail without errors
+### Portal Detail Routes (Non-Admin Approved Member)
 
-**Issues/Notes**:
+- [ ] Membership Detail loads without errors
+- [ ] Publishing Work Detail loads without errors
+- [ ] Release Detail loads without errors
+- [ ] Recording Project Detail loads without errors
+- [ ] Artist Development Detail loads without errors
 
+### Edit Links Dialog (Non-Admin Approved Member)
 
-### 5. Portal Detail Routes Load (Non-Admin Approved Member)
-- ☐ Own membership detail page loads without errors
-- ☐ Own publishing work detail page loads without errors
-- ☐ Own release detail page loads without errors
-- ☐ Own recording project detail page loads without errors
-- ☐ Own artist development detail page loads without errors
+- [ ] "Edit Links" dialog opens on Membership Detail
+- [ ] "Edit Links" dialog opens on Publishing Work Detail
+- [ ] "Edit Links" dialog opens on Release Detail
+- [ ] "Edit Links" dialog opens on Recording Project Detail
+- [ ] "Edit Links" dialog opens on Artist Development Detail
 
-**Issues/Notes**:
+### Issues/Failures
 
+**If any failures occurred, document them here:**
 
-### 6. Edit Links Dialog Opens (Non-Admin Approved Member)
-- ☐ "Edit Links" dialog opens on own membership without errors
-- ☐ "Edit Links" dialog opens on own publishing work without errors
-- ☐ "Edit Links" dialog opens on own release without errors
-- ☐ "Edit Links" dialog opens on own recording project without errors
-- ☐ "Edit Links" dialog opens on own artist development without errors
+_No failures_ OR:
 
-**Issues/Notes**:
-
-
-### 7. No Runtime Traps or Crashes
-- ☐ No backend runtime traps occurred
-- ☐ No frontend console errors related to undefined/null array access
-- ☐ No "Cannot read property of undefined" errors
-- ☐ No infinite loading states or frozen UI
-- ☐ All React Query operations complete successfully
-
-**Issues/Notes**:
-
-
-### 8. Router-Level Error Handling
-- ☐ Router error boundaries are active
-- ☐ Errors display in-app error screens (not full app crashes)
-- ☐ Error messages are user-friendly and actionable
-- ☐ Can recover from errors using "Try Again" buttons
-
-**Issues/Notes**:
-
-
-### Overall Rollout 21.5–21.6 Result
-- ☐ **PASS** — All smoke test steps passed
-- ☐ **FAIL** — One or more smoke test steps failed (document issues above)
+- **Route**: _____________
+- **User Role**: _____________
+- **Error**: _____________
+- **Steps to Reproduce**: _____________
 
 ---
 
 ## Rollout 21.7 Smoke Test Results
 
-### Test Environment
-- **Rollout Version**: 21.7
-- **Date of Smoke Test**: _________________
-- **Canister Version**: _________________
-- **Build Completed Successfully**: ☐ Yes ☐ No
-- **Upgrade Completed Successfully**: ☐ Yes ☐ No
-- **Platform Deployment Errors**: ☐ None ☐ Errors (describe below)
+**Test Date**: _____________  
+**Tester**: _____________  
+**Environment**: _____________
 
-### Test Users
-- **Admin User Principal**: _________________
-- **Non-Admin Member Principal**: _________________
-- **Non-Admin Member Approval Status**: ☐ Approved ☐ Pending ☐ Rejected
+### Build/Upgrade Status
+
+- [ ] Frontend build completed successfully (no TypeScript errors)
+- [ ] Backend build completed successfully (no Motoko errors)
+- [ ] Canister upgrade completed successfully (no data loss)
+- [ ] Application started after upgrade (no runtime traps on startup)
+- [ ] Deployment pipeline succeeded (no "Unable to create your app" error)
+- [ ] Frontend TypeScript check passed (`npm run typescript-check`)
+- [ ] Production build completed successfully (`npm run build`)
+
+### Test User Principals
 
-### 1. Landing Page Load
-- ☐ Landing page (`/`) loads without errors
-- ☐ No console errors or warnings
-- ☐ Login button visible and functional
+**Admin User Principal**: _____________  
+**Non-Admin Approved Member Principal**: _____________
 
-**Issues/Notes**:
+### Landing Page
 
+- [ ] Landing page (`/`) loads without errors
+- [ ] No console errors or warnings
 
-### 2. Authentication & Portal Access
-- ☐ Internet Identity authentication completes successfully
-- ☐ User redirected to portal after login
-- ☐ AuthGate allows authenticated users through
-- ☐ ApprovalGate allows approved users through
-- ☐ Portal layout renders correctly
+### Authentication Flow (Admin User)
 
-**Issues/Notes**:
-
-
-### 3. Portal Detail Routes Load (Admin User)
-- ☐ Membership Detail (`/portal/memberships/$id`) renders without errors
-- ☐ Publishing Work Detail (`/portal/publishing/$id`) renders without errors
-- ☐ Release Detail (`/portal/releases/$id`) renders without errors
-- ☐ Recording Project Detail (`/portal/recordings/$id`) renders without errors
-- ☐ Artist Development Detail (`/portal/artists/$id`) renders without errors
-
-**Issues/Notes**:
-
-
-### 4. Edit Links Dialog Opens (Admin User)
-- ☐ "Edit Links" dialog opens on Membership Detail without errors
-- ☐ "Edit Links" dialog opens on Publishing Work Detail without errors
-- ☐ "Edit Links" dialog opens on Release Detail without errors
-- ☐ "Edit Links" dialog opens on Recording Project Detail without errors
-- ☐ "Edit Links" dialog opens on Artist Development Detail without errors
-
-**Issues/Notes**:
-
-
-### 5. Portal Detail Routes Load (Non-Admin Approved Member)
-- ☐ Own membership detail page loads without errors
-- ☐ Own publishing work detail page loads without errors
-- ☐ Own release detail page loads without errors
-- ☐ Own recording project detail page loads without errors
-- ☐ Own artist development detail page loads without errors
-
-**Issues/Notes**:
-
-
-### 6. Edit Links Dialog Opens (Non-Admin Approved Member)
-- ☐ "Edit Links" dialog opens on own membership without errors
-- ☐ "Edit Links" dialog opens on own publishing work without errors
-- ☐ "Edit Links" dialog opens on own release without errors
-- ☐ "Edit Links" dialog opens on own recording project without errors
-- ☐ "Edit Links" dialog opens on own artist development without errors
-
-**Issues/Notes**:
-
-
-### 7. No Runtime Traps or Crashes
-- ☐ No backend runtime traps occurred
-- ☐ No frontend console errors related to undefined/null array access
-- ☐ No "Cannot read property of undefined" errors
-- ☐ No infinite loading states or frozen UI
-- ☐ All React Query operations complete successfully
-
-**Issues/Notes**:
-
-
-### 8. Router-Level Error Handling
-- ☐ Router error boundaries are active
-- ☐ Errors display in-app error screens (not full app crashes)
-- ☐ Error messages are user-friendly and actionable
-- ☐ Can recover from errors using "Try Again" buttons
-
-**Issues/Notes**:
-
-
-### Overall Rollout 21.7 Result
-- ☐ **PASS** — All smoke test steps passed
-- ☐ **FAIL** — One or more smoke test steps failed (document issues above)
-
----
-
-## Detailed Test Results (Admin User)
-
-### Membership Detail Page (`/portal/memberships/$id`)
-
-**Test Record ID**: _________________
-
-#### Page Load
-- ☐ Page loads without runtime errors
-- ☐ Profile information displays correctly
-- ☐ Related Records section renders
-- ☐ "Edit Links" button is visible
-
-#### Edit Links Dialog
-- ☐ Dialog opens without errors
-- ☐ All entity selection lists render correctly
-- ☐ Pre-existing links are correctly pre-selected
-- ☐ Can select/deselect entities
-- ☐ Save operation completes successfully
-- ☐ UI updates immediately after save
-- ☐ Page refresh confirms link persistence
-
-**Issues/Notes**:
-
-
----
-
-### Publishing Work Detail Page (`/portal/publishing/$id`)
-
-**Test Record ID**: _________________
-
-#### Page Load
-- ☐ Page loads without runtime errors
-- ☐ Work details display correctly
-- ☐ Related Records section renders
-- ☐ "Edit Links" button is visible
-
-#### Edit Links Dialog
-- ☐ Dialog opens without errors
-- ☐ All entity selection lists render correctly
-- ☐ Pre-existing links are correctly pre-selected
-- ☐ Can select/deselect entities
-- ☐ Save operation completes successfully
-- ☐ UI updates immediately after save
-- ☐ Page refresh confirms link persistence
-
-**Issues/Notes**:
-
-
----
-
-### Release Detail Page (`/portal/releases/$id`)
-
-**Test Record ID**: _________________
-
-#### Page Load
-- ☐ Page loads without runtime errors
-- ☐ Release information displays correctly
-- ☐ Related Records section renders
-- ☐ "Edit Links" button is visible
-
-#### Edit Links Dialog
-- ☐ Dialog opens without errors
-- ☐ All entity selection lists render correctly
-- ☐ Pre-existing links are correctly pre-selected
-- ☐ Can select/deselect entities
-- ☐ Save operation completes successfully
-- ☐ UI updates immediately after save
-- ☐ Page refresh confirms link persistence
-
-**Issues/Notes**:
-
-
----
-
-### Recording Project Detail Page (`/portal/recordings/$id`)
-
-**Test Record ID**: _________________
-
-#### Page Load
-- ☐ Page loads without runtime errors
-- ☐ Project details display correctly
-- ☐ Related Records section renders
-- ☐ "Edit Links" button is visible
-
-#### Edit Links Dialog
-- ☐ Dialog opens without errors
-- ☐ All entity selection lists render correctly
-- ☐ Pre-existing links are correctly pre-selected
-- ☐ Can select/deselect entities
-- ☐ Save operation completes successfully
-- ☐ UI updates immediately after save
-- ☐ Page refresh confirms link persistence
-
-**Issues/Notes**:
-
-
----
-
-### Artist Development Detail Page (`/portal/artists/$id`)
-
-**Test Record ID**: _________________
-
-#### Page Load
-- ☐ Page loads without runtime errors
-- ☐ Artist information displays correctly
-- ☐ Related Records section renders
-- ☐ "Edit Links" button is visible
-
-#### Edit Links Dialog
-- ☐ Dialog opens without errors
-- ☐ All entity selection lists render correctly (all 5 relationship types)
-- ☐ Pre-existing links are correctly pre-selected
-- ☐ Can select/deselect entities
-- ☐ Save operation completes successfully
-- ☐ UI updates immediately after save
-- ☐ Page refresh confirms link persistence
-
-**Issues/Notes**:
-
-
----
-
-## Detailed Test Results (Non-Admin Member)
-
-### Membership Detail Page (`/portal/memberships/$id`)
-
-**Test Record ID**: _________________
-
-#### Page Load
-- ☐ Page loads without runtime errors
-- ☐ Profile information displays correctly
-- ☐ Related Records section renders
-- ☐ "Edit Links" button is visible
-
-#### Edit Links Dialog
-- ☐ Dialog opens without errors
-- ☐ Entity selection lists show only member's own entities
-- ☐ Pre-existing links are correctly pre-selected
-- ☐ Can select/deselect entities
-- ☐ Save operation completes successfully
-- ☐ UI updates immediately after save
-- ☐ Page refresh confirms link persistence
-
-**Issues/Notes**:
-
-
----
-
-### Publishing Work Detail Page (`/portal/publishing/$id`)
-
-**Test Record ID**: _________________
-
-#### Page Load
-- ☐ Page loads without runtime errors
-- ☐ Work details display correctly
-- ☐ Related Records section renders
-- ☐ "Edit Links" button is visible
-
-#### Edit Links Dialog
-- ☐ Dialog opens without errors
-- ☐ Entity selection lists show only member's own entities
-- ☐ Pre-existing links are correctly pre-selected
-- ☐ Can select/deselect entities
-- ☐ Save operation completes successfully
-- ☐ UI updates immediately after save
-- ☐ Page refresh confirms link persistence
-
-**Issues/Notes**:
-
-
----
-
-### Release Detail Page (`/portal/releases/$id`)
-
-**Test Record ID**: _________________
-
-#### Page Load
-- ☐ Page loads without runtime errors
-- ☐ Release information displays correctly
-- ☐ Related Records section renders
-- ☐ "Edit Links" button is visible
-
-#### Edit Links Dialog
-- ☐ Dialog opens without errors
-- ☐ Entity selection lists show only member's own entities
-- ☐ Pre-existing links are correctly pre-selected
-- ☐ Can select/deselect entities
-- ☐ Save operation completes successfully
-- ☐ UI updates immediately after save
-- ☐ Page refresh confirms link persistence
-
-**Issues/Notes**:
-
-
----
-
-### Recording Project Detail Page (`/portal/recordings/$id`)
-
-**Test Record ID**: _________________
-
-#### Page Load
-- ☐ Page loads without runtime errors
-- ☐ Project details display correctly
-- ☐ Related Records section renders
-- ☐ "Edit Links" button is visible
-
-#### Edit Links Dialog
-- ☐ Dialog opens without errors
-- ☐ Entity selection lists show only member's own entities
-- ☐ Pre-existing links are correctly pre-selected
-- ☐ Can select/deselect entities
-- ☐ Save operation completes successfully
-- ☐ UI updates immediately after save
-- ☐ Page refresh confirms link persistence
-
-**Issues/Notes**:
-
-
----
-
-### Artist Development Detail Page (`/portal/artists/$id`)
-
-**Test Record ID**: _________________
-
-#### Page Load
-- ☐ Page loads without runtime errors
-- ☐ Artist information displays correctly
-- ☐ Related Records section renders
-- ☐ "Edit Links" button is visible
-
-#### Edit Links Dialog
-- ☐ Dialog opens without errors
-- ☐ Entity selection lists show only member's own entities (all 5 relationship types)
-- ☐ Pre-existing links are correctly pre-selected
-- ☐ Can select/deselect entities
-- ☐ Save operation completes successfully
-- ☐ UI updates immediately after save
-- ☐ Page refresh confirms link persistence
-
-**Issues/Notes**:
-
-
----
-
-## Overall Test Result
-
-- ☐ **PASS** — All test cases passed for both admin and member roles
-- ☐ **FAIL** — One or more test cases failed (document issues above)
-
-### Summary of Issues Found
-
-(List all issues discovered during testing, including severity, affected routes/components, and reproduction steps)
-
-
-### Recommendations
-
-(Document any recommendations for improvements, additional testing, or follow-up actions)
-
-
----
-
-**Test Completed By**: _________________
-
-**Date**: _________________
-
-**Signature**: _________________
+- [ ] Login button visible and functional
+- [ ] Internet Identity authentication flow completes successfully
+- [ ] User redirected to portal after login
+- [ ] **AuthGate verification**: Authenticated admin user allowed through
+- [ ] **ApprovalGate verification**: Admin user allowed through (admins always approved)
+- [ ] Portal layout renders correctly
+
+### Authentication Flow (Non-Admin Approved Member)
+
+- [ ] Logged out admin user successfully
+- [ ] Logged in as non-admin approved member
+- [ ] Internet Identity authentication flow completes successfully
+- [ ] User redirected to portal after login
+- [ ] **AuthGate verification**: Authenticated member allowed through
+- [ ] **ApprovalGate verification**: Approved member allowed through
+- [ ] Portal layout renders correctly
+
+### Portal Detail Routes (Admin User)
+
+**Record exact entity IDs used:**
+
+- [ ] Membership Detail (`/portal/memberships/$id`) loads without errors  
+  **Entity ID**: _____________
+- [ ] Publishing Work Detail (`/portal/publishing/$id`) loads without errors  
+  **Entity ID**: _____________
+- [ ] Release Detail (`/portal/releases/$id`) loads without errors  
+  **Entity ID**: _____________
+- [ ] Recording Project Detail (`/portal/recordings/$id`) loads without errors  
+  **Entity ID**: _____________
+- [ ] Artist Development Detail (`/portal/artists/$id`) loads without errors  
+  **Entity ID**: _____________
+
+### Edit Links Dialog (Admin User)
+
+- [ ] "Edit Links" dialog opens on Membership Detail
+- [ ] "Edit Links" dialog opens on Publishing Work Detail
+- [ ] "Edit Links" dialog opens on Release Detail
+- [ ] "Edit Links" dialog opens on Recording Project Detail
+- [ ] "Edit Links" dialog opens on Artist Development Detail
+
+### Portal Detail Routes (Non-Admin Approved Member)
+
+**Record exact entity IDs used:**
+
+- [ ] Membership Detail loads without errors  
+  **Entity ID**: _____________
+- [ ] Publishing Work Detail loads without errors  
+  **Entity ID**: _____________
+- [ ] Release Detail loads without errors  
+  **Entity ID**: _____________
+- [ ] Recording Project Detail loads without errors  
+  **Entity ID**: _____________
+- [ ] Artist Development Detail loads without errors  
+  **Entity ID**: _____________
+
+### Edit Links Dialog (Non-Admin Approved Member)
+
+- [ ] "Edit Links" dialog opens on Membership Detail
+- [ ] "Edit Links" dialog opens on Publishing Work Detail
+- [ ] "Edit Links" dialog opens on Release Detail
+- [ ] "Edit Links" dialog opens on Recording Project Detail
+- [ ] "Edit Links" dialog opens on Artist Development Detail
+
+### Console Error Check
+
+- [ ] Browser developer console reviewed during smoke test
+- [ ] **No frontend console errors related to undefined/null access**
+- [ ] **If errors exist, documented below with exact error text and stack trace**
+
+### Backend Runtime Trap Check
+
+- [ ] Backend logs reviewed (if available)
+- [ ] **No backend runtime traps occurred during smoke test**
+- [ ] **If traps exist, documented below with exact trap message**
+
+### Router Error Handling Verification
+
+- [ ] Router-level error boundaries configured in App.tsx
+- [ ] Controlled error triggered (e.g., invalid entity ID navigation)
+- [ ] Error renders as in-app error screen (not full SPA crash)
+- [ ] Error screen displays helpful message and allows navigation back
+
+### Frontend Hardening Verification
+
+- [ ] Array normalization (`normalizeToArray`) prevents undefined/null errors
+- [ ] Defensive null checks in AuthGate/ApprovalGate prevent navigation loops
+- [ ] Optional chaining (`?.`) used consistently for entity field access
+- [ ] React Query error handling prevents build/runtime crashes
+
+### Structured Failure Documentation
+
+**If any failures occurred, document them here with full details:**
+
+#### Failure 1 (if applicable)
+
+- **Route**: _____________
+- **User Role**: Admin / Non-Admin Approved Member
+- **Exact Error Text**:
+  ```
+  [Paste full error message from console here]
+  ```
+- **Stack Trace**:
+  ```
+  [Paste full stack trace here if available]
+  ```
+- **Steps to Reproduce**:
+  1. _____________
+  2. _____________
+  3. _____________
+
+#### Failure 2 (if applicable)
+
+- **Route**: _____________
+- **User Role**: Admin / Non-Admin Approved Member
+- **Exact Error Text**:
+  ```
+  [Paste full error message from console here]
+  ```
+- **Stack Trace**:
+  ```
+  [Paste full stack trace here if available]
+  ```
+- **Steps to Reproduce**:
+  1. _____________
+  2. _____________
+  3. _____________
+
+### Overall Result
+
+- [ ] **PASS**: All smoke test steps completed successfully for both roles
+- [ ] **FAIL**: One or more failures documented above
+
+**Additional Notes**: _____________

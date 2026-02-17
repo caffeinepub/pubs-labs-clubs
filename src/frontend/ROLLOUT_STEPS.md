@@ -162,21 +162,35 @@ This document serves as the single source of truth for the remaining rollout ste
 **Description**: Execute the rollout 21.7 build/upgrade deployment and perform post-upgrade smoke verification to confirm the application loads correctly, all key routes function without runtime crashes, and the frontend hardening measures (router-level error handling, defensive null checks, array normalization) prevent upgrade-related failures.
 
 **Build/Upgrade Focus**:
-- Frontend build completes successfully with no TypeScript build errors
-- Backend build completes successfully with no Motoko compiler errors
-- Canister upgrade completes successfully while preserving existing state (no data loss)
-- Application starts after upgrade with no runtime traps on startup
-- Deployment pipeline does not fail with the platform error "Unable to create your app"
-- Router-level error boundaries catch and display errors gracefully
-- All five portal detail routes load without crashes for both admin and non-admin approved member roles
-- "Edit Links" dialogs open successfully on all five detail routes for both roles
+- **Frontend Build Sanity**: Run `npm run typescript-check` before deployment to catch TypeScript errors early
+- **Backend Build**: Ensure Motoko compilation completes without errors
+- **Upgrade-Safe Expectations**: Canister upgrade preserves existing state; no data loss
+- **Startup Verification**: Application starts after upgrade with no runtime traps
+- **Deployment Pipeline**: No platform errors ("Unable to create your app")
+- **Router-Level Error Handling**: Error boundaries catch and display errors gracefully instead of crashing the entire SPA
+- **Portal Routes**: All five detail routes load without crashes for both admin and non-admin approved member roles
+- **Edit Links Dialogs**: Open successfully on all five detail routes for both roles
+
+**Frontend Build Verification Steps**:
+1. Run `npm run typescript-check` in the `frontend/` directory
+2. Verify no TypeScript compilation errors are reported
+3. If errors exist, fix them before proceeding with deployment
+4. Run `npm run build` to ensure production build completes successfully
+5. Check build output for warnings or errors
+
+**Troubleshooting Common TypeScript/Runtime Issues**:
+- **Undefined/null access errors**: Verify all array fields use `normalizeToArray()` utility
+- **Type mismatches**: Ensure backend types are imported from `src/backend` and used consistently
+- **Missing properties**: Check that all entity fields are accessed with optional chaining (`?.`) where appropriate
+- **Router errors**: Confirm all routes have error boundaries and ErrorComponent configured
+- **AuthGate/ApprovalGate issues**: Verify identity and approval status checks include defensive null handling
 
 **How to Verify**:
 - Execute the build/upgrade deployment
 - Follow the smoke test checklist in `frontend/SMOKE_TEST_21_7.md`
 - Test with both admin and non-admin approved member accounts
 - Verify AuthGate and ApprovalGate behavior remains stable post-upgrade
-- Confirm router-level error handling functions correctly
+- Confirm router-level error handling functions correctly (trigger an error and verify it renders as an in-app error screen, not a full SPA crash)
 - Record all test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under "Rollout 21.7 Smoke Test Results"
 
 **Acceptance Criteria**:
@@ -186,7 +200,7 @@ This document serves as the single source of truth for the remaining rollout ste
 - Application starts after upgrade with no runtime traps on startup
 - Deployment pipeline does not fail with the platform error "Unable to create your app"
 - Landing page (`/`) loads without errors
-- Authenticated portal navigation works (AuthGate and ApprovalGate)
+- Authenticated portal navigation works (AuthGate and ApprovalGate) for both roles
 - All five portal detail routes load without runtime crashes for both roles
 - "Edit Links" dialog opens successfully on each of the five detail routes for both roles
 - No frontend console errors related to undefined/null access occur during the smoke test

@@ -1,9 +1,8 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 53,
+  "projectStateVersion": 57,
   "summary": "Website/platform for Higgins Music to manage publishing, label operations, recordings/productions, and artist development with a co-op style membership model for artists/clients.",
   "architectural_notes": [
-    "User approved Steps 7.3–7.4 and requested proceeding with Step 7.5 and subsequent steps.",
     "User requested proceeding to the next items and to break the work into manageable portions to ensure error-free processing.",
     "User requested adding an admin-only Role Assignment UI to grant Admin privileges to additional signed-in principals (role assignment stored in backend user profiles).",
     "User requested proceeding to the next step and asked that each step be explicitly named.",
@@ -12,7 +11,8 @@
     "User requested proceeding with the next build/deploy specifically for Step 21 sub-steps 21.1 and 21.2.",
     "User requested proceeding with the next build/deploy specifically for Step 21 sub-steps 21.3 and 21.4.",
     "User requested proceeding with the next build/deploy specifically for Step 21 sub-steps 21.5 and 21.6.",
-    "User requested proceeding with the next build/deploy specifically for Step 21 sub-step 21.7 and to proceed with all subsequent steps."
+    "User requested proceeding with the next build/deploy specifically for Step 21 sub-step 21.7 and to proceed with all subsequent steps.",
+    "User confirmed to proceed with the next rollout step/build after the assistant asked to move ahead."
   ],
   "known_issues": [
     "Build/deploy pipeline encountered an error when attempting to add UI linking controls; requires adjustment for error-free completion.",
@@ -528,7 +528,33 @@
       "id": "feature-after-the-rollout-21-7-canister-upgrade-execute-the-post-upgrade-smoke-test-checklist-in-frontend-smoke-test-21-7-md-using-both-an-admin-user-and-a-non-admin-approved-member-user",
       "title": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user.",
       "reqIds": [
-        "REQ-85"
+        "REQ-85",
+        "REQ-88",
+        "REQ-91"
+      ],
+      "version": 3
+    },
+    {
+      "id": "feature-execute-rollout-21-7-build-upgrade-deployment-as-described-in-frontend-rollout-steps-md-step-9-5-keeping-all-existing-canister-state-intact-and-ensure-the-build-deploy-pipeline-completes-successfully-no-unable-to-create-your-app-failure",
+      "title": "Execute Rollout 21.7 build/upgrade deployment as described in `frontend/ROLLOUT_STEPS.md` Step 9.5, keeping all existing canister state intact, and ensure the build/deploy pipeline completes successfully (no “Unable to create your app” failure).",
+      "reqIds": [
+        "REQ-87"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-record-the-rollout-21-7-smoke-test-outcomes-in-frontend-upgrade-linking-verification-results-md-under-the-rollout-21-7-smoke-test-results-section-using-clear-english-notes-for-any-failures-include-route-user-role-and-observed-error-text",
+      "title": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section, using clear English notes for any failures (include route, user role, and observed error text).",
+      "reqIds": [
+        "REQ-89"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-execute-rollout-21-7-build-upgrade-deployment-as-described-in-frontend-rollout-steps-md-step-9-5-preserving-all-existing-canister-state-and-ensuring-the-build-deploy-pipeline-completes-successfully-no-platform-error-unable-to-create-your-app",
+      "title": "Execute Rollout 21.7 build/upgrade deployment as described in `frontend/ROLLOUT_STEPS.md` Step 9.5, preserving all existing canister state and ensuring the build/deploy pipeline completes successfully (no platform error \"Unable to create your app\").",
+      "reqIds": [
+        "REQ-90"
       ],
       "version": 1
     }
@@ -803,6 +829,14 @@
       "summary": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section, using clear English notes for any failures (include route, user role, and observed error text).",
       "reqIds": [
         "REQ-86"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-47",
+      "summary": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section, using clear English notes for any failures (include route, user role, and observed error text).",
+      "reqIds": [
+        "REQ-92"
       ],
       "status": "pending"
     }

@@ -2,11 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-produce-the-next-build-and-deploy-it-via-a-canister-upgrade-for-rollout-21-7-keeping-all-existing-canister-state-intact-and-ensure-the-build-deploy-pipeline-completes-successfully-no-unable-to-create-your-app-failure",
-      "featureTitle": "Produce the next build and deploy it via a canister upgrade for Rollout 21.7, keeping all existing canister state intact, and ensure the build/deploy pipeline completes successfully (no “Unable to create your app” failure).",
+      "featureId": "feature-execute-rollout-21-7-build-upgrade-deployment-as-described-in-frontend-rollout-steps-md-step-9-5-preserving-all-existing-canister-state-and-ensuring-the-build-deploy-pipeline-completes-successfully-no-platform-error-unable-to-create-your-app",
+      "featureTitle": "Execute Rollout 21.7 build/upgrade deployment as described in `frontend/ROLLOUT_STEPS.md` Step 9.5, preserving all existing canister state and ensuring the build/deploy pipeline completes successfully (no platform error \"Unable to create your app\").",
       "files": [
-        "frontend/ROLLOUT_STEPS.md",
-        "frontend/src/App.tsx"
+        "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md"
       ],
       "components": [
         "authorization@4.0.0",
@@ -18,7 +17,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-84"
+        "REQ-90"
       ],
       "confidence": "high"
     },
@@ -26,7 +25,7 @@
       "featureId": "feature-after-the-rollout-21-7-canister-upgrade-execute-the-post-upgrade-smoke-test-checklist-in-frontend-smoke-test-21-7-md-using-both-an-admin-user-and-a-non-admin-approved-member-user",
       "featureTitle": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user.",
       "files": [
-        "frontend/SMOKE_TEST_21_7.md"
+        "frontend/SMOKE_TEST_21_7_SESSION_LOG.md"
       ],
       "components": [
         "authorization@4.0.0",
@@ -38,7 +37,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-85"
+        "REQ-91"
       ],
       "confidence": "high"
     }

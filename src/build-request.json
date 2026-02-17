@@ -1,78 +1,86 @@
 {
   "kind": "build_request",
-  "title": "Execute Rollout 21.7 Build/Upgrade + Post-Upgrade Smoke Test and Record Results",
+  "title": "Proceed with Rollout 21.7 build/upgrade and record smoke test results",
   "projectName": "Higgins Music Hub",
-  "priority": "high",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-84",
-      "text": "Produce the next build and deploy it via a canister upgrade for Rollout 21.7, keeping all existing canister state intact, and ensure the build/deploy pipeline completes successfully (no “Unable to create your app” failure).",
-      "target": "both",
+      "id": "REQ-90",
+      "text": "Execute Rollout 21.7 build/upgrade deployment as described in `frontend/ROLLOUT_STEPS.md` Step 9.5, preserving all existing canister state and ensuring the build/deploy pipeline completes successfully (no platform error \"Unable to create your app\").",
+      "target": "unknown",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-1",
+          "msg-2",
+          "msg-3",
+          "msg-4"
         ],
         "quotes": [
-          "Build/Deploy Next Best Step Now"
+          "Everything landed smoothly — want me to move ahead with the next step in your rollout sequence?",
+          "Yes"
         ]
       },
       "acceptanceCriteria": [
         "Frontend build completes successfully with no TypeScript build errors.",
         "Backend build completes successfully with no Motoko compiler errors.",
-        "Canister upgrade completes successfully while preserving existing state (no data loss).",
+        "Canister upgrade completes successfully and preserves all existing canister state (no data loss).",
         "Application starts after upgrade with no runtime traps on startup.",
-        "Deployment pipeline does not fail with the platform error “Unable to create your app”."
+        "Deployment pipeline succeeds without the platform error \"Unable to create your app\"."
       ]
     },
     {
-      "id": "REQ-85",
+      "id": "REQ-91",
       "text": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user.",
       "target": "unknown",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-4"
         ],
         "quotes": [
-          "Build/Deploy Next Best Step Now"
+          "Yes"
         ]
       },
       "acceptanceCriteria": [
-        "All checklist items in `frontend/SMOKE_TEST_21_7.md` are executed end-to-end.",
-        "Landing page (`/`) loads without errors.",
-        "Authenticated portal navigation works (AuthGate and ApprovalGate).",
+        "Smoke test is executed twice: once as an admin user and once as a non-admin approved member user.",
+        "Landing page (`/`) loads without errors for both roles.",
+        "Authenticated portal navigation works for both roles (AuthGate and ApprovalGate behave as expected).",
         "All five portal detail routes load without runtime crashes for both roles: `/portal/memberships/$id`, `/portal/publishing/$id`, `/portal/releases/$id`, `/portal/recordings/$id`, `/portal/artists/$id`.",
-        "The “Edit Links” dialog opens successfully on each of the five detail routes for both roles (when authorized).",
+        "The \"Edit Links\" dialog opens successfully on each of the five detail routes for both roles.",
         "No frontend console errors related to undefined/null access occur during the smoke test.",
         "No backend runtime traps occur during the smoke test.",
-        "Router-level error handling remains stable (errors render as in-app error screens, not full SPA crashes)."
+        "Router-level error boundaries are verified per the checklist (errors render as in-app error screens, not full SPA crashes)."
       ]
     },
     {
-      "id": "REQ-86",
+      "id": "REQ-92",
       "text": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section, using clear English notes for any failures (include route, user role, and observed error text).",
-      "target": "unknown",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-3"
+          "msg-4"
         ],
         "quotes": [
-          "Build/Deploy Next Best Step Now"
+          "Yes"
         ]
       },
       "acceptanceCriteria": [
-        "`frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` has the “Rollout 21.7 Smoke Test Results” section completed with environment fields, user principals, and pass/fail selections.",
-        "Any failures include clear English notes with: affected route, user role, and exact observed error text (and stack trace if available)."
+        "`frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` is updated under “Rollout 21.7 Smoke Test Results”.",
+        "Recorded results include: test date, tester, environment, admin principal, non-admin approved member principal.",
+        "Recorded results include the exact entity IDs used for each of the five detail routes for both roles.",
+        "If any failures occurred, the results include route, user role, exact error text, stack trace (if available), and steps to reproduce.",
+        "The Overall Result checkbox is marked PASS only if all checklist items pass for both roles; otherwise marked FAIL with documented failures."
       ]
     }
   ],
   "constraints": [
     "Preserve all existing canister state during the Rollout 21.7 canister upgrade (no data loss).",
-    "Do not modify any files under `frontend/src/components/ui` or any paths listed in `frontend.immutablePaths`.",
-    "Use English for any user-facing text included/updated as part of the rollout artifacts."
+    "Do not introduce any platform deployment failure with the message \"Unable to create your app\".",
+    "Keep all Motoko backend logic in the single actor (`backend/main.mo`); only use `backend/migration.mo` if a state upgrade/migration is required.",
+    "Do not edit frontend files under the immutable paths listed in SYSTEM_CONTEXT."
   ],
   "nonGoals": [
-    "Implementing new product features beyond executing the Rollout 21.7 build/upgrade and verification steps.",
-    "Changing backend data models or adding migrations unless required by a build/upgrade failure uncovered during this rollout."
+    "Do not add new product features beyond the Rollout 21.7 build/upgrade execution, smoke testing, and results documentation.",
+    "Do not change the application’s authorization model (Admin vs Member) as part of this rollout step."
   ],
   "imageRequirements": {
     "required": [],

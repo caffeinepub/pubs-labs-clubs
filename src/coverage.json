@@ -1,7 +1,7 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T20:12:22.864Z",
+  "generatedAt": "2026-02-17T20:28:21.789Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
@@ -11,31 +11,31 @@
     "implemented": 2,
     "items": [
       {
-        "id": "REQ-84",
-        "summary": "Produce the next build and deploy it via a canister upgrade for Rollout 21.7, keeping all existing canister state intact, and ensure the build/deploy pipeline completes successfully (no “Unable to create your app” failure).",
+        "id": "REQ-90",
+        "summary": "Execute Rollout 21.7 build/upgrade deployment as described in `frontend/ROLLOUT_STEPS.md` Step 9.5, preserving all existing canister state and ensuring the build/deploy pipeline completes successfully (no platform error \"Unable to create your app\").",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/App.tsx",
+          "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
           "frontend/ROLLOUT_STEPS.md"
         ],
         "matchedFiles": [
-          "frontend/src/App.tsx",
-          "frontend/ROLLOUT_STEPS.md"
+          "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md"
         ]
       },
       {
-        "id": "REQ-85",
+        "id": "REQ-91",
         "summary": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user.",
         "status": "implemented",
         "plannedFiles": [
+          "frontend/SMOKE_TEST_21_7_SESSION_LOG.md",
           "frontend/SMOKE_TEST_21_7.md"
         ],
         "matchedFiles": [
-          "frontend/SMOKE_TEST_21_7.md"
+          "frontend/SMOKE_TEST_21_7_SESSION_LOG.md"
         ]
       },
       {
-        "id": "REQ-86",
+        "id": "REQ-92",
         "summary": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section, using clear English notes for any failures (include route, user role, and observed error text).",
         "status": "missing",
         "plannedFiles": [
@@ -51,9 +51,8 @@
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/ROLLOUT_STEPS.md",
-    "frontend/SMOKE_TEST_21_7.md",
-    "frontend/src/App.tsx",
+    "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
+    "frontend/SMOKE_TEST_21_7_SESSION_LOG.md",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",
