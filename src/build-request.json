@@ -1,54 +1,78 @@
 {
   "kind": "build_request",
-  "title": "Add named step documentation for ongoing rollout",
+  "title": "Execute Rollout 21.7 Build/Upgrade + Post-Upgrade Smoke Test and Record Results",
   "projectName": "Higgins Music Hub",
-  "priority": "normal",
+  "priority": "high",
   "requirements": [
     {
-      "id": "REQ-64",
-      "text": "Step 8 — Create a single source of truth document that names each remaining rollout step and briefly describes what will be done in that step (in English), so the team can track progress and refer to steps by name.",
-      "target": "unknown",
+      "id": "REQ-84",
+      "text": "Produce the next build and deploy it via a canister upgrade for Rollout 21.7, keeping all existing canister state intact, and ensure the build/deploy pipeline completes successfully (no “Unable to create your app” failure).",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-3"
         ],
         "quotes": [
-          "Move forward with the next step and remember to name each step for us. Thanks"
+          "Build/Deploy Next Best Step Now"
         ]
       },
       "acceptanceCriteria": [
-        "A new markdown document exists in the repo that lists rollout steps with explicit step numbers and step names (e.g., \"Step 8 — …\", \"Step 9 — …\").",
-        "Each step entry includes a short English description of what the step delivers and how to verify completion.",
-        "The document clearly indicates which step is next to execute."
+        "Frontend build completes successfully with no TypeScript build errors.",
+        "Backend build completes successfully with no Motoko compiler errors.",
+        "Canister upgrade completes successfully while preserving existing state (no data loss).",
+        "Application starts after upgrade with no runtime traps on startup.",
+        "Deployment pipeline does not fail with the platform error “Unable to create your app”."
       ]
     },
     {
-      "id": "REQ-65",
-      "text": "Step 9 — Update the existing manual verification checklist at frontend/UPGRADE_LINKING_VERIFICATION.md to include a clear human-readable step name for the checklist (and/or each major section) so it is easy to reference during the named-step rollout process.",
-      "target": "frontend",
+      "id": "REQ-85",
+      "text": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user.",
+      "target": "unknown",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-3"
         ],
         "quotes": [
-          "Move forward with the next step and remember to name each step for us. Thanks"
+          "Build/Deploy Next Best Step Now"
         ]
       },
       "acceptanceCriteria": [
-        "frontend/UPGRADE_LINKING_VERIFICATION.md includes an explicit step name near the top (for example, a heading like \"Step X — <Name>\").",
-        "All additions use English and do not change the existing verification meanings/URLs/button labels (e.g., \"Edit Links\")."
+        "All checklist items in `frontend/SMOKE_TEST_21_7.md` are executed end-to-end.",
+        "Landing page (`/`) loads without errors.",
+        "Authenticated portal navigation works (AuthGate and ApprovalGate).",
+        "All five portal detail routes load without runtime crashes for both roles: `/portal/memberships/$id`, `/portal/publishing/$id`, `/portal/releases/$id`, `/portal/recordings/$id`, `/portal/artists/$id`.",
+        "The “Edit Links” dialog opens successfully on each of the five detail routes for both roles (when authorized).",
+        "No frontend console errors related to undefined/null access occur during the smoke test.",
+        "No backend runtime traps occur during the smoke test.",
+        "Router-level error handling remains stable (errors render as in-app error screens, not full SPA crashes)."
+      ]
+    },
+    {
+      "id": "REQ-86",
+      "text": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section, using clear English notes for any failures (include route, user role, and observed error text).",
+      "target": "unknown",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Build/Deploy Next Best Step Now"
+        ]
+      },
+      "acceptanceCriteria": [
+        "`frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` has the “Rollout 21.7 Smoke Test Results” section completed with environment fields, user principals, and pass/fail selections.",
+        "Any failures include clear English notes with: affected route, user role, and exact observed error text (and stack trace if available)."
       ]
     }
   ],
   "constraints": [
-    "Respect the existing single-actor Motoko backend architecture (do not introduce additional canisters/services).",
-    "Do not edit files under frontend/src/components/ui or any other frontend immutablePaths listed in SYSTEM_CONTEXT.",
-    "Use English for any user-facing text added or modified."
+    "Preserve all existing canister state during the Rollout 21.7 canister upgrade (no data loss).",
+    "Do not modify any files under `frontend/src/components/ui` or any paths listed in `frontend.immutablePaths`.",
+    "Use English for any user-facing text included/updated as part of the rollout artifacts."
   ],
   "nonGoals": [
-    "No new entity types or schema changes.",
-    "No changes to authentication/authorization behavior.",
-    "No new UI pages or navigation items unless explicitly required by the step-naming documentation work."
+    "Implementing new product features beyond executing the Rollout 21.7 build/upgrade and verification steps.",
+    "Changing backend data models or adding migrations unless required by a build/upgrade failure uncovered during this rollout."
   ],
   "imageRequirements": {
     "required": [],

@@ -25,7 +25,12 @@ export function useGetCallerUserProfile() {
     queryKey: ['currentUserProfile'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
-      return actor.getCallerUserProfile();
+      try {
+        return await actor.getCallerUserProfile();
+      } catch (error) {
+        console.error('Failed to get caller user profile:', error);
+        throw error;
+      }
     },
     enabled: !!actor && !actorFetching,
     retry: false
@@ -65,7 +70,12 @@ export function useGetAllKnownUsers() {
     queryKey: ['allKnownUsers'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllKnownUsers();
+      try {
+        return await actor.getAllKnownUsers();
+      } catch (error) {
+        console.error('Failed to get all known users:', error);
+        return [];
+      }
     },
     enabled: !!actor && !actorFetching
   });
@@ -118,7 +128,12 @@ export function useListApprovals() {
     queryKey: ['approvals'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.listApprovals();
+      try {
+        return await actor.listApprovals();
+      } catch (error) {
+        console.error('Failed to list approvals:', error);
+        return [];
+      }
     },
     enabled: !!actor && !actorFetching
   });
@@ -132,7 +147,12 @@ export function useGetAllMembershipProfiles(enabled: boolean = true) {
     queryKey: ['memberships'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllMembershipProfiles();
+      try {
+        return await actor.getAllMembershipProfiles();
+      } catch (error) {
+        console.error('Failed to get all membership profiles:', error);
+        return [];
+      }
     },
     enabled: !!actor && !actorFetching && enabled
   });
@@ -213,7 +233,12 @@ export function useGetAllPublishingWorks(enabled: boolean = true) {
     queryKey: ['publishingWorks'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllPublishingWorks();
+      try {
+        return await actor.getAllPublishingWorks();
+      } catch (error) {
+        console.error('Failed to get all publishing works:', error);
+        return [];
+      }
     },
     enabled: !!actor && !actorFetching && enabled
   });
@@ -294,7 +319,12 @@ export function useGetAllReleases(enabled: boolean = true) {
     queryKey: ['releases'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllReleases();
+      try {
+        return await actor.getAllReleases();
+      } catch (error) {
+        console.error('Failed to get all releases:', error);
+        return [];
+      }
     },
     enabled: !!actor && !actorFetching && enabled
   });
@@ -326,7 +356,13 @@ export function useCreateRelease() {
       owners: string[];
     }) => {
       if (!actor) throw new Error('Actor not available');
-      return actor.createRelease(data.title, data.releaseType, data.tracklist, data.keyDates, data.owners);
+      return actor.createRelease(
+        data.title,
+        data.releaseType,
+        data.tracklist,
+        data.keyDates,
+        data.owners
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['releases'] });
@@ -347,7 +383,12 @@ export function useGetAllRecordingProjects(enabled: boolean = true) {
     queryKey: ['recordingProjects'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllRecordingProjects();
+      try {
+        return await actor.getAllRecordingProjects();
+      } catch (error) {
+        console.error('Failed to get all recording projects:', error);
+        return [];
+      }
     },
     enabled: !!actor && !actorFetching && enabled
   });
@@ -406,7 +447,12 @@ export function useGetAllArtistDevelopment(enabled: boolean = true) {
     queryKey: ['artistDevelopment'],
     queryFn: async () => {
       if (!actor) return [];
-      return actor.getAllArtistDevelopment();
+      try {
+        return await actor.getAllArtistDevelopment();
+      } catch (error) {
+        console.error('Failed to get all artist development:', error);
+        return [];
+      }
     },
     enabled: !!actor && !actorFetching && enabled
   });
@@ -457,27 +503,26 @@ export function useCreateArtistDevelopment() {
   });
 }
 
-// Cross-linking Queries - Get caller's entities for linking
+// Entities for Caller Query
 export function useGetEntitiesForCaller(enabled: boolean = true) {
   const { actor, isFetching: actorFetching } = useActor();
 
-  return useQuery<{
-    memberships: [string, Membership][];
-    publishingWorks: PublishingWork[];
-    releases: Release[];
-    recordingProjects: RecordingProject[];
-    artistDevelopment: ArtistDevelopment[];
-  }>({
+  return useQuery({
     queryKey: ['entitiesForCaller'],
     queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getEntitiesForCaller();
+      if (!actor) return null;
+      try {
+        return await actor.getEntitiesForCaller();
+      } catch (error) {
+        console.error('Failed to get entities for caller:', error);
+        return null;
+      }
     },
     enabled: !!actor && !actorFetching && enabled
   });
 }
 
-// Cross-linking Mutations
+// Link Mutations
 export function useLinkMembershipToEntities() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -502,39 +547,7 @@ export function useLinkMembershipToEntities() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['membershipDetails', variables.memberId] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
-      toast.success('Membership links updated');
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update links');
-    }
-  });
-}
-
-export function useUpdateMembershipLinks() {
-  const { actor } = useActor();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (data: {
-      memberId: string;
-      artistIds: string[];
-      workIds: string[];
-      releaseIds: string[];
-      projectIds: string[];
-    }) => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.updateMembershipLinks(
-        data.memberId,
-        data.artistIds,
-        data.workIds,
-        data.releaseIds,
-        data.projectIds
-      );
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['membershipDetails', variables.memberId] });
-      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
-      toast.success('Membership links updated');
+      toast.success('Links updated successfully');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update links');
@@ -565,9 +578,8 @@ export function useLinkPublishingWorkToEntities() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['publishingWork', variables.workId] });
-      queryClient.invalidateQueries({ queryKey: ['publishingWorks'] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
-      toast.success('Publishing work links updated');
+      toast.success('Links updated successfully');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update links');
@@ -598,9 +610,8 @@ export function useLinkReleaseToEntities() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['release', variables.releaseId] });
-      queryClient.invalidateQueries({ queryKey: ['releases'] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
-      toast.success('Release links updated');
+      toast.success('Links updated successfully');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update links');
@@ -631,9 +642,8 @@ export function useLinkProjectToEntities() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['recordingProject', variables.projectId] });
-      queryClient.invalidateQueries({ queryKey: ['recordingProjects'] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
-      toast.success('Recording project links updated');
+      toast.success('Links updated successfully');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update links');
@@ -666,9 +676,8 @@ export function useUpdateArtistDevelopmentLinks() {
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['artistDevelopment', variables.artistDevelopmentId] });
-      queryClient.invalidateQueries({ queryKey: ['artistDevelopment'] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
-      toast.success('Artist development links updated');
+      toast.success('Links updated successfully');
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to update links');

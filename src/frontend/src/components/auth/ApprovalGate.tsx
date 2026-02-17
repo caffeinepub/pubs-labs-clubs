@@ -22,6 +22,11 @@ export default function ApprovalGate({ children }: ApprovalGateProps) {
     return <>{children}</>;
   }
 
+  // Defensive: if approval status is unclear, show loading
+  if (isApproved === undefined || isApproved === null) {
+    return <LoadingState />;
+  }
+
   if (!isApproved) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -41,16 +46,22 @@ export default function ApprovalGate({ children }: ApprovalGateProps) {
               you'll have full access to your membership profile and associated records.
             </p>
             <Button 
-              onClick={() => requestApprovalMutation.mutate()}
+              onClick={() => {
+                try {
+                  requestApprovalMutation.mutate();
+                } catch (error) {
+                  console.error('Error requesting approval:', error);
+                }
+              }}
               disabled={requestApprovalMutation.isPending}
               className="w-full"
             >
               {requestApprovalMutation.isPending ? 'Requesting...' : 'Request Approval'}
             </Button>
             {requestApprovalMutation.isSuccess && (
-              <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+              <div className="flex items-center gap-2 text-sm text-green-600">
                 <CheckCircle className="h-4 w-4" />
-                Approval request submitted successfully
+                <span>Approval request submitted successfully</span>
               </div>
             )}
           </CardContent>

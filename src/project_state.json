@@ -1,15 +1,22 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 39,
+  "projectStateVersion": 53,
   "summary": "Website/platform for Higgins Music to manage publishing, label operations, recordings/productions, and artist development with a co-op style membership model for artists/clients.",
   "architectural_notes": [
     "User approved Steps 7.3–7.4 and requested proceeding with Step 7.5 and subsequent steps.",
     "User requested proceeding to the next items and to break the work into manageable portions to ensure error-free processing.",
     "User requested adding an admin-only Role Assignment UI to grant Admin privileges to additional signed-in principals (role assignment stored in backend user profiles).",
-    "User requested proceeding to the next step and asked that each step be explicitly named."
+    "User requested proceeding to the next step and asked that each step be explicitly named.",
+    "User approved proceeding and requested the next named rollout portion/step be presented for approval before code/deploy.",
+    "User requested moving forward with the next build and deployment for Step 21.",
+    "User requested proceeding with the next build/deploy specifically for Step 21 sub-steps 21.1 and 21.2.",
+    "User requested proceeding with the next build/deploy specifically for Step 21 sub-steps 21.3 and 21.4.",
+    "User requested proceeding with the next build/deploy specifically for Step 21 sub-steps 21.5 and 21.6.",
+    "User requested proceeding with the next build/deploy specifically for Step 21 sub-step 21.7 and to proceed with all subsequent steps."
   ],
   "known_issues": [
-    "Build/deploy pipeline encountered an error when attempting to add UI linking controls; requires adjustment for error-free completion."
+    "Build/deploy pipeline encountered an error when attempting to add UI linking controls; requires adjustment for error-free completion.",
+    "Build/deploy attempt failed with error \"Unable to create your app\" (user requested to proceed with build/deploy for Step 21.1–21.2)."
   ],
   "isFixRequest": false,
   "existing_features": [
@@ -380,6 +387,150 @@
         "REQ-65"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-execute-rollout-step-9-manual-verification-for-upgrade-safe-related-record-linking-by-following-the-checklist-in-frontend-upgrade-linking-verification-md-after-performing-a-canister-upgrade-covering-all-five-detail-routes-and-both-admin-and-non-admin-member-roles",
+      "title": "Execute Rollout Step 9 manual verification for upgrade-safe related-record linking by following the checklist in `frontend/UPGRADE_LINKING_VERIFICATION.md` after performing a canister upgrade, covering all five detail routes and both admin and non-admin member roles.",
+      "reqIds": [
+        "REQ-66"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-if-any-mismatch-or-ambiguity-is-discovered-during-step-9-verification-e-g-route-paths-entity-category-labels-shown-in-the-ui-or-required-prerequisites-update-frontend-upgrade-linking-verification-md-and-or-frontend-rollout-steps-md-so-the-step-9-instructions-exactly-match-the-implemented-application-behavior-using-clear-english-user-facing-text",
+      "title": "If any mismatch or ambiguity is discovered during Step 9 verification (e.g., route paths, entity category labels shown in the UI, or required prerequisites), update `frontend/UPGRADE_LINKING_VERIFICATION.md` and/or `frontend/ROLLOUT_STEPS.md` so the Step 9 instructions exactly match the implemented application behavior, using clear English user-facing text.",
+      "reqIds": [
+        "REQ-67"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-produce-the-next-build-and-deploy-it-via-a-canister-upgrade-keeping-all-existing-state-intact-with-the-expectation-that-the-application-starts-without-runtime-traps-and-the-frontend-loads-successfully-after-the-upgrade",
+      "title": "Produce the next build and deploy it via a canister upgrade (keeping all existing state intact), with the expectation that the application starts without runtime traps and the frontend loads successfully after the upgrade.",
+      "reqIds": [
+        "REQ-68"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-execute-rollout-step-9-manual-qa-for-upgrade-safe-related-record-linking-by-following-the-checklist-in-frontend-upgrade-linking-verification-md-covering-all-five-detail-routes-for-both-an-admin-user-and-a-non-admin-approved-member",
+      "title": "Execute Rollout Step 9 manual QA for upgrade-safe related-record linking by following the checklist in `frontend/UPGRADE_LINKING_VERIFICATION.md`, covering all five detail routes for both an admin user and a non-admin approved member.",
+      "reqIds": [
+        "REQ-69"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-produce-the-next-build-and-deploy-it-via-a-canister-upgrade-keeping-all-existing-state-intact-for-the-approved-rollout-sub-steps-21-1-and-21-2-ensuring-the-build-deploy-pipeline-completes-successfully-no-unable-to-create-your-app-failure",
+      "title": "Produce the next build and deploy it via a canister upgrade (keeping all existing state intact) for the approved rollout sub-steps 21.1 and 21.2, ensuring the build/deploy pipeline completes successfully (no “Unable to create your app” failure).",
+      "reqIds": [
+        "REQ-71"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-the-canister-upgrade-perform-a-post-deploy-smoke-test-that-the-application-starts-without-runtime-traps-and-the-frontend-loads-successfully-including-verifying-that-the-five-portal-detail-routes-load-without-crashes-and-that-the-edit-links-dialog-can-be-opened-on-each-detail-page",
+      "title": "After the canister upgrade, perform a post-deploy smoke test that the application starts without runtime traps and the frontend loads successfully, including verifying that the five portal detail routes load without crashes and that the “Edit Links” dialog can be opened on each detail page.",
+      "reqIds": [
+        "REQ-72"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-produce-the-next-build-and-deploy-it-via-a-canister-upgrade-keeping-all-existing-state-intact-for-rollout-sub-steps-21-3-and-21-4-ensuring-the-build-deploy-pipeline-completes-successfully-no-unable-to-create-your-app-failure-and-the-application-starts-without-runtime-traps",
+      "title": "Produce the next build and deploy it via a canister upgrade (keeping all existing state intact) for rollout sub-steps 21.3 and 21.4, ensuring the build/deploy pipeline completes successfully (no “Unable to create your app” failure) and the application starts without runtime traps.",
+      "reqIds": [
+        "REQ-73"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-the-21-3-21-4-canister-upgrade-execute-the-post-deploy-smoke-test-flow-that-verifies-the-landing-page-authenticated-portal-navigation-all-five-portal-detail-routes-and-that-the-edit-links-dialog-opens-on-each-detail-page-for-both-an-admin-and-a-non-admin-approved-member",
+      "title": "After the 21.3–21.4 canister upgrade, execute the post-deploy smoke test flow that verifies the landing page, authenticated portal navigation, all five portal detail routes, and that the “Edit Links” dialog opens on each detail page for both an admin and a non-admin approved member.",
+      "reqIds": [
+        "REQ-74"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-record-the-outcomes-of-the-21-3-21-4-post-upgrade-smoke-test-and-if-executed-the-step-9-comprehensive-linking-verification-in-frontend-upgrade-linking-verification-results-md-using-clear-english-notes-for-any-failures-including-route-user-role-and-observed-error-text",
+      "title": "Record the outcomes of the 21.3–21.4 post-upgrade smoke test and (if executed) the Step 9 comprehensive linking verification in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`, using clear English notes for any failures, including route, user role, and observed error text.",
+      "reqIds": [
+        "REQ-75"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-produce-the-next-build-and-deploy-it-via-a-canister-upgrade-for-rollout-sub-steps-21-5-and-21-6-keeping-all-existing-canister-state-intact-and-ensuring-the-build-deploy-pipeline-completes-successfully-no-unable-to-create-your-app-failure",
+      "title": "Produce the next build and deploy it via a canister upgrade for rollout sub-steps 21.5 and 21.6, keeping all existing canister state intact and ensuring the build/deploy pipeline completes successfully (no “Unable to create your app” failure).",
+      "reqIds": [
+        "REQ-76"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-rollout-21-5-21-6-post-upgrade-smoke-test-checklist-at-frontend-smoke-test-21-5-21-6-md-mirroring-the-structure-and-expectations-of-frontend-smoke-test-21-3-21-4-md-and-covering-landing-page-load-authentication-portal-access-all-five-portal-detail-routes-and-opening-the-edit-links-dialog-for-both-an-admin-and-a-non-admin-approved-member",
+      "title": "Create a rollout 21.5–21.6 post-upgrade smoke test checklist at `frontend/SMOKE_TEST_21_5_21_6.md`, mirroring the structure and expectations of `frontend/SMOKE_TEST_21_3_21_4.md` and covering: landing page load (`/`), authentication/portal access, all five portal detail routes, and opening the “Edit Links” dialog for both an admin and a non-admin approved member.",
+      "reqIds": [
+        "REQ-77"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-upgrade-linking-verification-results-md-to-add-a-dedicated-section-for-recording-rollout-21-5-21-6-smoke-test-results-aligned-in-format-and-fields-with-the-existing-rollout-21-3-21-4-smoke-test-results-section",
+      "title": "Update `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` to add a dedicated section for recording “Rollout 21.5–21.6 Smoke Test Results”, aligned in format and fields with the existing “Rollout 21.3–21.4 Smoke Test Results” section.",
+      "reqIds": [
+        "REQ-78"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-rollout-steps-md-so-the-next-execution-guidance-reflects-rollout-21-5-21-6-build-upgrade-post-upgrade-smoke-verification-and-references-frontend-smoke-test-21-5-21-6-md-and-the-new-21-5-21-6-results-section-in-frontend-upgrade-linking-verification-results-md",
+      "title": "Update `frontend/ROLLOUT_STEPS.md` so the next execution guidance reflects rollout 21.5–21.6 (build/upgrade + post-upgrade smoke verification) and references `frontend/SMOKE_TEST_21_5_21_6.md` and the new 21.5–21.6 results section in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`.",
+      "reqIds": [
+        "REQ-79"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-new-post-upgrade-smoke-test-checklist-document-for-rollout-21-7-at-frontend-smoke-test-21-7-md-mirroring-the-structure-and-expectations-of-frontend-smoke-test-21-5-21-6-md-landing-page-load-authentication-portal-access-all-five-portal-detail-routes-and-opening-the-edit-links-dialog-for-both-an-admin-and-a-non-admin-approved-member-using-clear-english-text",
+      "title": "Create a new post-upgrade smoke test checklist document for rollout 21.7 at `frontend/SMOKE_TEST_21_7.md`, mirroring the structure and expectations of `frontend/SMOKE_TEST_21_5_21_6.md` (landing page load `/`, authentication/portal access, all five portal detail routes, and opening the “Edit Links” dialog for both an admin and a non-admin approved member), using clear English text.",
+      "reqIds": [
+        "REQ-81"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-upgrade-linking-verification-results-md-to-add-a-dedicated-section-for-recording-rollout-21-7-smoke-test-results-aligned-in-format-and-fields-with-the-existing-rollout-21-5-21-6-smoke-test-results-section",
+      "title": "Update `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` to add a dedicated section for recording “Rollout 21.7 Smoke Test Results”, aligned in format and fields with the existing “Rollout 21.5–21.6 Smoke Test Results” section.",
+      "reqIds": [
+        "REQ-82"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-frontend-rollout-steps-md-to-add-a-new-rollout-execution-entry-for-rollout-21-7-build-upgrade-execution-that-1-references-frontend-smoke-test-21-7-md-2-instructs-recording-outcomes-in-frontend-upgrade-linking-verification-results-md-under-the-new-21-7-section-and-3-updates-the-next-step-to-execute-section-to-point-to-the-21-7-rollout-step",
+      "title": "Update `frontend/ROLLOUT_STEPS.md` to add a new rollout execution entry for “Rollout 21.7 Build/Upgrade Execution” that (1) references `frontend/SMOKE_TEST_21_7.md`, (2) instructs recording outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the new 21.7 section, and (3) updates the “Next Step to Execute” section to point to the 21.7 rollout step.",
+      "reqIds": [
+        "REQ-83"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-produce-the-next-build-and-deploy-it-via-a-canister-upgrade-for-rollout-21-7-keeping-all-existing-canister-state-intact-and-ensure-the-build-deploy-pipeline-completes-successfully-no-unable-to-create-your-app-failure",
+      "title": "Produce the next build and deploy it via a canister upgrade for Rollout 21.7, keeping all existing canister state intact, and ensure the build/deploy pipeline completes successfully (no “Unable to create your app” failure).",
+      "reqIds": [
+        "REQ-84"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-after-the-rollout-21-7-canister-upgrade-execute-the-post-upgrade-smoke-test-checklist-in-frontend-smoke-test-21-7-md-using-both-an-admin-user-and-a-non-admin-approved-member-user",
+      "title": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user.",
+      "reqIds": [
+        "REQ-85"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -610,6 +761,48 @@
       "summary": "Add backend support for an existing Admin to view a list of known signed-in users (principals that have interacted with the app) along with enough metadata to identify them (e.g., profile name/email when available) and manage their roles (Admin vs Member), enforcing that only Admin callers can access this functionality.",
       "reqIds": [
         "REQ-61"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-37",
+      "summary": "Record the results of the Step 9 manual QA run in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` using the existing template fields (environment, principals, and per-page outcomes).",
+      "reqIds": [
+        "REQ-70"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-38",
+      "summary": "Produce the next build and deploy it via a canister upgrade (keeping all existing state intact) for rollout sub-steps 21.3 and 21.4.",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-39",
+      "summary": "Produce the next build and deploy it via a canister upgrade (keeping all existing state intact) for rollout sub-steps 21.5 and 21.6.",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-40",
+      "summary": "Produce the next build and deploy it via a canister upgrade (keeping all existing state intact) for rollout sub-step 21.7 (and continue with subsequent rollout steps after 21.7).",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-41",
+      "summary": "Produce the next build and deploy it via a canister upgrade for rollout sub-step 21.7, keeping all existing canister state intact, and ensure the build/deploy pipeline completes successfully (no “Unable to create your app” failure).",
+      "reqIds": [
+        "REQ-80"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-44",
+      "summary": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section, using clear English notes for any failures (include route, user role, and observed error text).",
+      "reqIds": [
+        "REQ-86"
       ],
       "status": "pending"
     }

@@ -1,13 +1,11 @@
-import Map "mo:core/Map";
 import Array "mo:core/Array";
 import Text "mo:core/Text";
 import Iter "mo:core/Iter";
+import Map "mo:core/Map";
 import Principal "mo:core/Principal";
 import Time "mo:core/Time";
 import Order "mo:core/Order";
 import Runtime "mo:core/Runtime";
-
-
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 import UserApproval "user-approval/approval";
@@ -197,7 +195,7 @@ actor {
 
   public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
     if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Can only view your own profile");
+      Runtime.trap("Unauthorized: you can only view your own profile");
     };
     userProfiles.get(user);
   };
@@ -295,7 +293,7 @@ actor {
       case (?membership) {
         // Members can only view their own profile, admins can view all
         if (caller != membership.profile.principal and not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: You can only view your own membership profile");
+          Runtime.trap("Unauthorized: you can only view your own membership profile");
         };
         membership.profile;
       };
@@ -309,7 +307,7 @@ actor {
     status : MemberStatus.T,
   ) : async MembershipProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can update membership profiles");
+      Runtime.trap("Unauthorized: Only users can update memberships");
     };
     switch (memberships.get(id)) {
       case (null) { Runtime.trap("Membership profile not found") };
@@ -383,7 +381,7 @@ actor {
       case (?membership) {
         // Members can only view their own record, admins can view all
         if (caller != membership.profile.principal and not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: You can only view your own membership record");
+          Runtime.trap("Unauthorized: you can only view your own membership record");
         };
         membership;
       };
@@ -426,7 +424,9 @@ actor {
     work;
   };
 
-  public query ({ caller }) func getPublishingWork(id : Text) : async PublishingWork {
+  public query ({ caller }) func getPublishingWork(
+    id : Text,
+  ) : async PublishingWork {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view publishing work");
     };
@@ -437,7 +437,7 @@ actor {
       case (?work) {
         // Members can only view their own work, admins can view all
         if (caller != work.owner and not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: You can only view your own publishing work");
+          Runtime.trap("Unauthorized: you can only view your own publishing work");
         };
         work;
       };
@@ -498,7 +498,7 @@ actor {
       case (?release) {
         // Members can only view their own releases, admins can view all
         if (caller != release.owner and not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: You can only view your own releases");
+          Runtime.trap("Unauthorized: you can only view your own releases");
         };
         release;
       };
@@ -564,7 +564,7 @@ actor {
       case (?project) {
         // Members can only view their own projects, admins can view all
         if (caller != project.owner and not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: You can only view your own recording projects");
+          Runtime.trap("Unauthorized: you can only view your own recording projects");
         };
         project;
       };
@@ -613,7 +613,7 @@ actor {
       case (?entry) {
         // Members can only view their own entries, admins can view all
         if (caller != entry.owner and not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: You can only view your own artist development entries");
+          Runtime.trap("Unauthorized: you can only view your own artist development entries");
         };
         entry;
       };
@@ -915,7 +915,7 @@ actor {
   // ROLLOUT STEP TRACKER (single source of truth)
   public shared ({ caller }) func getRemainingRolloutSteps() : async [(Text, Text)] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view rollout steps");
+      Runtime.trap("Unauthorized: only admins can view rollout steps");
     };
 
     [

@@ -13,89 +13,257 @@ This document serves as the single source of truth for the remaining rollout ste
 
 **Description**: Perform comprehensive manual verification of the "Edit Links" functionality across all five entity detail pages (Membership, Publishing Work, Release, Recording Project, Artist Development) for both admin and non-admin member roles after a canister upgrade. This step ensures that the upgrade-safe array normalization implemented in previous steps works correctly in production scenarios.
 
+**Portal Routes Tested**:
+- `/portal/memberships/$id` — Membership Detail
+- `/portal/publishing/$id` — Publishing Work Detail
+- `/portal/releases/$id` — Release Detail
+- `/portal/recordings/$id` — Recording Project Detail
+- `/portal/artists/$id` — Artist Development Detail
+
+**Entity Category Labels in UI**:
+- **Memberships** — Member profiles and accounts
+- **Artist Development** — Artist CRM and development plans
+- **Publishing Works** — Songs, compositions, and publishing catalog
+- **Releases** — Albums, EPs, singles, and label releases
+- **Recording Projects** — Studio sessions and recording projects
+
 **How to Verify**:
+- **Perform a canister upgrade before beginning testing**
 - Follow the detailed checklist in `frontend/UPGRADE_LINKING_VERIFICATION.md`
+- Record all test results in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`
 - Test with both admin and non-admin member accounts
 - Verify that all "Edit Links" dialogs open without errors
 - Confirm pre-existing links are correctly pre-selected
 - Test save operations and verify immediate UI updates
-- Refresh pages to confirm link persistence
+- **Refresh pages to confirm link persistence** (critical acceptance criterion)
 - Check that non-admin members see only their own entities in dialogs
 - Ensure no runtime errors occur when loading detail pages post-upgrade
 
 **Acceptance Criteria**:
+- A canister upgrade is performed prior to testing, and no runtime traps occur on startup after upgrade
 - All checklist items in `UPGRADE_LINKING_VERIFICATION.md` pass for both admin and member roles
 - No runtime errors or crashes occur during any linking operations
 - Related Records sections display correctly after upgrade
 - Links persist correctly across page refreshes
+- All test results are documented in `UPGRADE_LINKING_VERIFICATION_RESULTS.md`
+
+---
+
+### Step 9.1 — Rollout 21.1–21.2 Build/Upgrade Readiness
+
+**Description**: Prepare the frontend for the next build/upgrade deployment by adding router-level error handling and documenting explicit rollout 21.1–21.2 verification steps. This ensures that unexpected render/runtime errors in routed pages are surfaced as stable in-app error screens instead of crashing the entire SPA during/after upgrade validation.
+
+**Frontend Changes**:
+- Add router-level error handling to `App.tsx` with `ErrorComponent` for root route and individual routes
+- Create `SMOKE_TEST_21_1_21_2.md` with concise post-upgrade smoke test checklist
+- Update `ROLLOUT_STEPS.md` to include rollout 21.1–21.2 build/upgrade verification notes
+- Update `UPGRADE_LINKING_VERIFICATION.md` to cross-reference rollout 21.1–21.2 smoke test expectations
+- Update `UPGRADE_LINKING_VERIFICATION_RESULTS.md` to capture rollout 21.1–21.2 post-upgrade smoke outcomes
+
+**How to Verify**:
+- A new build completes successfully for both frontend and backend without errors
+- A canister upgrade deployment completes successfully and preserves existing canister state (no data loss)
+- The deployment process does not fail with the platform error "Unable to create your app"
+- Router-level error boundaries catch and display errors gracefully instead of crashing the app
+- All documentation files are updated with rollout 21.1–21.2 references
+
+**Acceptance Criteria**:
+- Build completes without errors
+- Canister upgrade succeeds without data loss
+- No platform deployment errors occur
+- Error handling prevents full app crashes
+- Documentation is complete and accurate
+
+---
+
+### Step 9.2 — Rollout 21.1–21.2 Post-Deploy Smoke Verification
+
+**Description**: Execute the post-upgrade smoke test checklist to verify that the landing page, the five portal detail routes, and the "Edit Links" dialog open successfully for authorized users after the rollout 21.1–21.2 upgrade.
+
+**Smoke Test Focus**:
+- Landing page (`/`) loads successfully in the browser
+- Authenticated portal navigation works via AuthGate and ApprovalGate
+- All five detail routes load without runtime errors:
+  - `/portal/memberships/$id`
+  - `/portal/publishing/$id`
+  - `/portal/releases/$id`
+  - `/portal/recordings/$id`
+  - `/portal/artists/$id`
+- "Edit Links" dialog opens successfully on each of the five detail routes for authorized users (admin or record owner)
+
+**How to Verify**:
+- Follow the smoke test checklist in `frontend/SMOKE_TEST_21_1_21_2.md`
+- Test with both admin and non-admin approved member accounts
+- Record all test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under "Rollout 21.1–21.2 Smoke Test Results"
+- Verify no runtime traps occur on startup after upgrade
+- Confirm all portal routes render without crashes
+- Ensure "Edit Links" dialogs initialize without errors
+
+**Acceptance Criteria**:
+- No runtime traps occur on startup after the upgrade
+- Landing page loads successfully
+- Authenticated portal navigation works correctly
+- All five portal detail routes load without runtime errors
+- "Edit Links" dialog opens successfully on all five detail routes for authorized users
+- All smoke test results are documented in the results template
+
+---
+
+### Step 9.3 — Rollout 21.3–21.4 Build/Upgrade Execution
+
+**Description**: Execute the rollout 21.3–21.4 build/upgrade deployment and perform post-upgrade smoke verification to confirm the application loads correctly and all key routes function without runtime crashes.
+
+**Build/Upgrade Focus**:
+- Frontend build completes successfully with no TypeScript build errors
+- Backend build completes successfully with no Motoko compiler errors
+- Canister upgrade completes successfully while preserving existing state (no data loss)
+- Application starts after upgrade with no runtime traps on startup
+- Deployment pipeline does not fail with the platform error "Unable to create your app"
+
+**How to Verify**:
+- Execute the build/upgrade deployment
+- Follow the smoke test checklist in `frontend/SMOKE_TEST_21_3_21_4.md`
+- Record all test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under "Rollout 21.3–21.4 Smoke Test Results"
+
+**Acceptance Criteria**:
+- Build and upgrade complete successfully
+- All smoke test steps pass
+- No runtime traps or crashes occur
+- Documentation is complete
+
+---
+
+### Step 9.4 — Rollout 21.5–21.6 Build/Upgrade Execution
+
+**Description**: Execute the rollout 21.5–21.6 build/upgrade deployment and perform post-upgrade smoke verification to confirm the application loads correctly and all key routes function without runtime crashes.
+
+**Build/Upgrade Focus**:
+- Frontend build completes successfully with no TypeScript build errors
+- Backend build completes successfully with no Motoko compiler errors
+- Canister upgrade completes successfully while preserving existing state (no data loss)
+- Application starts after upgrade with no runtime traps on startup
+- Deployment pipeline does not fail with the platform error "Unable to create your app"
+
+**How to Verify**:
+- Execute the build/upgrade deployment
+- Follow the smoke test checklist in `frontend/SMOKE_TEST_21_5_21_6.md`
+- Record all test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under "Rollout 21.5–21.6 Smoke Test Results"
+
+**Acceptance Criteria**:
+- Build and upgrade complete successfully
+- All smoke test steps pass
+- No runtime traps or crashes occur
+- Documentation is complete
+
+---
+
+### Step 9.5 — Rollout 21.7 Build/Upgrade Execution
+
+**Description**: Execute the rollout 21.7 build/upgrade deployment and perform post-upgrade smoke verification to confirm the application loads correctly, all key routes function without runtime crashes, and the frontend hardening measures (router-level error handling, defensive null checks, array normalization) prevent upgrade-related failures.
+
+**Build/Upgrade Focus**:
+- Frontend build completes successfully with no TypeScript build errors
+- Backend build completes successfully with no Motoko compiler errors
+- Canister upgrade completes successfully while preserving existing state (no data loss)
+- Application starts after upgrade with no runtime traps on startup
+- Deployment pipeline does not fail with the platform error "Unable to create your app"
+- Router-level error boundaries catch and display errors gracefully
+- All five portal detail routes load without crashes for both admin and non-admin approved member roles
+- "Edit Links" dialogs open successfully on all five detail routes for both roles
+
+**How to Verify**:
+- Execute the build/upgrade deployment
+- Follow the smoke test checklist in `frontend/SMOKE_TEST_21_7.md`
+- Test with both admin and non-admin approved member accounts
+- Verify AuthGate and ApprovalGate behavior remains stable post-upgrade
+- Confirm router-level error handling functions correctly
+- Record all test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under "Rollout 21.7 Smoke Test Results"
+
+**Acceptance Criteria**:
+- Frontend build completes successfully with no TypeScript build errors
+- Backend build completes successfully with no Motoko compiler errors
+- Canister upgrade completes successfully while preserving existing state (no data loss)
+- Application starts after upgrade with no runtime traps on startup
+- Deployment pipeline does not fail with the platform error "Unable to create your app"
+- Landing page (`/`) loads without errors
+- Authenticated portal navigation works (AuthGate and ApprovalGate)
+- All five portal detail routes load without runtime crashes for both roles
+- "Edit Links" dialog opens successfully on each of the five detail routes for both roles
+- No frontend console errors related to undefined/null access occur during the smoke test
+- No backend runtime traps occur during the smoke test
+- Router-level error handling remains stable (errors render as in-app error screens, not full SPA crashes)
+- All smoke test results are documented in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`
 
 ---
 
 ### Step 10 — Deployment and Launch
 
-**Description**: Deploy the Higgins Music Hub system to the Internet Computer Protocol (ICP) mainnet. Configure production environment settings, perform final smoke tests, and monitor initial performance and user adoption metrics. Set up production monitoring and logging infrastructure.
+**Description**: Deploy the Higgins Music Hub system to the ICP mainnet, monitor performance and user adoption, perform additional system configuration as needed, and perform final quality assurance checks.
 
-**How to Verify**:
-- Canister successfully deployed to mainnet with correct canister IDs
-- Production environment variables configured correctly
-- All authentication flows work on mainnet (Internet Identity integration)
-- Admin bootstrap process completes successfully
-- Sample data can be created and retrieved without errors
-- Performance metrics are within acceptable ranges (query response times < 2s)
-- Error logging and monitoring dashboards are operational
+**Deployment Tasks**:
+- Deploy backend canister to mainnet
+- Deploy frontend assets to mainnet
+- Configure production environment variables
+- Set up monitoring and logging
+- Perform final smoke tests on mainnet
+- Monitor initial user adoption and system performance
 
 **Acceptance Criteria**:
-- Application is accessible via mainnet URL
-- All core features functional on mainnet
-- No critical errors in production logs
-- Admin and member user flows complete successfully
-- Performance benchmarks met
+- System is live on mainnet
+- All core features function correctly in production
+- No critical bugs or performance issues
+- Monitoring and logging are operational
+- Initial users can successfully access and use the system
 
 ---
 
 ### Step 11 — Post-Launch Refinements
 
-**Description**: Incorporate user feedback from initial launch to improve user experience and performance. Address any bugs or issues discovered in production use. Optimize query performance and UI responsiveness based on real-world usage patterns. Integrate continuous integration/continuous deployment (CI/CD) pipeline for streamlined future updates.
+**Description**: Incorporate user feedback to improve UX and performance, fix remaining bugs and issues, and integrate CI/CD pipeline.
 
-**How to Verify**:
-- User feedback collected and prioritized
-- Bug reports triaged and resolved
-- Performance improvements measured and documented
-- CI/CD pipeline successfully deploys test changes
-- Automated tests run on each commit
-- Deployment process documented and repeatable
+**Refinement Tasks**:
+- Collect and analyze user feedback
+- Prioritize and implement UX improvements
+- Fix reported bugs and issues
+- Optimize performance based on real-world usage
+- Set up CI/CD pipeline for automated testing and deployment
 
 **Acceptance Criteria**:
-- All critical and high-priority bugs resolved
-- User satisfaction metrics show improvement
-- CI/CD pipeline operational with automated testing
-- Deployment documentation complete and validated
+- User feedback is collected and analyzed
+- High-priority improvements are implemented
+- Critical bugs are resolved
+- Performance is optimized
+- CI/CD pipeline is operational
 
 ---
 
 ### Step 12 — Long-Term Maintenance
 
-**Description**: Establish ongoing system maintenance procedures and schedules. Plan and implement feature enhancements based on user needs and business requirements. Train core team members on system administration, troubleshooting, and maintenance tasks. Maintain comprehensive documentation including change logs, API documentation, and operational runbooks.
+**Description**: Plan and implement system maintenance procedures, add improvements as needed, train core team on system maintenance, and maintain documentation and change logs.
 
-**How to Verify**:
-- Maintenance schedule documented and followed
-- Team training sessions completed with documented outcomes
-- System documentation up-to-date and accessible
-- Change log maintained for all updates
-- Backup and recovery procedures tested
-- Security audit completed and recommendations implemented
+**Maintenance Tasks**:
+- Establish regular maintenance schedule
+- Document maintenance procedures
+- Train team members on system administration
+- Keep documentation up to date
+- Plan and implement feature enhancements
+- Monitor system health and performance
 
 **Acceptance Criteria**:
-- Maintenance procedures documented and operational
-- Core team trained and capable of independent system management
-- Documentation complete, current, and accessible
-- Regular maintenance tasks performed on schedule
-- System remains stable and performant over time
+- Maintenance procedures are documented and followed
+- Team is trained on system maintenance
+- Documentation is current and accurate
+- System remains stable and performant
+- Feature enhancements are planned and implemented as needed
 
 ---
 
 ## Next Step to Execute
 
-**→ Step 9 — Verify Upgrade-Safe Related-Record Linking (Manual QA)**
+**Current Step**: Step 9.5 — Rollout 21.7 Build/Upgrade Execution
 
-Begin by following the comprehensive checklist in `frontend/UPGRADE_LINKING_VERIFICATION.md` to ensure all related-record linking functionality works correctly after canister upgrades.
+**Action Required**: Execute the build/upgrade deployment, then follow the smoke test checklist in `frontend/SMOKE_TEST_21_7.md` and record results in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`.
+
+**References**:
+- Smoke test checklist: `frontend/SMOKE_TEST_21_7.md`
+- Results template: `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`

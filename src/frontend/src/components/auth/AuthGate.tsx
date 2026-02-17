@@ -14,8 +14,14 @@ export default function AuthGate({ children }: AuthGateProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Defensive: only redirect if we're sure the user is not authenticated
+    // and not in the process of logging in
     if (!isInitializing && !identity && loginStatus !== 'logging-in') {
-      navigate({ to: '/' });
+      try {
+        navigate({ to: '/' });
+      } catch (error) {
+        console.error('Navigation error in AuthGate:', error);
+      }
     }
   }, [identity, isInitializing, loginStatus, navigate]);
 

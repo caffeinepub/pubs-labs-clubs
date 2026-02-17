@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-step-8-create-a-single-source-of-truth-document-that-names-each-remaining-rollout-step-and-briefly-describes-what-will-be-done-in-that-step-in-english-so-the-team-can-track-progress-and-refer-to-steps-by-name",
-      "featureTitle": "Step 8 — Create a single source of truth document that names each remaining rollout step and briefly describes what will be done in that step (in English), so the team can track progress and refer to steps by name.",
+      "featureId": "feature-produce-the-next-build-and-deploy-it-via-a-canister-upgrade-for-rollout-21-7-keeping-all-existing-canister-state-intact-and-ensure-the-build-deploy-pipeline-completes-successfully-no-unable-to-create-your-app-failure",
+      "featureTitle": "Produce the next build and deploy it via a canister upgrade for Rollout 21.7, keeping all existing canister state intact, and ensure the build/deploy pipeline completes successfully (no “Unable to create your app” failure).",
       "files": [
-        "frontend/ROLLOUT_STEPS.md"
+        "frontend/ROLLOUT_STEPS.md",
+        "frontend/src/App.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -17,15 +18,15 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-64"
+        "REQ-84"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-step-9-update-the-existing-manual-verification-checklist-at-frontend-upgrade-linking-verification-md-to-include-a-clear-human-readable-step-name-for-the-checklist-and-or-each-major-section-so-it-is-easy-to-reference-during-the-named-step-rollout-process",
-      "featureTitle": "Step 9 — Update the existing manual verification checklist at frontend/UPGRADE_LINKING_VERIFICATION.md to include a clear human-readable step name for the checklist (and/or each major section) so it is easy to reference during the named-step rollout process.",
+      "featureId": "feature-after-the-rollout-21-7-canister-upgrade-execute-the-post-upgrade-smoke-test-checklist-in-frontend-smoke-test-21-7-md-using-both-an-admin-user-and-a-non-admin-approved-member-user",
+      "featureTitle": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user.",
       "files": [
-        "frontend/UPGRADE_LINKING_VERIFICATION.md"
+        "frontend/SMOKE_TEST_21_7.md"
       ],
       "components": [
         "authorization@4.0.0",
@@ -37,7 +38,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-65"
+        "REQ-85"
       ],
       "confidence": "high"
     }

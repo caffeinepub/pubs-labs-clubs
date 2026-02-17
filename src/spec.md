@@ -1,10 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Add named-step rollout documentation so the team can reference and track remaining rollout steps by name and number.
+**Goal:** Execute the Rollout 21.7 build and canister upgrade for Higgins Music Hub, then run the prescribed post-upgrade smoke tests and record results.
 
 **Planned changes:**
-- Add a new markdown document that lists the remaining rollout steps with explicit step numbers and step names, each with a brief English description and a verification method, and clearly marks the next step to execute.
-- Update `frontend/UPGRADE_LINKING_VERIFICATION.md` to include a clear, human-readable step name near the top (and/or for major sections) without changing existing verification meanings, URLs, or button labels.
+- Produce the next build and deploy via canister upgrade for Rollout 21.7 while preserving existing canister state and avoiding deployment pipeline failure (“Unable to create your app”).
+- Ensure frontend and backend builds complete successfully (no TypeScript errors; no Motoko compiler errors) and the app starts post-upgrade without runtime traps.
+- Execute the smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user, including landing page, gated navigation, five portal detail routes, and “Edit Links” dialog checks.
+- Record smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under “Rollout 21.7 Smoke Test Results,” including environment/user principal fields and detailed notes for any failures (route, role, exact error text).
 
-**User-visible outcome:** The repo includes a single source of truth for named rollout steps (with the next step clearly identified), and the manual verification checklist is easier to reference during the named-step rollout process.
+**User-visible outcome:** The upgraded Rollout 21.7 deployment runs without startup/runtime crashes, key portal routes and dialogs are verified for both roles, and the smoke test results are documented for review.

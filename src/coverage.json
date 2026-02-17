@@ -1,36 +1,47 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T16:10:56.587Z",
+  "generatedAt": "2026-02-17T20:12:22.864Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 2,
+    "total": 3,
     "implemented": 2,
     "items": [
       {
-        "id": "REQ-64",
-        "summary": "Step 8 — Create a single source of truth document that names each remaining rollout step and briefly describes what will be done in that step (in English), so the team can track progress and refer to steps by name.",
+        "id": "REQ-84",
+        "summary": "Produce the next build and deploy it via a canister upgrade for Rollout 21.7, keeping all existing canister state intact, and ensure the build/deploy pipeline completes successfully (no “Unable to create your app” failure).",
         "status": "implemented",
         "plannedFiles": [
+          "frontend/src/App.tsx",
           "frontend/ROLLOUT_STEPS.md"
         ],
         "matchedFiles": [
+          "frontend/src/App.tsx",
           "frontend/ROLLOUT_STEPS.md"
         ]
       },
       {
-        "id": "REQ-65",
-        "summary": "Step 9 — Update the existing manual verification checklist at frontend/UPGRADE_LINKING_VERIFICATION.md to include a clear human-readable step name for the checklist (and/or each major section) so it is easy to reference during the named-step rollout process.",
+        "id": "REQ-85",
+        "summary": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/UPGRADE_LINKING_VERIFICATION.md"
+          "frontend/SMOKE_TEST_21_7.md"
         ],
         "matchedFiles": [
-          "frontend/UPGRADE_LINKING_VERIFICATION.md"
+          "frontend/SMOKE_TEST_21_7.md"
         ]
+      },
+      {
+        "id": "REQ-86",
+        "summary": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section, using clear English notes for any failures (include route, user role, and observed error text).",
+        "status": "missing",
+        "plannedFiles": [
+          "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md"
+        ],
+        "matchedFiles": []
       }
     ]
   },
@@ -41,11 +52,8 @@
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
     "frontend/ROLLOUT_STEPS.md",
-    "frontend/UPGRADE_LINKING_VERIFICATION.md",
-    "frontend/src/backend.d.ts",
-    "frontend/src/backend.ts",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
+    "frontend/SMOKE_TEST_21_7.md",
+    "frontend/src/App.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

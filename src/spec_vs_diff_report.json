@@ -1,29 +1,40 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T16:10:56.583Z",
-  "summary": "REQ-64 and REQ-65 appear implemented via new named rollout-steps markdown and adding an explicit Step 9 heading to the manual verification checklist. However, the diff also includes multiple unrelated changes (backend and project metadata, plus apparent frontend code normalization work) that were not requested by the BuildRequest.",
-  "missing_requirements": [],
+  "generatedAt": "2026-02-17T20:12:22.860Z",
+  "summary": "Diff updates backend/frontend code and rollout documentation (notably App.tsx router-level error handling and a Rollout 21.7 smoke test checklist doc), but does not include evidence of executing the canister upgrade, running the smoke test end-to-end, or recording smoke test results in the required results file. It also introduces additional rollout-step content for 21.1–21.2 that was not requested for Rollout 21.7.",
+  "missing_requirements": [
+    {
+      "id": "REQ-84",
+      "requirement": "Produce the next build and deploy it via a canister upgrade for Rollout 21.7, keeping all existing canister state intact, and ensure the build/deploy pipeline completes successfully (no “Unable to create your app” failure).",
+      "reason": "The diff shows code/doc changes but no evidence of build artifacts, deployment pipeline configuration/output, or any explicit canister-upgrade/state-preservation work/results. From the diff alone, the build+upgrade completion and state preservation cannot be verified.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/App.tsx",
+        "frontend/ROLLOUT_STEPS.md"
+      ]
+    },
+    {
+      "id": "REQ-85",
+      "requirement": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user.",
+      "reason": "While the checklist file exists/was modified, there is no evidence in the diff that the checklist was executed end-to-end post-upgrade for both roles (no recorded outcomes/logs/results).",
+      "evidence": [
+        "frontend/SMOKE_TEST_21_7.md"
+      ]
+    },
+    {
+      "id": "REQ-86",
+      "requirement": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section.",
+      "reason": "`frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` is not shown as modified in the diff summary, so the required results section completion (environment fields, principals, pass/fail, failure notes) is missing from the provided changes.",
+      "evidence": []
+    }
+  ],
   "hallucinated_features": [
     {
-      "description": "Backend Motoko code changes in backend/main.mo, despite the request only being documentation updates.",
-      "reason": "BuildRequest requirements REQ-64 and REQ-65 only ask for markdown documentation updates; no backend behavior/code changes were requested and constraints emphasize preserving the existing backend architecture.",
+      "description": "Added/expanded rollout documentation content for “Step 9.1 — Rollout 21.1–21.2 Build/Upgrade Readiness” (including creating/mentioning a 21.1–21.2 smoke test and related documentation updates), which is outside the requested Rollout 21.7 execution + smoke test + results recording scope.",
+      "reason": "BuildRequest is specifically about executing Rollout 21.7 upgrade and post-upgrade smoke test + recording results; introducing a separate 21.1–21.2 readiness step is not requested.",
       "evidence": [
-        "backend/main.mo"
-      ]
-    },
-    {
-      "description": "Frontend implementation work related to upgrade-safe array normalization and related-record linking across multiple React components/pages (as described in the repo summary file).",
-      "reason": "REQ-64/REQ-65 are documentation-only; the diff summary indicates substantive frontend code changes (hooks/components/pages) beyond adding step-name documentation.",
-      "evidence": [
-        "frontend-file-summaries.txt"
-      ]
-    },
-    {
-      "description": "Project metadata/state update (project_state.json version/state changes).",
-      "reason": "Not requested by REQ-64/REQ-65 and unrelated to the named-step documentation deliverables.",
-      "evidence": [
-        "project_state.json"
+        "frontend/ROLLOUT_STEPS.md"
       ]
     }
   ],
@@ -32,7 +43,8 @@
     "backend/main.mo",
     "frontend-file-summaries.txt",
     "frontend/ROLLOUT_STEPS.md",
-    "frontend/UPGRADE_LINKING_VERIFICATION.md",
+    "frontend/SMOKE_TEST_21_7.md",
+    "frontend/src/App.tsx",
     "project_state.json"
   ]
 }

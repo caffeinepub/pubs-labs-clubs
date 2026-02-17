@@ -1,36 +1,61 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Named rollout step documentation (Steps 8–9)",
+  "title": "Higgins Music Hub — Rollout 21.7 Frontend Build Readiness + Smoke Test Artifacts",
   "requirements": [
     {
-      "id": "REQ-64",
-      "summary": "Create a single source of truth markdown document naming each remaining rollout step with brief descriptions and verification guidance, and indicate the next step to execute.",
+      "id": "REQ-84",
+      "summary": "Ensure the frontend is build-ready for Rollout 21.7 and that upgrade-related verification steps are clearly captured without changing app behavior.",
       "acceptanceCriteria": [
-        "A new markdown document exists in the repo that lists rollout steps with explicit step numbers and step names (e.g., \"Step 8 — …\", \"Step 9 — …\").",
-        "Each step entry includes a short English description of what the step delivers and how to verify completion.",
-        "The document clearly indicates which step is next to execute."
+        "Frontend build completes successfully with no TypeScript build errors.",
+        "Application starts after upgrade with no runtime traps on startup.",
+        "Deployment pipeline does not fail with the platform error “Unable to create your app”."
       ],
       "file_operations": [
         {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Remove any unused imports and perform minor type-safety/TS build-hardening adjustments without changing routing behavior, keeping router-level error handling stable for post-upgrade recovery screens."
+        },
+        {
           "path": "frontend/ROLLOUT_STEPS.md",
-          "operation": "create",
-          "description": "Add a named-step rollout tracker document for Higgins Music Hub. Include: (1) a numbered list with explicit headings like \"Step 8 — <Name>\", \"Step 9 — <Name>\", etc. for the remaining rollout steps; (2) for each step, a short English description of what will be done and a concise \"How to verify\" checklist; (3) a clear marker stating the next step to execute (expected: Step 9 after this document is created)."
+          "operation": "modify",
+          "description": "Update Rollout 21.7 step notes to explicitly call out the frontend build verification expectations and to cross-reference the 21.7 smoke test + results recording locations, keeping all instructions in English."
         }
       ]
     },
     {
-      "id": "REQ-65",
-      "summary": "Add a clear human-readable named-step heading to the existing manual verification checklist so it is easy to reference during the named-step rollout process.",
+      "id": "REQ-85",
+      "summary": "Execute the Rollout 21.7 post-upgrade smoke test checklist using both admin and non-admin approved member roles (documentation-supported).",
       "acceptanceCriteria": [
-        "frontend/UPGRADE_LINKING_VERIFICATION.md includes an explicit step name near the top (for example, a heading like \"Step X — <Name>\").",
-        "All additions use English and do not change the existing verification meanings/URLs/button labels (e.g., \"Edit Links\")."
+        "All checklist items in `frontend/SMOKE_TEST_21_7.md` are executed end-to-end.",
+        "Landing page (`/`) loads without errors.",
+        "Authenticated portal navigation works (AuthGate and ApprovalGate).",
+        "All five portal detail routes load without runtime crashes for both roles: `/portal/memberships/$id`, `/portal/publishing/$id`, `/portal/releases/$id`, `/portal/recordings/$id`, `/portal/artists/$id`.",
+        "The “Edit Links” dialog opens successfully on each of the five detail routes for both roles (when authorized).",
+        "No frontend console errors related to undefined/null access occur during the smoke test.",
+        "Router-level error handling remains stable (errors render as in-app error screens, not full SPA crashes)."
       ],
       "file_operations": [
         {
-          "path": "frontend/UPGRADE_LINKING_VERIFICATION.md",
+          "path": "frontend/SMOKE_TEST_21_7.md",
           "operation": "modify",
-          "description": "Update the top of the checklist to include an explicit named rollout step heading (e.g., \"Step 9 — Verify upgrade-safe related-record linking (Manual QA)\") near the beginning. Optionally add concise named headings for major sections to improve referenceability, without changing the existing checklist semantics, URLs, or UI labels such as \"Edit Links\"."
+          "description": "Tighten the checklist wording to ensure it explicitly requires running the flow twice (admin + non-admin approved member), and explicitly calls out verifying AuthGate/ApprovalGate behavior (authorization + user-approval components). Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-86",
+      "summary": "Record Rollout 21.7 smoke test outcomes in the existing results template with clear, role- and route-specific failure notes.",
+      "acceptanceCriteria": [
+        "`frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` has the “Rollout 21.7 Smoke Test Results” section completed with environment fields, user principals, and pass/fail selections.",
+        "Any failures include clear English notes with: affected route, user role, and exact observed error text (and stack trace if available)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md",
+          "operation": "modify",
+          "description": "Fill in the “Rollout 21.7 Smoke Test Results” section after executing the checklist, including environment fields, admin/non-admin principals, pass/fail selections, and clear English failure notes containing route, role, and exact error text/stack trace when applicable."
         }
       ]
     }

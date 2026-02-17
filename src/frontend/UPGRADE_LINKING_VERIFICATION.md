@@ -6,12 +6,36 @@ This document provides a manual verification checklist for post-upgrade related-
 
 After a canister upgrade, verify that the "Edit Links" flow works correctly for both admin and non-admin member roles across all supported entity detail pages.
 
+**Important**: Before beginning testing, perform a canister upgrade to ensure you are testing the upgrade-safe behavior. Record your test results in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`.
+
+**Rollout 21.1–21.2 Note**: For the rollout 21.1–21.2 deployment, first complete the concise smoke test checklist in `frontend/SMOKE_TEST_21_1_21_2.md` to verify basic functionality, then proceed with this comprehensive verification if the smoke test passes.
+
 ## Prerequisites
 
-- Canister has been upgraded successfully
+- **Canister upgrade must be performed before testing begins**
 - At least one admin user exists
 - At least one non-admin approved member exists
 - Sample data exists for each entity type (Membership, Publishing Work, Release, Recording Project, Artist Development)
+
+## Portal Routes
+
+The following five detail routes are tested in this verification:
+
+1. `/portal/memberships/$id` — Membership Detail
+2. `/portal/publishing/$id` — Publishing Work Detail
+3. `/portal/releases/$id` — Release Detail
+4. `/portal/recordings/$id` — Recording Project Detail
+5. `/portal/artists/$id` — Artist Development Detail
+
+## Entity Category Labels
+
+The "Edit Links" dialog and Related Records section use the following labels:
+
+- **Memberships** — Member profiles and accounts
+- **Artist Development** — Artist CRM and development plans
+- **Publishing Works** — Songs, compositions, and publishing catalog
+- **Releases** — Albums, EPs, singles, and label releases
+- **Recording Projects** — Studio sessions and recording projects
 
 ## Verification Steps
 
@@ -27,7 +51,7 @@ After a canister upgrade, verify that the "Edit Links" flow works correctly for 
 - [ ] Select/deselect entities and click "Save Changes"
 - [ ] Save succeeds without errors
 - [ ] Related Records section updates immediately to reflect saved links
-- [ ] Refresh page - links persist correctly
+- [ ] **Refresh page - links persist correctly**
 
 #### Non-Admin Member
 - [ ] Navigate to own membership detail page
@@ -39,7 +63,7 @@ After a canister upgrade, verify that the "Edit Links" flow works correctly for 
 - [ ] Select/deselect entities and click "Save Changes"
 - [ ] Save succeeds without errors
 - [ ] Related Records section updates immediately to reflect saved links
-- [ ] Refresh page - links persist correctly
+- [ ] **Refresh page - links persist correctly**
 
 ### 2. Publishing Work Detail Page (`/portal/publishing/$id`)
 
@@ -53,7 +77,7 @@ After a canister upgrade, verify that the "Edit Links" flow works correctly for 
 - [ ] Select/deselect entities and click "Save Changes"
 - [ ] Save succeeds without errors
 - [ ] Related Records section updates immediately to reflect saved links
-- [ ] Refresh page - links persist correctly
+- [ ] **Refresh page - links persist correctly**
 
 #### Non-Admin Member
 - [ ] Navigate to own publishing work detail page
@@ -65,7 +89,7 @@ After a canister upgrade, verify that the "Edit Links" flow works correctly for 
 - [ ] Select/deselect entities and click "Save Changes"
 - [ ] Save succeeds without errors
 - [ ] Related Records section updates immediately to reflect saved links
-- [ ] Refresh page - links persist correctly
+- [ ] **Refresh page - links persist correctly**
 
 ### 3. Release Detail Page (`/portal/releases/$id`)
 
@@ -79,7 +103,7 @@ After a canister upgrade, verify that the "Edit Links" flow works correctly for 
 - [ ] Select/deselect entities and click "Save Changes"
 - [ ] Save succeeds without errors
 - [ ] Related Records section updates immediately to reflect saved links
-- [ ] Refresh page - links persist correctly
+- [ ] **Refresh page - links persist correctly**
 
 #### Non-Admin Member
 - [ ] Navigate to own release detail page
@@ -91,7 +115,7 @@ After a canister upgrade, verify that the "Edit Links" flow works correctly for 
 - [ ] Select/deselect entities and click "Save Changes"
 - [ ] Save succeeds without errors
 - [ ] Related Records section updates immediately to reflect saved links
-- [ ] Refresh page - links persist correctly
+- [ ] **Refresh page - links persist correctly**
 
 ### 4. Recording Project Detail Page (`/portal/recordings/$id`)
 
@@ -105,7 +129,7 @@ After a canister upgrade, verify that the "Edit Links" flow works correctly for 
 - [ ] Select/deselect entities and click "Save Changes"
 - [ ] Save succeeds without errors
 - [ ] Related Records section updates immediately to reflect saved links
-- [ ] Refresh page - links persist correctly
+- [ ] **Refresh page - links persist correctly**
 
 #### Non-Admin Member
 - [ ] Navigate to own recording project detail page
@@ -117,7 +141,7 @@ After a canister upgrade, verify that the "Edit Links" flow works correctly for 
 - [ ] Select/deselect entities and click "Save Changes"
 - [ ] Save succeeds without errors
 - [ ] Related Records section updates immediately to reflect saved links
-- [ ] Refresh page - links persist correctly
+- [ ] **Refresh page - links persist correctly**
 
 ### 5. Artist Development Detail Page (`/portal/artists/$id`)
 
@@ -131,7 +155,7 @@ After a canister upgrade, verify that the "Edit Links" flow works correctly for 
 - [ ] Select/deselect entities and click "Save Changes"
 - [ ] Save succeeds without errors
 - [ ] Related Records section updates immediately to reflect saved links
-- [ ] Refresh page - links persist correctly
+- [ ] **Refresh page - links persist correctly**
 
 #### Non-Admin Member
 - [ ] Navigate to own artist development detail page
@@ -143,51 +167,44 @@ After a canister upgrade, verify that the "Edit Links" flow works correctly for 
 - [ ] Select/deselect entities and click "Save Changes"
 - [ ] Save succeeds without errors
 - [ ] Related Records section updates immediately to reflect saved links
-- [ ] Refresh page - links persist correctly
+- [ ] **Refresh page - links persist correctly**
 
 ## Expected Outcomes
 
 ### For All Pages and Roles:
-- No runtime errors or crashes when loading detail pages
-- "Edit Links" button is visible for authorized users (owners or admins)
-- Dialog opens without errors and displays correct entity categories
-- Pre-existing links are correctly pre-selected in the dialog
-- Save operation completes successfully
-- Related Records section updates immediately after save
+- No runtime errors or crashes when loading detail pages after upgrade
+- "Edit Links" dialogs open without errors
+- Pre-existing links are correctly pre-selected in dialogs
+- Save operations complete successfully
+- Related Records sections update immediately after save
 - Links persist correctly after page refresh
+- No console errors related to undefined/null array access
 
 ### Role-Specific Expectations:
-- **Admin users**: See all entities in the system in the "Edit Links" dialog
-- **Non-admin members**: See only their own entities (from `getEntitiesForCaller`) in the "Edit Links" dialog
-- **Non-admin members**: Cannot edit links on entities they don't own
+- **Admin users**: See all entities in "Edit Links" dialogs (from admin-only queries)
+- **Non-admin members**: See only their own entities in "Edit Links" dialogs (from `getEntitiesForCaller`)
 
-## Troubleshooting
+## Common Issues to Watch For
 
-### Dialog doesn't open or shows loading indefinitely
-- Check browser console for errors
-- Verify `useLinkableEntityOptions` hook is fetching data correctly
-- Ensure actor is initialized and queries are enabled
+1. **Undefined array errors**: If array normalization is not working, you may see "Cannot read property 'map' of undefined" errors
+2. **Dialog initialization failures**: If selected IDs are not normalized, dialogs may fail to open
+3. **Missing pre-selections**: If existing links are not properly normalized, they may not appear as pre-selected
+4. **Authorization errors**: Non-admin members should not see authorization errors when viewing their own records
 
-### Pre-existing links not pre-selected
-- Verify linked ID arrays are being normalized correctly in detail page components
-- Check that `normalizeToArray` is being used on all linked ID props passed to `EditRelatedDialog`
+## Recording Results
 
-### Save fails with authorization error
-- Verify user has permission to edit the entity (owner or admin)
-- Check that the correct mutation is being called with proper parameters
+Document all test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`. Include:
+- Date and time of testing
+- Canister version tested
+- Test user principals (admin and member)
+- Pass/fail status for each checklist item
+- Any errors or issues encountered
+- Screenshots or console logs if applicable
 
-### Related Records section doesn't update after save
-- Verify React Query cache invalidation is working
-- Check that the mutation's `onSuccess` callback is invalidating the correct query keys
+## Rollout 21.1–21.2 Integration
 
-### Links don't persist after refresh
-- Verify backend mutation is actually saving the data
-- Check that the detail query is refetching after invalidation
-- Ensure linked ID arrays are being normalized when reading from backend response
-
-## Notes
-
-- All user-facing text uses "Edit Links" (not "Edit Related Records" or "Manage Links")
-- Entity categories are labeled as: "Memberships", "Artist Development", "Publishing Works", "Releases", "Recording Projects"
-- Non-admin users rely exclusively on `getEntitiesForCaller` for both viewing and editing links
-- All array normalization uses the shared `normalizeToArray` utility from `utils/arrays.ts`
+For the rollout 21.1–21.2 deployment:
+1. First complete the smoke test in `frontend/SMOKE_TEST_21_1_21_2.md`
+2. If smoke test passes, proceed with this comprehensive verification
+3. Record all results in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under both the smoke test section and the comprehensive verification section
+4. Ensure router-level error handling is working correctly (errors should display in-app error screens, not crash the entire application)
