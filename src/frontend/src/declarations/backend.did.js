@@ -104,16 +104,21 @@ export const Release = IDL.Record({
   'linkedArtists' : IDL.Vec(ArtistDevelopmentId),
   'releaseType' : IDL.Text,
 });
+export const UserProfile = IDL.Record({
+  'bio' : IDL.Text,
+  'name' : IDL.Text,
+  'email' : IDL.Text,
+});
+export const SignedInUser = IDL.Record({
+  'principal' : IDL.Principal,
+  'role' : UserRole,
+  'profile' : IDL.Opt(UserProfile),
+});
 export const ByGoals = IDL.Record({
   'id' : ArtistDevelopmentId,
   'artistId' : IDL.Text,
   'created_at' : Time,
   'goals' : IDL.Text,
-});
-export const UserProfile = IDL.Record({
-  'bio' : IDL.Text,
-  'name' : IDL.Text,
-  'email' : IDL.Text,
 });
 export const MembershipTier = IDL.Record({
   'fee' : IDL.Nat,
@@ -193,6 +198,7 @@ export const idlService = IDL.Service({
       [IDL.Vec(ArtistDevelopment)],
       ['query'],
     ),
+  'getAllKnownUsers' : IDL.Func([], [IDL.Vec(SignedInUser)], ['query']),
   'getAllMembershipProfiles' : IDL.Func(
       [],
       [IDL.Vec(MembershipProfile)],
@@ -236,6 +242,11 @@ export const idlService = IDL.Service({
   'getPublishingWork' : IDL.Func([IDL.Text], [PublishingWork], ['query']),
   'getRecordingProject' : IDL.Func([RecodingId], [RecordingProject], ['query']),
   'getRelease' : IDL.Func([LabelEntityId], [Release], ['query']),
+  'getRemainingRolloutSteps' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      [],
+    ),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -303,6 +314,7 @@ export const idlService = IDL.Service({
       [],
       [],
     ),
+  'updateKnownUserRole' : IDL.Func([], [], []),
   'updateMembershipLinks' : IDL.Func(
       [
         MemberId,
@@ -420,16 +432,21 @@ export const idlFactory = ({ IDL }) => {
     'linkedArtists' : IDL.Vec(ArtistDevelopmentId),
     'releaseType' : IDL.Text,
   });
+  const UserProfile = IDL.Record({
+    'bio' : IDL.Text,
+    'name' : IDL.Text,
+    'email' : IDL.Text,
+  });
+  const SignedInUser = IDL.Record({
+    'principal' : IDL.Principal,
+    'role' : UserRole,
+    'profile' : IDL.Opt(UserProfile),
+  });
   const ByGoals = IDL.Record({
     'id' : ArtistDevelopmentId,
     'artistId' : IDL.Text,
     'created_at' : Time,
     'goals' : IDL.Text,
-  });
-  const UserProfile = IDL.Record({
-    'bio' : IDL.Text,
-    'name' : IDL.Text,
-    'email' : IDL.Text,
   });
   const MembershipTier = IDL.Record({
     'fee' : IDL.Nat,
@@ -513,6 +530,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ArtistDevelopment)],
         ['query'],
       ),
+    'getAllKnownUsers' : IDL.Func([], [IDL.Vec(SignedInUser)], ['query']),
     'getAllMembershipProfiles' : IDL.Func(
         [],
         [IDL.Vec(MembershipProfile)],
@@ -568,6 +586,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getRelease' : IDL.Func([LabelEntityId], [Release], ['query']),
+    'getRemainingRolloutSteps' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+        [],
+      ),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
@@ -635,6 +658,7 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'updateKnownUserRole' : IDL.Func([], [], []),
     'updateMembershipLinks' : IDL.Func(
         [
           MemberId,

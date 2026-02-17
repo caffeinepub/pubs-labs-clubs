@@ -53,11 +53,16 @@ export default function RecordingProjectDetail() {
 
   const canEdit = canEditRecordingProject(identity, isAdmin, project.owner);
 
-  // Normalize linked arrays to handle upgrade-time undefined/null values
+  // Normalize all array-valued fields to handle upgrade-time undefined/null values
+  const safeParticipants = normalizeToArray<string>(project.participants);
+  const safeAssetReferences = normalizeToArray<string>(project.assetReferences);
   const safeLinkedMembers = normalizeToArray<string>(project.linkedMembers);
   const safeLinkedArtists = normalizeToArray<string>(project.linkedArtists);
   const safeLinkedWorks = normalizeToArray<string>(project.linkedWorks);
   const safeLinkedReleases = normalizeToArray<string>(project.linkedReleases);
+
+  // Safely format status string
+  const statusDisplay = project.status ? String(project.status).replace('_', ' ') : 'unknown';
 
   const handleSaveRelated = (data: {
     memberIds: string[];
@@ -101,11 +106,11 @@ export default function RecordingProjectDetail() {
         <CardContent className="space-y-4">
           <div>
             <Label className="text-muted-foreground">Status</Label>
-            <p className="text-lg capitalize">{project.status.replace('_', ' ')}</p>
+            <p className="text-lg capitalize">{statusDisplay}</p>
           </div>
           <div>
             <Label className="text-muted-foreground">Participants</Label>
-            <p className="text-lg">{project.participants.join(', ') || 'None'}</p>
+            <p className="text-lg">{safeParticipants.join(', ') || 'None'}</p>
           </div>
           <div>
             <Label className="text-muted-foreground">Session Date</Label>
@@ -113,6 +118,14 @@ export default function RecordingProjectDetail() {
               {new Date(Number(project.sessionDate) / 1000000).toLocaleDateString()}
             </p>
           </div>
+          {safeAssetReferences.length > 0 && (
+            <div>
+              <Label className="text-muted-foreground">Asset References</Label>
+              <ul className="list-disc list-inside text-lg">
+                {safeAssetReferences.map((ref, idx) => <li key={idx}>{ref}</li>)}
+              </ul>
+            </div>
+          )}
           <div>
             <Label className="text-muted-foreground">Notes</Label>
             <p className="text-lg whitespace-pre-wrap">{project.notes || 'No notes'}</p>

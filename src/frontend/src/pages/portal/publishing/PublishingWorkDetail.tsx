@@ -58,7 +58,9 @@ export default function PublishingWorkDetail() {
 
   const canEdit = canEditPublishingWork(identity, isAdmin, work.owner);
 
-  // Normalize linked arrays to handle upgrade-time undefined/null values
+  // Normalize all array-valued fields to handle upgrade-time undefined/null values
+  const safeContributors = normalizeToArray<string>(work.contributors);
+  const safeOwnershipSplits = normalizeToArray<[string, bigint]>(work.ownershipSplits);
   const safeLinkedMembers = normalizeToArray<string>(work.linkedMembers);
   const safeLinkedArtists = normalizeToArray<string>(work.linkedArtists);
   const safeLinkedReleases = normalizeToArray<string>(work.linkedReleases);
@@ -117,8 +119,18 @@ export default function PublishingWorkDetail() {
         <CardContent className="space-y-4">
           <div>
             <Label className="text-muted-foreground">Contributors</Label>
-            <p className="text-lg">{work.contributors.join(', ') || 'None'}</p>
+            <p className="text-lg">{safeContributors.join(', ') || 'None'}</p>
           </div>
+          {safeOwnershipSplits.length > 0 && (
+            <div>
+              <Label className="text-muted-foreground">Ownership Splits</Label>
+              <ul className="list-disc list-inside text-lg">
+                {safeOwnershipSplits.map(([name, share], idx) => (
+                  <li key={idx}>{name}: {share.toString()}%</li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div>
             <Label className="text-muted-foreground">Registration Status</Label>
             <p className="text-lg">{work.registrationStatus}</p>

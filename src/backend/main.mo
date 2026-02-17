@@ -11,10 +11,9 @@ import Runtime "mo:core/Runtime";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 import UserApproval "user-approval/approval";
-import Migration "migration";
 
+// Enable migration with the (with ...) clause
 
-(with migration = Migration.run)
 actor {
   type MemberId = Text;
   type PublishingId = Text;
@@ -27,6 +26,12 @@ actor {
     name : Text;
     email : Text;
     bio : Text;
+  };
+
+  public type SignedInUser = {
+    principal : Principal;
+    profile : ?UserProfile;
+    role : AccessControl.UserRole;
   };
 
   // MEMBERSHIP
@@ -179,6 +184,7 @@ actor {
   let releases = Map.empty<LabelEntityId, Release>();
   let recordingProjects = Map.empty<RecodingId, RecordingProject>();
   let artistDevelopment = Map.empty<ArtistDevelopmentId, ArtistDevelopment>();
+  let knownUsers = Map.empty<Principal, SignedInUser>();
 
   // USER PROFILE FUNCTIONS (Required by frontend)
 
@@ -201,6 +207,38 @@ actor {
       Runtime.trap("Unauthorized: Only users can save profiles");
     };
     userProfiles.add(caller, profile);
+
+    // Update knownUsers map when saving profile
+    let role = AccessControl.getUserRole(accessControlState, caller);
+    let signedInUser : SignedInUser = {
+      principal = caller;
+      profile = ?profile;
+      role;
+    };
+    knownUsers.add(caller, signedInUser);
+  };
+
+  public shared ({ caller }) func updateKnownUserRole() : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can update role information");
+    };
+    let role = AccessControl.getUserRole(accessControlState, caller);
+
+    let existingProfile = userProfiles.get(caller);
+
+    let signedInUser : SignedInUser = {
+      principal = caller;
+      profile = existingProfile;
+      role;
+    };
+    knownUsers.add(caller, signedInUser);
+  };
+
+  public query ({ caller }) func getAllKnownUsers() : async [SignedInUser] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view all users");
+    };
+    knownUsers.values().toArray();
   };
 
   // MEMBERSHIP FUNCTIONS
@@ -872,6 +910,19 @@ actor {
       Runtime.trap("Unauthorized: Only admins can perform this action");
     };
     UserApproval.listApprovals(approvalState);
+  };
+
+  // ROLLOUT STEP TRACKER (single source of truth)
+  public shared ({ caller }) func getRemainingRolloutSteps() : async [(Text, Text)] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view rollout steps");
+    };
+
+    [
+      ("Step 9: Deployment and Launch", "Deploy system to the ICP mainnet, monitor performance and user adoption. Perform additional system configuration as needed. Perform final quality assurance checks."),
+      ("Step 10: Post-Launch Refinements", "Incorporate user feedback to improve UX and performance. Fix remaining bugs and issues. Integrate CI/CD pipeline."),
+      ("Step 12: Long Term Maintenance", "Plan and implement system maintenance procedures. Add improvements as needed. Train core team on system maintenance. Maintain documentations and change logs."),
+    ];
   };
 };
 

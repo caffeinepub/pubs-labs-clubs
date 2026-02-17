@@ -54,7 +54,10 @@ export default function ArtistDevelopmentDetail() {
 
   const canEdit = canEditArtistDevelopment(identity, isAdmin, artist.owner);
 
-  // Normalize linked arrays to handle upgrade-time undefined/null values
+  // Normalize all array-valued fields to handle upgrade-time undefined/null values
+  const safeGoals = normalizeToArray<string>(artist.goals);
+  const safePlans = normalizeToArray<string>(artist.plans);
+  const safeMilestones = normalizeToArray<string>(artist.milestones);
   const safeRelatedMemberships = normalizeToArray<string>(artist.relatedMemberships);
   const safeRelatedArtistDevelopment = normalizeToArray<string>(artist.relatedArtistDevelopment);
   const safeRelatedPublishing = normalizeToArray<string>(artist.relatedPublishing);
@@ -104,33 +107,33 @@ export default function ArtistDevelopmentDetail() {
         <CardContent className="space-y-4">
           <div>
             <Label className="text-muted-foreground">Goals</Label>
-            <ul className="list-disc list-inside text-lg">
-              {artist.goals.length > 0 ? (
-                artist.goals.map((goal, idx) => <li key={idx}>{goal}</li>)
-              ) : (
-                <p className="text-muted-foreground">No goals set</p>
-              )}
-            </ul>
+            {safeGoals.length > 0 ? (
+              <ul className="list-disc list-inside text-lg">
+                {safeGoals.map((goal, idx) => <li key={idx}>{goal}</li>)}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground">No goals set</p>
+            )}
           </div>
           <div>
             <Label className="text-muted-foreground">Plans</Label>
-            <ul className="list-disc list-inside text-lg">
-              {artist.plans.length > 0 ? (
-                artist.plans.map((plan, idx) => <li key={idx}>{plan}</li>)
-              ) : (
-                <p className="text-muted-foreground">No plans set</p>
-              )}
-            </ul>
+            {safePlans.length > 0 ? (
+              <ul className="list-disc list-inside text-lg">
+                {safePlans.map((plan, idx) => <li key={idx}>{plan}</li>)}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground">No plans set</p>
+            )}
           </div>
           <div>
             <Label className="text-muted-foreground">Milestones</Label>
-            <ul className="list-disc list-inside text-lg">
-              {artist.milestones.length > 0 ? (
-                artist.milestones.map((milestone, idx) => <li key={idx}>{milestone}</li>)
-              ) : (
-                <p className="text-muted-foreground">No milestones set</p>
-              )}
-            </ul>
+            {safeMilestones.length > 0 ? (
+              <ul className="list-disc list-inside text-lg">
+                {safeMilestones.map((milestone, idx) => <li key={idx}>{milestone}</li>)}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground">No milestones set</p>
+            )}
           </div>
           <div>
             <Label className="text-muted-foreground">Internal Notes</Label>

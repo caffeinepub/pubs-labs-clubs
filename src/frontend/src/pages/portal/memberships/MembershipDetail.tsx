@@ -65,7 +65,9 @@ export default function MembershipDetail() {
 
   const canEdit = canEditMembership(identity, isAdmin, membership.profile.principal);
 
-  // Normalize linked arrays to handle upgrade-time undefined/null values
+  // Normalize all array-valued fields to handle upgrade-time undefined/null values
+  const safeAgreements = normalizeToArray<string>(membership.profile.agreements);
+  const safeTierBenefits = normalizeToArray<string>(membership.tier?.benefits);
   const safeLinkedArtists = normalizeToArray<string>(membership.linkedArtists);
   const safeLinkedWorks = normalizeToArray<string>(membership.linkedWorks);
   const safeLinkedReleases = normalizeToArray<string>(membership.linkedReleases);
@@ -202,6 +204,26 @@ export default function MembershipDetail() {
                 <Label className="text-muted-foreground">Tier</Label>
                 <p className="text-lg">{membership.profile.tier}</p>
               </div>
+              {safeTierBenefits.length > 0 && (
+                <div>
+                  <Label className="text-muted-foreground">Benefits</Label>
+                  <ul className="list-disc list-inside text-lg">
+                    {safeTierBenefits.map((benefit, idx) => (
+                      <li key={idx}>{benefit}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {safeAgreements.length > 0 && (
+                <div>
+                  <Label className="text-muted-foreground">Agreements</Label>
+                  <ul className="list-disc list-inside text-lg">
+                    {safeAgreements.map((agreement, idx) => (
+                      <li key={idx}>{agreement}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <div>
                 <Label className="text-muted-foreground">Created</Label>
                 <p className="text-lg">

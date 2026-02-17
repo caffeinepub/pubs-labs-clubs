@@ -1,9 +1,12 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 33,
+  "projectStateVersion": 39,
   "summary": "Website/platform for Higgins Music to manage publishing, label operations, recordings/productions, and artist development with a co-op style membership model for artists/clients.",
   "architectural_notes": [
-    "User approved Steps 7.3–7.4 and requested proceeding with Step 7.5 and subsequent steps."
+    "User approved Steps 7.3–7.4 and requested proceeding with Step 7.5 and subsequent steps.",
+    "User requested proceeding to the next items and to break the work into manageable portions to ensure error-free processing.",
+    "User requested adding an admin-only Role Assignment UI to grant Admin privileges to additional signed-in principals (role assignment stored in backend user profiles).",
+    "User requested proceeding to the next step and asked that each step be explicitly named."
   ],
   "known_issues": [
     "Build/deploy pipeline encountered an error when attempting to add UI linking controls; requires adjustment for error-free completion."
@@ -329,6 +332,54 @@
         "REQ-56"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-identify-and-resolve-any-remaining-build-deploy-failures-and-runtime-errors-related-to-the-related-record-linking-flow-so-the-app-compiles-cleanly-typescript-motoko-and-the-portal-can-be-navigated-without-crashes",
+      "title": "Identify and resolve any remaining build/deploy failures and runtime errors related to the related-record linking flow so the app compiles cleanly (TypeScript + Motoko) and the portal can be navigated without crashes.",
+      "reqIds": [
+        "REQ-57"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-complete-the-post-upgrade-end-to-end-verification-flow-for-related-record-linking-across-all-supported-detail-pages-for-both-admin-and-non-admin-member-roles-and-fix-any-issues-uncovered-so-links-persist-and-re-load-correctly-after-refresh",
+      "title": "Complete the post-upgrade end-to-end verification flow for related-record linking across all supported detail pages for both admin and non-admin member roles, and fix any issues uncovered so links persist and re-load correctly after refresh.",
+      "reqIds": [
+        "REQ-59"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-a-new-admin-only-portal-page-for-role-assignment-that-lets-an-admin-promote-or-demote-users-by-principal-with-clear-english-user-facing-text-explaining-that-signing-in-only-authenticates-a-user-and-that-admin-access-must-be-granted-by-an-existing-admin",
+      "title": "Create a new admin-only portal page for role assignment that lets an Admin promote or demote users by principal, with clear English user-facing text explaining that signing in only authenticates a user and that Admin access must be granted by an existing Admin.",
+      "reqIds": [
+        "REQ-62"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-wire-the-new-role-assignment-page-into-the-existing-admin-navigation-and-routing-and-add-react-query-hooks-for-the-new-backend-role-management-endpoints-with-appropriate-cache-invalidation-so-the-ui-stays-consistent-after-changes",
+      "title": "Wire the new role assignment page into the existing admin navigation and routing, and add React Query hooks for the new backend role-management endpoints with appropriate cache invalidation so the UI stays consistent after changes.",
+      "reqIds": [
+        "REQ-63"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-step-8-create-a-single-source-of-truth-document-that-names-each-remaining-rollout-step-and-briefly-describes-what-will-be-done-in-that-step-in-english-so-the-team-can-track-progress-and-refer-to-steps-by-name",
+      "title": "Step 8 — Create a single source of truth document that names each remaining rollout step and briefly describes what will be done in that step (in English), so the team can track progress and refer to steps by name.",
+      "reqIds": [
+        "REQ-64"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-step-9-update-the-existing-manual-verification-checklist-at-frontend-upgrade-linking-verification-md-to-include-a-clear-human-readable-step-name-for-the-checklist-and-or-each-major-section-so-it-is-easy-to-reference-during-the-named-step-rollout-process",
+      "title": "Step 9 — Update the existing manual verification checklist at frontend/UPGRADE_LINKING_VERIFICATION.md to include a clear human-readable step name for the checklist (and/or each major section) so it is easy to reference during the named-step rollout process.",
+      "reqIds": [
+        "REQ-65"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -529,6 +580,36 @@
       "summary": "Add/confirm an explicit post-upgrade manual verification checklist for the related-record linking flow that covers all supported detail pages (Membership, Publishing Work, Release, Recording Project, Artist Development) and both admin + non-admin member roles, including expected outcomes and troubleshooting guidance, in English user-facing text.",
       "reqIds": [
         "REQ-51"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-30",
+      "summary": "Ensure upgrade-safe handling of missing/undefined related-ID arrays and missing/partial entity collections during and after upgrades so the UI and linking flows treat them as empty arrays (not crashes, traps, or silent misbehavior).",
+      "reqIds": [
+        "REQ-58"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-32",
+      "summary": "Review and update the manual post-upgrade verification checklist so it accurately reflects the implemented UI labels and entity categories shown in the “Edit Links” dialog and Related Records section, and can be followed to verify Step 7.5+ completion.",
+      "reqIds": [
+        "REQ-60"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-33",
+      "summary": "Add an admin-only role assignment feature (UI + backend support as needed) so an existing Admin can promote signed-in users to Admin after their principal is recorded.",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-34",
+      "summary": "Add backend support for an existing Admin to view a list of known signed-in users (principals that have interacted with the app) along with enough metadata to identify them (e.g., profile name/email when available) and manage their roles (Admin vs Member), enforcing that only Admin callers can access this functionality.",
+      "reqIds": [
+        "REQ-61"
       ],
       "status": "pending"
     }

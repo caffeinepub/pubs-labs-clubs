@@ -53,7 +53,11 @@ export default function ReleaseDetail() {
 
   const canEdit = canEditRelease(identity, isAdmin, release.owner);
 
-  // Normalize linked arrays to handle upgrade-time undefined/null values
+  // Normalize all array-valued fields to handle upgrade-time undefined/null values
+  const safeTracklist = normalizeToArray<string>(release.tracklist);
+  const safeKeyDates = normalizeToArray<string>(release.keyDates);
+  const safeOwners = normalizeToArray<string>(release.owners);
+  const safeWorkflowChecklist = normalizeToArray<string>(release.workflowChecklist);
   const safeLinkedMembers = normalizeToArray<string>(release.linkedMembers);
   const safeLinkedArtists = normalizeToArray<string>(release.linkedArtists);
   const safeLinkedWorks = normalizeToArray<string>(release.linkedWorks);
@@ -105,28 +109,36 @@ export default function ReleaseDetail() {
           </div>
           <div>
             <Label className="text-muted-foreground">Tracklist</Label>
-            <ul className="list-disc list-inside text-lg">
-              {release.tracklist.length > 0 ? (
-                release.tracklist.map((track, idx) => <li key={idx}>{track}</li>)
-              ) : (
-                <p className="text-muted-foreground">No tracks</p>
-              )}
-            </ul>
+            {safeTracklist.length > 0 ? (
+              <ul className="list-disc list-inside text-lg">
+                {safeTracklist.map((track, idx) => <li key={idx}>{track}</li>)}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground">No tracks</p>
+            )}
           </div>
           <div>
             <Label className="text-muted-foreground">Key Dates</Label>
-            <ul className="list-disc list-inside text-lg">
-              {release.keyDates.length > 0 ? (
-                release.keyDates.map((date, idx) => <li key={idx}>{date}</li>)
-              ) : (
-                <p className="text-muted-foreground">No key dates</p>
-              )}
-            </ul>
+            {safeKeyDates.length > 0 ? (
+              <ul className="list-disc list-inside text-lg">
+                {safeKeyDates.map((date, idx) => <li key={idx}>{date}</li>)}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground">No key dates</p>
+            )}
           </div>
           <div>
             <Label className="text-muted-foreground">Owners</Label>
-            <p className="text-lg">{release.owners.join(', ') || 'None'}</p>
+            <p className="text-lg">{safeOwners.join(', ') || 'None'}</p>
           </div>
+          {safeWorkflowChecklist.length > 0 && (
+            <div>
+              <Label className="text-muted-foreground">Workflow Checklist</Label>
+              <ul className="list-disc list-inside text-lg">
+                {safeWorkflowChecklist.map((item, idx) => <li key={idx}>{item}</li>)}
+              </ul>
+            </div>
+          )}
           <div>
             <Label className="text-muted-foreground">Created</Label>
             <p className="text-lg">

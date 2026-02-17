@@ -10,9 +10,12 @@ import type {
   UserApprovalInfo,
   T as MemberStatus,
   ProjectStatus,
-  Membership
+  Membership,
+  SignedInUser,
+  UserRole
 } from '../backend';
 import { toast } from 'sonner';
+import { Principal } from '@dfinity/principal';
 
 // User Profile Queries
 export function useGetCallerUserProfile() {
@@ -50,6 +53,41 @@ export function useSaveCallerUserProfile() {
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to save profile');
+    }
+  });
+}
+
+// Role Management Queries
+export function useGetAllKnownUsers() {
+  const { actor, isFetching: actorFetching } = useActor();
+
+  return useQuery<SignedInUser[]>({
+    queryKey: ['allKnownUsers'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllKnownUsers();
+    },
+    enabled: !!actor && !actorFetching
+  });
+}
+
+export function useAssignUserRole() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: { principal: string; role: UserRole }) => {
+      if (!actor) throw new Error('Actor not available');
+      const principal = Principal.fromText(data.principal);
+      return actor.assignCallerUserRole(principal, data.role);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allKnownUsers'] });
+      queryClient.invalidateQueries({ queryKey: ['currentUserRole'] });
+      toast.success('User role updated successfully');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update user role');
     }
   });
 }
@@ -462,14 +500,44 @@ export function useLinkMembershipToEntities() {
       );
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['membership', variables.memberId] });
       queryClient.invalidateQueries({ queryKey: ['membershipDetails', variables.memberId] });
-      queryClient.invalidateQueries({ queryKey: ['memberships'] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
-      toast.success('Related records updated');
+      toast.success('Membership links updated');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update related records');
+      toast.error(error.message || 'Failed to update links');
+    }
+  });
+}
+
+export function useUpdateMembershipLinks() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      memberId: string;
+      artistIds: string[];
+      workIds: string[];
+      releaseIds: string[];
+      projectIds: string[];
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.updateMembershipLinks(
+        data.memberId,
+        data.artistIds,
+        data.workIds,
+        data.releaseIds,
+        data.projectIds
+      );
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['membershipDetails', variables.memberId] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
+      toast.success('Membership links updated');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update links');
     }
   });
 }
@@ -499,10 +567,10 @@ export function useLinkPublishingWorkToEntities() {
       queryClient.invalidateQueries({ queryKey: ['publishingWork', variables.workId] });
       queryClient.invalidateQueries({ queryKey: ['publishingWorks'] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
-      toast.success('Related records updated');
+      toast.success('Publishing work links updated');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update related records');
+      toast.error(error.message || 'Failed to update links');
     }
   });
 }
@@ -532,10 +600,10 @@ export function useLinkReleaseToEntities() {
       queryClient.invalidateQueries({ queryKey: ['release', variables.releaseId] });
       queryClient.invalidateQueries({ queryKey: ['releases'] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
-      toast.success('Related records updated');
+      toast.success('Release links updated');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update related records');
+      toast.error(error.message || 'Failed to update links');
     }
   });
 }
@@ -565,10 +633,10 @@ export function useLinkProjectToEntities() {
       queryClient.invalidateQueries({ queryKey: ['recordingProject', variables.projectId] });
       queryClient.invalidateQueries({ queryKey: ['recordingProjects'] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
-      toast.success('Related records updated');
+      toast.success('Recording project links updated');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update related records');
+      toast.error(error.message || 'Failed to update links');
     }
   });
 }
@@ -600,10 +668,10 @@ export function useUpdateArtistDevelopmentLinks() {
       queryClient.invalidateQueries({ queryKey: ['artistDevelopment', variables.artistDevelopmentId] });
       queryClient.invalidateQueries({ queryKey: ['artistDevelopment'] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
-      toast.success('Related records updated');
+      toast.success('Artist development links updated');
     },
     onError: (error: Error) => {
-      toast.error(error.message || 'Failed to update related records');
+      toast.error(error.message || 'Failed to update links');
     }
   });
 }

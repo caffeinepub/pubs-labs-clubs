@@ -1,43 +1,38 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T14:04:17.138Z",
-  "summary": "Diff focuses on frontend upgrade-safe normalization for related-ID arrays, role-aware option loading, and consistent Edit Links UI across all five detail pages; it also adds a backend migration hook/module. However, the diff summary does not provide enough evidence that the backend persistence and post-upgrade linking behavior is fully implemented/verified end-to-end, nor that all build/runtime issues are resolved.",
-  "missing_requirements": [
+  "generatedAt": "2026-02-17T16:10:56.583Z",
+  "summary": "REQ-64 and REQ-65 appear implemented via new named rollout-steps markdown and adding an explicit Step 9 heading to the manual verification checklist. However, the diff also includes multiple unrelated changes (backend and project metadata, plus apparent frontend code normalization work) that were not requested by the BuildRequest.",
+  "missing_requirements": [],
+  "hallucinated_features": [
     {
-      "id": "REQ-53",
-      "requirement": "Ensure the post-upgrade related-record linking flow is fully upgrade-resilient end-to-end across all supported detail pages for both admin and non-admin roles (including persistence after refresh).",
-      "reason": "Frontend components/pages were updated for upgrade-safe array handling and linking UI, but the diff summary does not show backend-side link update/query logic changes (storage, retrieval, and post-upgrade compatibility) needed to guarantee links persist and reload correctly after upgrade/refresh across all entity types.",
+      "description": "Backend Motoko code changes in backend/main.mo, despite the request only being documentation updates.",
+      "reason": "BuildRequest requirements REQ-64 and REQ-65 only ask for markdown documentation updates; no backend behavior/code changes were requested and constraints emphasize preserving the existing backend architecture.",
       "evidence": [
-        "backend/main.mo (truncated; no linking functions shown)",
-        "frontend-file-summaries.txt (mentions backend methods but no backend implementation shown)"
+        "backend/main.mo"
       ]
     },
     {
-      "id": "REQ-54",
-      "requirement": "Resolve remaining build/deploy/runtime issues so frontend has no TypeScript errors, backend has no Motoko errors/traps, and no runtime errors occur when opening/saving Edit Links on all supported detail pages for both roles.",
-      "reason": "The diff summary describes changes intended to prevent runtime errors, but it does not include compilation results or sufficient code visibility to confirm there are no remaining TypeScript errors, Motoko compiler errors, startup traps, or runtime errors on all pages/roles.",
+      "description": "Frontend implementation work related to upgrade-safe array normalization and related-record linking across multiple React components/pages (as described in the repo summary file).",
+      "reason": "REQ-64/REQ-65 are documentation-only; the diff summary indicates substantive frontend code changes (hooks/components/pages) beyond adding step-name documentation.",
       "evidence": [
-        "backend/main.mo (truncated)",
-        "frontend-file-summaries.txt (high-level summaries; no build output)"
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "Project metadata/state update (project_state.json version/state changes).",
+      "reason": "Not requested by REQ-64/REQ-65 and unrelated to the named-step documentation deliverables.",
+      "evidence": [
+        "project_state.json"
       ]
     }
   ],
-  "hallucinated_features": [],
-  "confidence": 0.62,
+  "confidence": 0.74,
   "changed_files": [
     "backend/main.mo",
-    "backend/migration.mo",
     "frontend-file-summaries.txt",
+    "frontend/ROLLOUT_STEPS.md",
     "frontend/UPGRADE_LINKING_VERIFICATION.md",
-    "frontend/src/components/related/EditRelatedDialog.tsx",
-    "frontend/src/components/related/RelatedRecordsSection.tsx",
-    "frontend/src/hooks/useLinkableEntityOptions.ts",
-    "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
-    "frontend/src/pages/portal/label/ReleaseDetail.tsx",
-    "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
-    "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
-    "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
     "project_state.json"
   ]
 }

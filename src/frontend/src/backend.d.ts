@@ -84,6 +84,11 @@ export interface Release {
     releaseType: string;
 }
 export type ArtistDevelopmentId = string;
+export interface SignedInUser {
+    principal: Principal;
+    role: UserRole;
+    profile?: UserProfile;
+}
 export interface MembershipTier {
     fee: bigint;
     name: string;
@@ -147,6 +152,7 @@ export interface backendInterface {
     createRecordingProject(title: string, participants: Array<string>, sessionDate: Time, status: ProjectStatus, notes: string): Promise<RecordingProject>;
     createRelease(title: string, releaseType: string, tracklist: Array<string>, keyDates: Array<string>, owners: Array<string>): Promise<Release>;
     getAllArtistDevelopment(): Promise<Array<ArtistDevelopment>>;
+    getAllKnownUsers(): Promise<Array<SignedInUser>>;
     getAllMembershipProfiles(): Promise<Array<MembershipProfile>>;
     getAllPublishingWorks(): Promise<Array<PublishingWork>>;
     getAllRecordingProjects(): Promise<Array<RecordingProject>>;
@@ -168,6 +174,7 @@ export interface backendInterface {
     getPublishingWork(id: string): Promise<PublishingWork>;
     getRecordingProject(projectId: RecodingId): Promise<RecordingProject>;
     getRelease(releaseId: LabelEntityId): Promise<Release>;
+    getRemainingRolloutSteps(): Promise<Array<[string, string]>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     isCallerApproved(): Promise<boolean>;
@@ -180,6 +187,7 @@ export interface backendInterface {
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setApproval(user: Principal, status: ApprovalStatus): Promise<void>;
     updateArtistDevelopmentLinks(artistDevelopmentId: ArtistDevelopmentId, relatedMemberships: Array<MemberId>, relatedPublishing: Array<PublishingId>, relatedLabelEntities: Array<LabelEntityId>, relatedRecordingProjects: Array<RecodingId>, relatedArtistDevelopment: Array<ArtistDevelopmentId>): Promise<void>;
+    updateKnownUserRole(): Promise<void>;
     updateMembershipLinks(id: MemberId, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, releaseIds: Array<LabelEntityId>, projectIds: Array<RecodingId>): Promise<void>;
     updateMembershipProfile(id: MemberId, name: string, email: string, status: T): Promise<MembershipProfile>;
 }

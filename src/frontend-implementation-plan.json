@@ -1,133 +1,36 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Higgins Music Hub — Step 7.5+ upgrade-resilience and linking verification (frontend-only)",
+  "title": "Named rollout step documentation (Steps 8–9)",
   "requirements": [
     {
-      "id": "REQ-53",
-      "summary": "Make the post-upgrade related-record linking UI flow reliably work end-to-end on all supported detail pages for both admin and non-admin member roles.",
+      "id": "REQ-64",
+      "summary": "Create a single source of truth markdown document naming each remaining rollout step with brief descriptions and verification guidance, and indicate the next step to execute.",
       "acceptanceCriteria": [
-        "After a canister upgrade, each supported detail page loads without crashes for both admin and non-admin member users.",
-        "On each supported detail page, the “Edit Links” dialog opens successfully, pre-populates with the record’s current linked IDs, saves successfully, and the Related Records section updates immediately.",
-        "After a browser refresh, saved links persist and are displayed correctly on each supported detail page for both roles."
+        "A new markdown document exists in the repo that lists rollout steps with explicit step numbers and step names (e.g., \"Step 8 — …\", \"Step 9 — …\").",
+        "Each step entry includes a short English description of what the step delivers and how to verify completion.",
+        "The document clearly indicates which step is next to execute."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/related/RelatedRecordsSection.tsx",
-          "operation": "modify",
-          "description": "Harden non-admin label-resolution to be upgrade-resilient by normalizing caller entity collections before iterating (e.g., treat missing/undefined/non-array collections as empty arrays), and keep behavior authorization-safe (non-admins use only caller-scoped data)."
-        },
-        {
-          "path": "frontend/src/hooks/useLinkableEntityOptions.ts",
-          "operation": "modify",
-          "description": "Ensure the linkable-options builder is resilient to upgrade-time missing/partial collections for both admin and non-admin by normalizing all collections before mapping, so the “Edit Links” dialog consistently renders options without crashing."
-        },
-        {
-          "path": "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
-          "operation": "modify",
-          "description": "Standardize and reuse safe array normalization for all linked-ID arrays passed to RelatedRecordsSection and EditRelatedDialog, ensuring pre-population and immediate UI updates remain stable after upgrades."
-        },
-        {
-          "path": "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
-          "operation": "modify",
-          "description": "Standardize and reuse safe array normalization for all linked-ID arrays used by RelatedRecordsSection and EditRelatedDialog so the linking flow is stable post-upgrade for both roles."
-        },
-        {
-          "path": "frontend/src/pages/portal/label/ReleaseDetail.tsx",
-          "operation": "modify",
-          "description": "Standardize and reuse safe array normalization for all linked-ID arrays used by RelatedRecordsSection and EditRelatedDialog so the linking flow is stable post-upgrade for both roles."
-        },
-        {
-          "path": "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
-          "operation": "modify",
-          "description": "Standardize and reuse safe array normalization for all linked-ID arrays used by RelatedRecordsSection and EditRelatedDialog so the linking flow is stable post-upgrade for both roles."
-        },
-        {
-          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
-          "operation": "modify",
-          "description": "Standardize and reuse safe array normalization for all related-ID arrays used by RelatedRecordsSection and EditRelatedDialog so the linking flow is stable post-upgrade for both roles (including all 5 relationship types)."
-        },
-        {
-          "path": "frontend/src/components/related/EditRelatedDialog.tsx",
-          "operation": "modify",
-          "description": "Strengthen selected-ID normalization and dialog state reset behavior to avoid any upgrade-time crashes and ensure the dialog always pre-populates correctly when opened."
+          "path": "frontend/ROLLOUT_STEPS.md",
+          "operation": "create",
+          "description": "Add a named-step rollout tracker document for Higgins Music Hub. Include: (1) a numbered list with explicit headings like \"Step 8 — <Name>\", \"Step 9 — <Name>\", etc. for the remaining rollout steps; (2) for each step, a short English description of what will be done and a concise \"How to verify\" checklist; (3) a clear marker stating the next step to execute (expected: Step 9 after this document is created)."
         }
       ]
     },
     {
-      "id": "REQ-54",
-      "summary": "Resolve remaining frontend build/runtime issues that block clean navigation to all supported detail pages and reliable “Edit Links” dialog open/save flows.",
+      "id": "REQ-65",
+      "summary": "Add a clear human-readable named-step heading to the existing manual verification checklist so it is easy to reference during the named-step rollout process.",
       "acceptanceCriteria": [
-        "Frontend builds without TypeScript errors.",
-        "Backend builds without Motoko compiler errors and does not trap on startup.",
-        "No runtime errors occur when opening and saving the “Edit Links” dialog on MembershipDetail, PublishingWorkDetail, ReleaseDetail, RecordingProjectDetail, and ArtistDevelopmentDetail as both admin and non-admin member."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/components/related/RelatedRecordsSection.tsx",
-          "operation": "modify",
-          "description": "Eliminate potential runtime failures from unexpected shapes (e.g., non-array collections) by using shared array-normalization utilities before calling array methods like find/map."
-        },
-        {
-          "path": "frontend/src/hooks/useLinkableEntityOptions.ts",
-          "operation": "modify",
-          "description": "Fix any TypeScript/runtime hazards in option-building (e.g., missing/partial shapes) by normalizing inputs and ensuring the hook always returns consistent arrays for each entity type."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "Ensure React Query invalidations and query enablement remain stable across role changes and upgrades (e.g., avoid assumptions about returned collection shapes), preventing runtime errors during open/save flows."
-        },
-        {
-          "path": "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
-          "operation": "modify",
-          "description": "Address any remaining TypeScript or runtime issues in the detail page linking flow (open dialog, pre-populate, save, and render updated Related Records) while keeping user-facing text in English."
-        }
-      ]
-    },
-    {
-      "id": "REQ-55",
-      "summary": "Ensure upgrade-safe handling of missing/undefined related-ID arrays and missing/partial entity collections, treating them as empty arrays and keeping non-admin label resolution authorization-safe.",
-      "acceptanceCriteria": [
-        "If any related-ID array field is undefined/null/non-array in responses after upgrade, the Related Records section and Edit Links dialog render without throwing and behave as if the array is empty.",
-        "For non-admin users, any label-resolution logic remains authorization-safe and does not trigger admin-only queries; missing label data does not crash the UI."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/utils/arrays.ts",
-          "operation": "modify",
-          "description": "Extend/clarify shared helpers as needed to support consistent normalization of unknown values to arrays across the linking UI (e.g., use normalizeToArray everywhere instead of ad-hoc Array.isArray checks)."
-        },
-        {
-          "path": "frontend/src/components/related/RelatedRecordsSection.tsx",
-          "operation": "modify",
-          "description": "Use the shared array-normalization helpers for both linked-ID props and caller entity collections before iterating, so upgrade-time undefined/null/non-array values never crash and non-admin label resolution stays caller-scoped."
-        },
-        {
-          "path": "frontend/src/hooks/useLinkableEntityOptions.ts",
-          "operation": "modify",
-          "description": "Normalize all entity collections (admin and caller-scoped) using shared array utilities so the options lists behave as empty arrays when data is missing after upgrade."
-        },
-        {
-          "path": "frontend/src/components/related/EditRelatedDialog.tsx",
-          "operation": "modify",
-          "description": "Normalize all selected-ID props (treat undefined/null/non-array as empty arrays) and ensure internal dialog state resets safely on open, preventing silent misbehavior post-upgrade."
-        }
-      ]
-    },
-    {
-      "id": "REQ-56",
-      "summary": "Update the manual post-upgrade verification checklist to match current UI text (“Edit Links”) and the entity category labels shown in the dialog and Related Records section.",
-      "acceptanceCriteria": [
-        "The checklist in frontend/UPGRADE_LINKING_VERIFICATION.md covers each supported detail page and both admin and non-admin member roles with clear steps and expected outcomes in English.",
-        "The checklist matches the current user-facing text “Edit Links” and the actual entity categories available on each page’s dialog.",
-        "Following the checklist produces the expected outcomes without requiring admin-only APIs for non-admin users."
+        "frontend/UPGRADE_LINKING_VERIFICATION.md includes an explicit step name near the top (for example, a heading like \"Step X — <Name>\").",
+        "All additions use English and do not change the existing verification meanings/URLs/button labels (e.g., \"Edit Links\")."
       ],
       "file_operations": [
         {
           "path": "frontend/UPGRADE_LINKING_VERIFICATION.md",
           "operation": "modify",
-          "description": "Revise checklist steps and expected outcomes to use the exact user-facing label “Edit Links” and align entity category names with the UI (e.g., “Memberships”, “Artist Development”, “Publishing Works”, “Releases”, “Recording Projects”), including role-specific expectations that non-admins rely on caller-scoped data only."
+          "description": "Update the top of the checklist to include an explicit named rollout step heading (e.g., \"Step 9 — Verify upgrade-safe related-record linking (Manual QA)\") near the beginning. Optionally add concise named headings for major sections to improve referenceability, without changing the existing checklist semantics, URLs, or UI labels such as \"Edit Links\"."
         }
       ]
     }

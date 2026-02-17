@@ -15,6 +15,7 @@ import RecordingProjectDetail from './pages/portal/recordings/RecordingProjectDe
 import ArtistDevelopmentPage from './pages/portal/artists/ArtistDevelopmentPage';
 import ArtistDevelopmentDetail from './pages/portal/artists/ArtistDevelopmentDetail';
 import AdminBootstrapPage from './pages/portal/admin/AdminBootstrapPage';
+import RoleAssignmentPage from './pages/portal/admin/RoleAssignmentPage';
 import AuthGate from './components/auth/AuthGate';
 import ApprovalGate from './components/auth/ApprovalGate';
 import ProfileSetupModal from './components/auth/ProfileSetupModal';
@@ -56,6 +57,12 @@ const bootstrapRoute = createRoute({
   getParentRoute: () => portalRoute,
   path: '/bootstrap',
   component: AdminBootstrapPage
+});
+
+const roleAssignmentRoute = createRoute({
+  getParentRoute: () => portalRoute,
+  path: '/roles',
+  component: RoleAssignmentPage
 });
 
 const membershipsRoute = createRoute({
@@ -123,6 +130,7 @@ const routeTree = rootRoute.addChildren([
   portalRoute.addChildren([
     dashboardRoute,
     bootstrapRoute,
+    roleAssignmentRoute,
     membershipsRoute,
     membershipDetailRoute,
     publishingRoute,

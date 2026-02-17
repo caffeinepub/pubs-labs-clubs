@@ -1,4 +1,4 @@
-# Upgrade Linking Verification Checklist
+# Step 9 — Verify Upgrade-Safe Related-Record Linking (Manual QA)
 
 This document provides a manual verification checklist for post-upgrade related-record linking functionality across all detail pages in the Higgins Music Hub application.
 

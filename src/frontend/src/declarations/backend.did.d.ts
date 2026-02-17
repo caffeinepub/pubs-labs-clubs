@@ -115,6 +115,11 @@ export interface Release {
   'linkedArtists' : Array<ArtistDevelopmentId>,
   'releaseType' : string,
 }
+export interface SignedInUser {
+  'principal' : Principal,
+  'role' : UserRole,
+  'profile' : [] | [UserProfile],
+}
 export type T = { 'applicant' : null } |
   { 'active' : null } |
   { 'inactive' : null } |
@@ -168,6 +173,7 @@ export interface _SERVICE {
     Release
   >,
   'getAllArtistDevelopment' : ActorMethod<[], Array<ArtistDevelopment>>,
+  'getAllKnownUsers' : ActorMethod<[], Array<SignedInUser>>,
   'getAllMembershipProfiles' : ActorMethod<[], Array<MembershipProfile>>,
   'getAllPublishingWorks' : ActorMethod<[], Array<PublishingWork>>,
   'getAllRecordingProjects' : ActorMethod<[], Array<RecordingProject>>,
@@ -195,6 +201,7 @@ export interface _SERVICE {
   'getPublishingWork' : ActorMethod<[string], PublishingWork>,
   'getRecordingProject' : ActorMethod<[RecodingId], RecordingProject>,
   'getRelease' : ActorMethod<[LabelEntityId], Release>,
+  'getRemainingRolloutSteps' : ActorMethod<[], Array<[string, string]>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isCallerApproved' : ActorMethod<[], boolean>,
@@ -253,6 +260,7 @@ export interface _SERVICE {
     ],
     undefined
   >,
+  'updateKnownUserRole' : ActorMethod<[], undefined>,
   'updateMembershipLinks' : ActorMethod<
     [
       MemberId,

@@ -1,75 +1,29 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T14:04:17.143Z",
+  "generatedAt": "2026-02-17T16:10:56.587Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 4,
-    "implemented": 4,
+    "total": 2,
+    "implemented": 2,
     "items": [
       {
-        "id": "REQ-53",
-        "summary": "Complete the remaining Step 7.5 work by ensuring the post-upgrade related-record linking flow is fully upgrade-resilient end-to-end across all supported detail pages (Membership, Publishing Work, Release, Recording Project, Artist Development) for both admin and non-admin member roles.",
+        "id": "REQ-64",
+        "summary": "Step 8 — Create a single source of truth document that names each remaining rollout step and briefly describes what will be done in that step (in English), so the team can track progress and refer to steps by name.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/components/related/RelatedRecordsSection.tsx",
-          "frontend/src/hooks/useLinkableEntityOptions.ts",
-          "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
-          "frontend/src/pages/portal/label/ReleaseDetail.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
-          "frontend/src/components/related/EditRelatedDialog.tsx"
+          "frontend/ROLLOUT_STEPS.md"
         ],
         "matchedFiles": [
-          "frontend/src/components/related/RelatedRecordsSection.tsx",
-          "frontend/src/hooks/useLinkableEntityOptions.ts",
-          "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
-          "frontend/src/pages/portal/label/ReleaseDetail.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
-          "frontend/src/components/related/EditRelatedDialog.tsx"
+          "frontend/ROLLOUT_STEPS.md"
         ]
       },
       {
-        "id": "REQ-54",
-        "summary": "Resolve any remaining build/deploy/runtime issues blocking completion of Step 7.5+ so the project compiles and runs cleanly when navigating to each supported detail page and using the “Edit Links” dialog.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/related/RelatedRecordsSection.tsx",
-          "frontend/src/hooks/useLinkableEntityOptions.ts",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/portal/memberships/MembershipDetail.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/related/RelatedRecordsSection.tsx",
-          "frontend/src/hooks/useLinkableEntityOptions.ts",
-          "frontend/src/pages/portal/memberships/MembershipDetail.tsx"
-        ]
-      },
-      {
-        "id": "REQ-55",
-        "summary": "Ensure upgrade-safe handling of missing/undefined related-ID arrays and missing/partial entity collections during and after upgrades, so the UI and linking flows treat them as empty arrays instead of crashing or silently misbehaving.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/utils/arrays.ts",
-          "frontend/src/components/related/RelatedRecordsSection.tsx",
-          "frontend/src/hooks/useLinkableEntityOptions.ts",
-          "frontend/src/components/related/EditRelatedDialog.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/related/RelatedRecordsSection.tsx",
-          "frontend/src/hooks/useLinkableEntityOptions.ts",
-          "frontend/src/components/related/EditRelatedDialog.tsx"
-        ]
-      },
-      {
-        "id": "REQ-56",
-        "summary": "Finalize and validate the manual post-upgrade verification checklist so it accurately reflects the implemented UI labels and entity categories shown in the “Edit Links” dialog and Related Records section, and can be followed to verify Step 7.5+ completion.",
+        "id": "REQ-65",
+        "summary": "Step 9 — Update the existing manual verification checklist at frontend/UPGRADE_LINKING_VERIFICATION.md to include a clear human-readable step name for the checklist (and/or each major section) so it is easy to reference during the named-step rollout process.",
         "status": "implemented",
         "plannedFiles": [
           "frontend/UPGRADE_LINKING_VERIFICATION.md"
@@ -82,20 +36,16 @@
   },
   "changedFiles": [
     "backend/main.mo",
-    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
+    "frontend/ROLLOUT_STEPS.md",
     "frontend/UPGRADE_LINKING_VERIFICATION.md",
-    "frontend/src/components/related/EditRelatedDialog.tsx",
-    "frontend/src/components/related/RelatedRecordsSection.tsx",
-    "frontend/src/hooks/useLinkableEntityOptions.ts",
-    "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
-    "frontend/src/pages/portal/label/ReleaseDetail.tsx",
-    "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
-    "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
-    "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

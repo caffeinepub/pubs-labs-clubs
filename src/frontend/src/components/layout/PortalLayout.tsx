@@ -12,7 +12,8 @@ import {
   TrendingUp,
   Settings,
   Menu,
-  X
+  X,
+  UserCog
 } from 'lucide-react';
 import { useState } from 'react';
 import BrandHeader from './BrandHeader';
@@ -41,7 +42,10 @@ export default function PortalLayout({ children }: PortalLayoutProps) {
     { icon: Disc, label: 'Releases', path: '/portal/releases' },
     { icon: Mic, label: 'Recordings', path: '/portal/recordings' },
     { icon: TrendingUp, label: 'Artist Development', path: '/portal/artists' },
-    ...(isAdmin ? [{ icon: Settings, label: 'Bootstrap', path: '/portal/bootstrap' }] : [])
+    ...(isAdmin ? [
+      { icon: UserCog, label: 'Role Assignment', path: '/portal/roles' },
+      { icon: Settings, label: 'Bootstrap', path: '/portal/bootstrap' }
+    ] : [])
   ];
 
   return (
