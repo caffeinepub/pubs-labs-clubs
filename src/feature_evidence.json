@@ -1,0 +1,96 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-complete-the-remaining-step-7-5-work-by-ensuring-the-post-upgrade-related-record-linking-flow-is-fully-upgrade-resilient-end-to-end-across-all-supported-detail-pages-membership-publishing-work-release-recording-project-artist-development-for-both-admin-and-non-admin-member-roles",
+      "featureTitle": "Complete the remaining Step 7.5 work by ensuring the post-upgrade related-record linking flow is fully upgrade-resilient end-to-end across all supported detail pages (Membership, Publishing Work, Release, Recording Project, Artist Development) for both admin and non-admin member roles.",
+      "files": [
+        "frontend/src/components/related/EditRelatedDialog.tsx",
+        "frontend/src/components/related/RelatedRecordsSection.tsx",
+        "frontend/src/hooks/useLinkableEntityOptions.ts",
+        "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
+        "frontend/src/pages/portal/label/ReleaseDetail.tsx",
+        "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+        "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
+        "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-53"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-resolve-any-remaining-build-deploy-runtime-issues-blocking-completion-of-step-7-5-so-the-project-compiles-and-runs-cleanly-when-navigating-to-each-supported-detail-page-and-using-the-edit-links-dialog",
+      "featureTitle": "Resolve any remaining build/deploy/runtime issues blocking completion of Step 7.5+ so the project compiles and runs cleanly when navigating to each supported detail page and using the “Edit Links” dialog.",
+      "files": [
+        "frontend/src/components/related/RelatedRecordsSection.tsx",
+        "frontend/src/hooks/useLinkableEntityOptions.ts",
+        "frontend/src/pages/portal/memberships/MembershipDetail.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-54"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-ensure-upgrade-safe-handling-of-missing-undefined-related-id-arrays-and-missing-partial-entity-collections-during-and-after-upgrades-so-the-ui-and-linking-flows-treat-them-as-empty-arrays-instead-of-crashing-or-silently-misbehaving",
+      "featureTitle": "Ensure upgrade-safe handling of missing/undefined related-ID arrays and missing/partial entity collections during and after upgrades, so the UI and linking flows treat them as empty arrays instead of crashing or silently misbehaving.",
+      "files": [
+        "frontend/src/components/related/EditRelatedDialog.tsx",
+        "frontend/src/components/related/RelatedRecordsSection.tsx",
+        "frontend/src/hooks/useLinkableEntityOptions.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-55"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-finalize-and-validate-the-manual-post-upgrade-verification-checklist-so-it-accurately-reflects-the-implemented-ui-labels-and-entity-categories-shown-in-the-edit-links-dialog-and-related-records-section-and-can-be-followed-to-verify-step-7-5-completion",
+      "featureTitle": "Finalize and validate the manual post-upgrade verification checklist so it accurately reflects the implemented UI labels and entity categories shown in the “Edit Links” dialog and Related Records section, and can be followed to verify Step 7.5+ completion.",
+      "files": [
+        "frontend/UPGRADE_LINKING_VERIFICATION.md"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-56"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

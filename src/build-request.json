@@ -1,0 +1,94 @@
+{
+  "kind": "build_request",
+  "title": "Complete Step 7.5+ upgrade-resilience and linking verification work",
+  "projectName": "Higgins Music Hub",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-53",
+      "text": "Complete the remaining Step 7.5 work by ensuring the post-upgrade related-record linking flow is fully upgrade-resilient end-to-end across all supported detail pages (Membership, Publishing Work, Release, Recording Project, Artist Development) for both admin and non-admin member roles.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Yes please proceed with the rest of 7.5 and the others as well."
+        ]
+      },
+      "acceptanceCriteria": [
+        "After a canister upgrade, each supported detail page loads without crashes for both admin and non-admin member users.",
+        "On each supported detail page, the “Edit Links” dialog opens successfully, pre-populates with the record’s current linked IDs, saves successfully, and the Related Records section updates immediately.",
+        "After a browser refresh, saved links persist and are displayed correctly on each supported detail page for both roles."
+      ]
+    },
+    {
+      "id": "REQ-54",
+      "text": "Resolve any remaining build/deploy/runtime issues blocking completion of Step 7.5+ so the project compiles and runs cleanly when navigating to each supported detail page and using the “Edit Links” dialog.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Yes please proceed with the rest of 7.5 and the others as well."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Frontend builds without TypeScript errors.",
+        "Backend builds without Motoko compiler errors and does not trap on startup.",
+        "No runtime errors occur when opening and saving the “Edit Links” dialog on MembershipDetail, PublishingWorkDetail, ReleaseDetail, RecordingProjectDetail, and ArtistDevelopmentDetail as both admin and non-admin member."
+      ]
+    },
+    {
+      "id": "REQ-55",
+      "text": "Ensure upgrade-safe handling of missing/undefined related-ID arrays and missing/partial entity collections during and after upgrades, so the UI and linking flows treat them as empty arrays instead of crashing or silently misbehaving.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Yes please proceed with the rest of 7.5 and the others as well."
+        ]
+      },
+      "acceptanceCriteria": [
+        "If any related-ID array field is undefined/null/non-array in responses after upgrade, the Related Records section and Edit Links dialog render without throwing and behave as if the array is empty.",
+        "For non-admin users, any label-resolution logic remains authorization-safe and does not trigger admin-only queries; missing label data does not crash the UI."
+      ]
+    },
+    {
+      "id": "REQ-56",
+      "text": "Finalize and validate the manual post-upgrade verification checklist so it accurately reflects the implemented UI labels and entity categories shown in the “Edit Links” dialog and Related Records section, and can be followed to verify Step 7.5+ completion.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "Yes please proceed with the rest of 7.5 and the others as well."
+        ]
+      },
+      "acceptanceCriteria": [
+        "The checklist in frontend/UPGRADE_LINKING_VERIFICATION.md covers each supported detail page and both admin and non-admin member roles with clear steps and expected outcomes in English.",
+        "The checklist matches the current user-facing text “Edit Links” and the actual entity categories available on each page’s dialog.",
+        "Following the checklist produces the expected outcomes without requiring admin-only APIs for non-admin users."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor (all logic in backend/main.mo).",
+    "Only add/modify backend/migration.mo if a state-shape change requires an upgrade migration; migrations must be conditional/backward-compatible.",
+    "Do not edit files under frontend/src/components/ui or any paths listed as frontend immutablePaths (compose existing components instead).",
+    "Use English for all user-facing text."
+  ],
+  "nonGoals": [
+    "Adding new business modules beyond the existing five (Memberships, Publishing, Releases, Recording Projects, Artist Development).",
+    "Introducing external databases or non-Motoko backend services.",
+    "Adding third-party authentication beyond Internet Identity."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

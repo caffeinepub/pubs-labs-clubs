@@ -1,0 +1,540 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 33,
+  "summary": "Website/platform for Higgins Music to manage publishing, label operations, recordings/productions, and artist development with a co-op style membership model for artists/clients.",
+  "architectural_notes": [
+    "User approved Steps 7.3–7.4 and requested proceeding with Step 7.5 and subsequent steps."
+  ],
+  "known_issues": [
+    "Build/deploy pipeline encountered an error when attempting to add UI linking controls; requires adjustment for error-free completion."
+  ],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-create-a-public-facing-landing-page-for-higgins-music-that-clearly-explains-the-company-services-publishing-label-management-operations-recordings-productions-artist-development-and-the-co-op-style-membership-concept-and-provides-a-clear-call-to-action-to-sign-in-internet-identity-to-access-the-management-portal",
+      "title": "Create a public-facing landing page for Higgins Music that clearly explains the company services (Publishing, Label Management & Operations, Recordings/Productions, Artist Development) and the co-op style membership concept, and provides a clear call-to-action to sign in (Internet Identity) to access the management portal.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-authenticated-user-access-using-internet-identity-and-maintain-a-simple-role-system-with-at-least-two-roles-admin-and-member-where-admin-can-manage-all-company-data-and-member-can-view-update-their-own-membership-profile-and-their-own-projects-records",
+      "title": "Implement authenticated user access using Internet Identity and maintain a simple role system with at least two roles: Admin and Member, where Admin can manage all company data and Member can view/update their own membership profile and their own projects/records.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-co-op-style-membership-module-create-read-update-membership-profiles-define-membership-tiers-track-member-status-e-g-applicant-active-paused-and-record-a-member-s-participation-notes-agreements-relevant-to-co-op-operations",
+      "title": "Build a co-op style membership module: create/read/update membership profiles, define membership tiers, track member status (e.g., applicant/active/paused), and record a member’s participation notes/agreements relevant to co-op operations.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-publishing-management-module-to-track-a-publishing-catalog-including-works-contributors-ownership-splits-and-registrations-status-support-attaching-basic-reference-metadata-iswc-isrc-fields-where-applicable-and-storing-notes-per-work",
+      "title": "Build a Publishing management module to track a publishing catalog including works, contributors, ownership splits, and registrations status; support attaching basic reference metadata (ISWC/ISRC fields where applicable) and storing notes per work.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-label-management-operations-module-to-manage-releases-and-operational-workflows-releases-single-ep-album-tracklists-key-dates-assigned-owners-and-a-simple-task-workflow-checklist-per-release-e-g-contract-artwork-distribution-marketing-steps",
+      "title": "Build a Label Management & Operations module to manage releases and operational workflows: releases (single/EP/album), tracklists, key dates, assigned owners, and a simple task/workflow checklist per release (e.g., contract, artwork, distribution, marketing steps).",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-recordings-productions-module-to-manage-production-projects-projects-sessions-participants-deliverables-and-file-asset-references-store-metadata-links-rather-than-uploading-binaries",
+      "title": "Build a Recordings & Productions module to manage production projects: projects, sessions, participants, deliverables, and file/asset references (store metadata/links rather than uploading binaries).",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-an-artist-development-clientele-module-that-functions-as-a-lightweight-crm-artist-client-profiles-goals-plans-milestones-and-internal-notes-with-associations-to-memberships-and-to-relevant-publishing-label-production-records",
+      "title": "Build an Artist Development / Clientele module that functions as a lightweight CRM: artist/client profiles, goals/plans, milestones, and internal notes, with associations to memberships and to relevant publishing/label/production records.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-provide-an-admin-dashboard-that-summarizes-key-operational-counts-and-recent-activity-across-modules-memberships-works-releases-projects-clients-and-offers-quick-navigation-into-each-management-area",
+      "title": "Provide an Admin dashboard that summarizes key operational counts and recent activity across modules (memberships, works, releases, projects, clients) and offers quick navigation into each management area.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-coherent-visual-theme-and-design-system-for-the-higgins-music-hub-ui-colors-typography-spacing-component-usage-with-a-professional-music-industry-co-op-feel-applied-consistently-across-the-landing-page-and-portal",
+      "title": "Add a coherent visual theme and design system for the Higgins Music Hub UI (colors, typography, spacing, component usage) with a professional music-industry/co-op feel, applied consistently across the landing page and portal.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-initial-seed-data-and-empty-state-ux-so-the-app-is-usable-from-a-fresh-install-first-run-admin-bootstrap-empty-lists-with-clear-add-actions-and-basic-loading-error-states-for-all-major-pages",
+      "title": "Create initial seed data and empty-state UX so the app is usable from a fresh install: first-run admin bootstrap, empty lists with clear ‘Add’ actions, and basic loading/error states for all major pages.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-generate-and-include-static-brand-images-for-higgins-music-logo-simple-hero-background-and-render-them-in-the-landing-page-and-portal-header-as-static-assets-under-frontend-public-assets-generated-no-backend-image-serving",
+      "title": "Generate and include static brand images for Higgins Music (logo + simple hero background) and render them in the landing page and portal header as static assets under frontend/public/assets/generated (no backend image serving).",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-hooks-for-the-new-cross-linking-and-my-records-endpoints-and-ensure-queries-mutations-invalidate-the-correct-caches-so-linked-sections-update-immediately-after-changes",
+      "title": "Add React Query hooks for the new cross-linking and “my records” endpoints, and ensure queries/mutations invalidate the correct caches so linked sections update immediately after changes.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-each-module-s-detail-page-to-display-a-related-records-section-that-renders-linked-entities-as-clickable-navigation-links-to-their-corresponding-detail-routes-with-sensible-empty-states",
+      "title": "Update each module’s detail page to display a \"Related Records\" section that renders linked entities as clickable navigation links to their corresponding detail routes, with sensible empty states.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-provide-an-admin-only-and-record-owner-ui-to-edit-cross-links-from-detail-pages-via-a-simple-selection-dialog-multi-select-that-uses-the-new-my-records-queries-for-members-and-all-records-queries-for-admins-where-available",
+      "title": "Provide an admin-only (and record-owner) UI to edit cross-links from detail pages via a simple selection dialog (multi-select) that uses the new “my records” queries for members and “all records” queries for admins where available.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-consistent-user-facing-edit-links-button-on-each-portal-detail-page-membership-publishing-work-release-recording-project-artist-development-near-the-related-records-section-and-only-render-the-button-when-the-current-user-has-permission-to-edit-links-for-that-record-admin-or-record-owner-member-using-the-existing-related-records-permission-helpers-the-button-should-be-labeled-exactly-edit-links-english-and-use-the-existing-link-icon-styling-pattern-already-used-on-other-pages",
+      "title": "Add a consistent user-facing “Edit Links” button on each portal detail page (Membership, Publishing Work, Release, Recording Project, Artist Development) near the “Related Records” section, and only render the button when the current user has permission to edit links for that record (admin or record owner/member, using the existing related-records permission helpers). The button should be labeled exactly “Edit Links” (English) and use the existing link icon styling pattern already used on other pages.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-wire-the-existing-edit-links-button-on-each-portal-detail-page-membership-publishing-work-release-recording-project-artist-development-to-open-the-existing-editrelateddialog-modal-and-pre-populate-it-with-the-record-s-currently-linked-entity-ids",
+      "title": "Wire the existing “Edit Links” button on each portal detail page (Membership, Publishing Work, Release, Recording Project, Artist Development) to open the existing EditRelatedDialog modal and pre-populate it with the record’s currently linked entity IDs.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-save-behavior-for-the-editrelateddialog-on-each-supported-detail-page-using-the-existing-cross-linking-react-query-mutations-uselinkmembershiptoentities-uselinkpublishingworktoentities-uselinkreleasetoentities-uselinkprojecttoentities-uselinkartistdevelopmenttoentities-and-close-the-modal-after-a-successful-save",
+      "title": "Implement save behavior for the EditRelatedDialog on each supported detail page using the existing cross-linking React Query mutations (useLinkMembershipToEntities, useLinkPublishingWorkToEntities, useLinkReleaseToEntities, useLinkProjectToEntities, useLinkArtistDevelopmentToEntities) and close the modal after a successful save.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-editrelateddialog-option-lists-follow-the-intended-permissions-model-admins-can-select-from-all-records-members-can-only-select-from-the-entities-for-caller-dataset-returned-by-getentitiesforcaller",
+      "title": "Ensure the EditRelatedDialog option lists follow the intended permissions model: admins can select from all records; members can only select from the “entities for caller” dataset returned by getEntitiesForCaller.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-membership-detail-related-record-editing-so-it-uses-real-linked-ids-from-the-backend-not-placeholder-empty-arrays-allowing-the-modal-and-related-records-section-to-accurately-display-and-edit-membership-cross-links",
+      "title": "Fix Membership detail related-record editing so it uses real linked IDs from the backend (not placeholder empty arrays), allowing the modal and Related Records section to accurately display and edit membership cross-links.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-relatedrecordssection-so-it-does-not-call-admin-only-get-all-queries-for-non-admin-users-which-can-fail-authorization-while-still-rendering-sensible-labels-for-linked-items-when-possible",
+      "title": "Update RelatedRecordsSection so it does not call admin-only “get all” queries for non-admin users (which can fail authorization), while still rendering sensible labels for linked items when possible.",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-upgrade-the-existing-editrelateddialog-selection-ui-to-use-a-multi-select-list-pattern-instead-of-a-long-checkbox-list-for-each-available-entity-category-memberships-artist-development-publishing-works-releases-recording-projects-while-preserving-the-current-behavior-of-returning-arrays-of-selected-ids-via-onsave",
+      "title": "Upgrade the existing EditRelatedDialog selection UI to use a multi-select list pattern (instead of a long checkbox list) for each available entity category (Memberships, Artist Development, Publishing Works, Releases, Recording Projects), while preserving the current behavior of returning arrays of selected IDs via onSave.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-basic-multi-select-usability-features-inside-editrelateddialog-per-category-search-filter-input-and-a-visible-selected-count-indicator-for-that-category",
+      "title": "Add basic multi-select usability features inside EditRelatedDialog: per-category search/filter input and a visible selected-count indicator for that category.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-each-portal-detail-page-membershipdetail-publishingworkdetail-releasedetail-recordingprojectdetail-artistdevelopmentdetail-fetches-linkable-entity-option-lists-using-the-correct-data-source-based-on-the-current-user-role-admins-use-the-existing-admin-get-all-queries-non-admin-members-use-getentitiesforcaller",
+      "title": "Ensure each portal detail page (MembershipDetail, PublishingWorkDetail, ReleaseDetail, RecordingProjectDetail, ArtistDevelopmentDetail) fetches linkable entity option lists using the correct data source based on the current user role: admins use the existing admin “get all” queries; non-admin members use getEntitiesForCaller.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-explicit-loading-and-error-handling-for-the-edit-links-data-fetching-flow-so-the-editrelateddialog-does-not-silently-render-empty-categories-while-linkable-entities-are-still-loading-or-when-fetching-fails",
+      "title": "Add explicit loading and error handling for the Edit Links data-fetching flow so the EditRelatedDialog does not silently render empty categories while linkable entities are still loading or when fetching fails.",
+      "reqIds": [
+        "REQ-26"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-verify-that-relatedrecordssection-data-fetching-remains-authorization-safe-by-only-running-admin-only-get-all-queries-when-isadmin-is-true-and-using-getentitiesforcaller-for-non-admin-label-lookups-where-possible",
+      "title": "Verify that RelatedRecordsSection data fetching remains authorization-safe by only running admin-only “get all” queries when isAdmin is true, and using getEntitiesForCaller for non-admin label lookups where possible.",
+      "reqIds": [
+        "REQ-27"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-every-portal-detail-page-that-uses-the-edit-related-records-modal-fetches-linkable-entity-option-lists-using-the-role-aware-data-source-selection-admins-use-admin-wide-getall-queries-non-admin-members-use-getentitiesforcaller-and-passes-the-resulting-loading-error-state-into-editrelateddialog-so-the-dialog-shows-the-existing-loading-error-ui-instead-of-silently-rendering-empty-categories",
+      "title": "Ensure every portal detail page that uses the “Edit Related Records” modal fetches linkable entity option lists using the role-aware data source selection (admins use admin-wide getAll* queries; non-admin members use getEntitiesForCaller), and passes the resulting loading/error state into EditRelatedDialog so the dialog shows the existing loading/error UI instead of silently rendering empty categories.",
+      "reqIds": [
+        "REQ-28"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-each-portal-detail-page-passes-the-record-s-real-backend-provided-linked-entity-id-arrays-into-editrelateddialog-as-the-selected-ids-props-so-the-modal-always-opens-pre-populated-with-the-current-relationships-no-placeholder-empty-arrays-no-mismapped-fields",
+      "title": "Ensure each portal detail page passes the record’s real, backend-provided linked entity ID arrays into EditRelatedDialog as the selected*Ids props, so the modal always opens pre-populated with the current relationships (no placeholder empty arrays, no mismapped fields).",
+      "reqIds": [
+        "REQ-29"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-every-portal-detail-page-that-uses-editrelateddialog-fetches-linkable-entity-option-lists-using-the-role-aware-data-source-selection-admins-use-existing-admin-getall-queries-non-admin-members-use-getentitiesforcaller-via-the-existing-uselinkableentityoptions-hook-and-passes-the-resulting-loading-and-error-state-into-editrelateddialog-so-the-dialog-shows-its-existing-loading-error-ui-instead-of-silently-rendering-empty-categories",
+      "title": "Ensure every portal detail page that uses EditRelatedDialog fetches linkable entity option lists using the role-aware data source selection (admins use existing admin getAll* queries; non-admin members use getEntitiesForCaller via the existing useLinkableEntityOptions hook) and passes the resulting loading and error state into EditRelatedDialog so the dialog shows its existing loading/error UI instead of silently rendering empty categories.",
+      "reqIds": [
+        "REQ-30"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-each-portal-detail-page-passes-the-record-s-real-backend-provided-linked-entity-id-arrays-into-editrelateddialog-as-the-selected-ids-props-no-placeholder-empty-arrays-no-mismapped-fields-so-the-dialog-always-opens-pre-populated-with-the-current-relationships-and-the-related-records-section-reflects-the-same-linked-ids",
+      "title": "Ensure each portal detail page passes the record’s real backend-provided linked entity ID arrays into EditRelatedDialog as the selected*Ids props (no placeholder empty arrays, no mismapped fields) so the dialog always opens pre-populated with the current relationships and the Related Records section reflects the same linked IDs.",
+      "reqIds": [
+        "REQ-31"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-frontend-artistdevelopmentdetail-page-to-use-the-backend-provided-related-id-arrays-consistently-across-relatedrecordssection-and-editrelateddialog-ensuring-the-modal-opens-pre-populated-with-the-current-relationships-and-saving-writes-back-the-same-categories-that-are-shown-in-the-ui",
+      "title": "Fix the frontend ArtistDevelopmentDetail page to use the backend-provided related ID arrays consistently across RelatedRecordsSection and EditRelatedDialog, ensuring the modal opens pre-populated with the current relationships and saving writes back the same categories that are shown in the UI.",
+      "reqIds": [
+        "REQ-33"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-resolve-any-build-deploy-failures-introduced-by-the-related-record-linking-flow-so-the-project-compiles-cleanly-typescript-and-runs-without-runtime-errors-when-navigating-to-each-detail-page-membership-publishing-work-release-recording-project-artist-development-and-opening-the-edit-links-dialog",
+      "title": "Resolve any build/deploy failures introduced by the related-record linking flow so the project compiles cleanly (TypeScript) and runs without runtime errors when navigating to each detail page (Membership, Publishing Work, Release, Recording Project, Artist Development) and opening the “Edit Links” dialog.",
+      "reqIds": [
+        "REQ-34"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-align-the-frontend-artistdevelopmentdetail-edit-links-flow-with-the-backend-artistdevelopment-cross-link-shape-so-the-dialog-opens-pre-populated-from-backend-provided-related-id-arrays-and-saving-writes-back-the-same-categories-that-are-shown-in-the-ui",
+      "title": "Align the frontend ArtistDevelopmentDetail “Edit Links” flow with the backend ArtistDevelopment cross-link shape so the dialog opens pre-populated from backend-provided related-ID arrays and saving writes back the same categories that are shown in the UI.",
+      "reqIds": [
+        "REQ-43"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-resolve-any-remaining-build-deploy-runtime-issues-introduced-by-steps-6-5-6-6-so-the-app-compiles-cleanly-typescript-and-the-edit-links-dialog-can-be-opened-and-saved-on-all-supported-detail-pages-as-both-an-admin-and-a-non-admin-member",
+      "title": "Resolve any remaining build/deploy/runtime issues introduced by Steps 6.5–6.6 so the app compiles cleanly (TypeScript) and the “Edit Links” dialog can be opened and saved on all supported detail pages as both an admin and a non-admin member.",
+      "reqIds": [
+        "REQ-44"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-project-builds-and-deploys-successfully-after-adding-the-migration-with-no-motoko-compiler-errors-and-no-runtime-traps-on-startup-or-when-calling-existing-endpoints-used-by-the-frontend-related-record-linking-flow",
+      "title": "Ensure the project builds and deploys successfully after adding the migration, with no Motoko compiler errors and no runtime traps on startup or when calling existing endpoints used by the frontend related-record linking flow.",
+      "reqIds": [
+        "REQ-47"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-verify-end-to-end-that-the-related-record-linking-flow-still-works-after-an-upgrade-open-each-supported-detail-page-membership-publishing-work-release-recording-project-artist-development-open-edit-links-save-changes-and-confirm-the-related-records-section-updates-accordingly-for-both-admin-and-non-admin-member-roles",
+      "title": "Verify end-to-end that the related-record linking flow still works after an upgrade: open each supported detail page (Membership, Publishing Work, Release, Recording Project, Artist Development), open “Edit Links”, save changes, and confirm the Related Records section updates accordingly for both admin and non-admin member roles.",
+      "reqIds": [
+        "REQ-50"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-the-application-is-upgrade-resilient-and-passes-the-upgrade-linking-verification-flow-end-to-end-after-a-canister-upgrade-each-supported-detail-page-must-load-without-crashes-the-edit-links-dialog-must-open-pre-populate-selected-relationships-save-successfully-immediately-update-the-related-records-section-and-persist-after-refresh-for-both-admin-and-non-admin-member-roles",
+      "title": "Ensure the application is upgrade-resilient and passes the upgrade linking verification flow end-to-end: after a canister upgrade, each supported detail page must load without crashes; the “Edit Links” dialog must open, pre-populate selected relationships, save successfully, immediately update the Related Records section, and persist after refresh for both admin and non-admin member roles.",
+      "reqIds": [
+        "REQ-52"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-complete-the-remaining-step-7-5-work-by-ensuring-the-post-upgrade-related-record-linking-flow-is-fully-upgrade-resilient-end-to-end-across-all-supported-detail-pages-membership-publishing-work-release-recording-project-artist-development-for-both-admin-and-non-admin-member-roles",
+      "title": "Complete the remaining Step 7.5 work by ensuring the post-upgrade related-record linking flow is fully upgrade-resilient end-to-end across all supported detail pages (Membership, Publishing Work, Release, Recording Project, Artist Development) for both admin and non-admin member roles.",
+      "reqIds": [
+        "REQ-53"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-resolve-any-remaining-build-deploy-runtime-issues-blocking-completion-of-step-7-5-so-the-project-compiles-and-runs-cleanly-when-navigating-to-each-supported-detail-page-and-using-the-edit-links-dialog",
+      "title": "Resolve any remaining build/deploy/runtime issues blocking completion of Step 7.5+ so the project compiles and runs cleanly when navigating to each supported detail page and using the “Edit Links” dialog.",
+      "reqIds": [
+        "REQ-54"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-ensure-upgrade-safe-handling-of-missing-undefined-related-id-arrays-and-missing-partial-entity-collections-during-and-after-upgrades-so-the-ui-and-linking-flows-treat-them-as-empty-arrays-instead-of-crashing-or-silently-misbehaving",
+      "title": "Ensure upgrade-safe handling of missing/undefined related-ID arrays and missing/partial entity collections during and after upgrades, so the UI and linking flows treat them as empty arrays instead of crashing or silently misbehaving.",
+      "reqIds": [
+        "REQ-55"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-finalize-and-validate-the-manual-post-upgrade-verification-checklist-so-it-accurately-reflects-the-implemented-ui-labels-and-entity-categories-shown-in-the-edit-links-dialog-and-related-records-section-and-can-be-followed-to-verify-step-7-5-completion",
+      "title": "Finalize and validate the manual post-upgrade verification checklist so it accurately reflects the implemented UI labels and entity categories shown in the “Edit Links” dialog and Related Records section, and can be followed to verify Step 7.5+ completion.",
+      "reqIds": [
+        "REQ-56"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Core company management website for Higgins Music (admin + staff portals)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Publishing management module (catalog, splits, registrations, royalty tracking)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Label management & operations module (releases, distribution, marketing, contracts/workflows)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Recordings & productions management module (projects, sessions, assets, budgets)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Artist development / clientele management module (CRM, plans, milestones, resources)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Co-op style memberships system for artists/clients (membership tiers, benefits, governance/participation)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Add cross-linking/relationships between modules in the UI and data model (Artists/Memberships/Works/Releases/Projects) so records can reference and navigate to related entities",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Extend the backend data models to support explicit cross-links between modules (Memberships, Artist Development, Publishing Works, Releases, Recording Projects) by storing related entity IDs on records, while keeping existing authorization rules (admin can manage/view all; members can only manage/view their own records).",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Add backend endpoints to create/update cross-links and to retrieve linkable entities for the current caller, so the UI can (a) set relationships and (b) populate selection lists without requiring admin-only APIs.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Implement UI linking controls on detail pages (Step 1: add “Edit Links” buttons on each detail page)",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Implement UI linking controls on detail pages (Step 2: add the Edit Links modal/selection dialog for managing cross-links)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Implement UI linking controls on detail pages (Step 3: add multi-select list UI in the Edit Links modal for selecting related entities)",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Implement UI linking controls on detail pages (Step 4: plug in data fetching for Edit Links modal/related records using the appropriate queries for admin vs member)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Implement UI linking controls on detail pages (Step 5: finalize Edit Links flow — correct admin vs member data sources and ensure detail pages pass real linked IDs into the modal)",
+      "reqIds": [],
+      "status": "in_progress"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Update the backend ArtistDevelopment data model and related endpoints so Artist Development entries support the same cross-linking shape as other modules, including storing and returning related IDs for Memberships, Publishing Works, Releases, Recording Projects, and Artist Development entries (where applicable), using consistent field naming that the frontend EditRelatedDialog can consume.",
+      "reqIds": [
+        "REQ-32"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-16",
+      "summary": "Update the backend ArtistDevelopment data model so each ArtistDevelopment record stores explicit related-ID arrays for cross-linking to other modules (Memberships, Publishing Works, Releases, Recording Projects, and Artist Development), using the same field names currently consumed by the frontend ArtistDevelopmentDetail page: relatedMemberships, relatedPublishing, relatedLabelEntities, relatedRecordingProjects, and relatedArtistDevelopment.",
+      "reqIds": [
+        "REQ-35"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Update the backend Artist Development read endpoints so they return the full ArtistDevelopment record including the related-ID arrays (relatedMemberships, relatedPublishing, relatedLabelEntities, relatedRecordingProjects, relatedArtistDevelopment) wherever ArtistDevelopment records are returned to the frontend.",
+      "reqIds": [
+        "REQ-36"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Implement backend support for Artist Development cross-link editing so Artist Development records can be linked/unlinked to Memberships, Publishing Works, Releases, Recording Projects, and other Artist Development entries using explicit related-ID arrays (relatedMemberships, relatedPublishing, relatedLabelEntities, relatedRecordingProjects, relatedArtistDevelopment), while preserving the existing authorization model (admins can edit all; members can only edit their own records).",
+      "reqIds": [
+        "REQ-37"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Ensure the frontend ArtistDevelopmentDetail page uses the backend-provided related-ID arrays consistently in both RelatedRecordsSection and EditRelatedDialog, and that saving from the dialog calls the Artist Development link mutation with the complete payload for all categories shown in the UI.",
+      "reqIds": [
+        "REQ-38"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Resolve any build/deploy failures introduced by the related-record linking flow so the project compiles cleanly (TypeScript) and runs without runtime errors when navigating to each detail page (Membership, Publishing Work, Release, Recording Project, Artist Development) and opening the “Edit Links” dialog as both an admin and a non-admin member.",
+      "reqIds": [
+        "REQ-39"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-21",
+      "summary": "Ensure the backend Artist Development module fully supports cross-link editing by storing and updating explicit related-ID arrays on each ArtistDevelopment record (relatedMemberships, relatedPublishing, relatedLabelEntities, relatedRecordingProjects, relatedArtistDevelopment) and enforcing the existing authorization model (admins can edit any record; non-admin members can edit only their own records).",
+      "reqIds": [
+        "REQ-40"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-22",
+      "summary": "Ensure all backend Artist Development read/list endpoints that return ArtistDevelopment records include the full cross-link related-ID arrays, and ensure getEntitiesForCaller includes ArtistDevelopment records with these same fields so non-admin members can populate linkable options without using admin-only APIs.",
+      "reqIds": [
+        "REQ-41"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-23",
+      "summary": "If the backend stable/persistent state shape changes as part of Steps 6.5–6.6, add a conditional Motoko state migration so existing deployed canister state upgrades without traps and preserves all existing records and link arrays.",
+      "reqIds": [
+        "REQ-42"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-24",
+      "summary": "Implement a conditional Motoko state migration for canister upgrades so existing deployed state can upgrade without traps and preserves all existing records and cross-link arrays, including ArtistDevelopment related-ID arrays (relatedMemberships, relatedPublishing, relatedLabelEntities, relatedRecordingProjects, relatedArtistDevelopment).",
+      "reqIds": [
+        "REQ-45"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Wire the migration into the single main actor upgrade flow so state is serialized on preupgrade, migrated if needed on postupgrade, and rehydrated into the runtime maps used by backend/main.mo.",
+      "reqIds": [
+        "REQ-46"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-26",
+      "summary": "Implement upgrade-safe persistence for all backend domain data (memberships, publishing works, releases, recording projects, artist development, and user profiles), so canister upgrades preserve existing records and all related/link ID arrays.",
+      "reqIds": [
+        "REQ-48"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-27",
+      "summary": "Make backend state migration conditional and backward-compatible using backend/migration.mo, so older deployed state versions (including any pre-cross-linking shapes) are safely migrated to the current stable state shape without data loss.",
+      "reqIds": [
+        "REQ-49"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-28",
+      "summary": "Add/confirm an explicit post-upgrade manual verification checklist for the related-record linking flow that covers all supported detail pages (Membership, Publishing Work, Release, Recording Project, Artist Development) and both admin + non-admin member roles, including expected outcomes and troubleshooting guidance, in English user-facing text.",
+      "reqIds": [
+        "REQ-51"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "Higgins Music",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
