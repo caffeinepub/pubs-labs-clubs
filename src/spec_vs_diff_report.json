@@ -1,71 +1,49 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-17T20:28:21.784Z",
-  "summary": "Diff adds two new Markdown log templates for rollout execution and smoke testing, and shows substantial frontend hardening changes (per `frontend-file-summaries.txt`) plus a backend file modification (truncated). However, the requested smoke test results recording in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` is not evidenced, and there is no concrete evidence in the diff that the deployment/upgrade and smoke tests were actually executed (only templates/notes scaffolding). Several implemented frontend code changes appear to go beyond the request to “execute rollout + smoke test + document results.”",
+  "generatedAt": "2026-02-17T20:34:54.104Z",
+  "summary": "The diff adds an execution log template for Rollout 21.7 and modifies backend/main.mo plus two metadata/summary files, but it does not show completion of the requested rollout build/upgrade steps, the post-upgrade smoke test execution for both roles, or recording smoke-test outcomes in the specified results file.",
   "missing_requirements": [
     {
-      "id": "REQ-90",
-      "requirement": "Execute Rollout 21.7 build/upgrade deployment as described in `frontend/ROLLOUT_STEPS.md` Step 9.5, preserving all existing canister state and ensuring the build/deploy pipeline completes successfully (no platform error \"Unable to create your app\").",
-      "reason": "The diff shows a newly added execution-log template, but no evidence of an actual performed upgrade/deploy, no recorded command outputs, and no explicit evidence of preserved canister state or successful pipeline completion.",
-      "evidence": [
-        "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
-        "backend/main.mo (truncated)"
-      ]
-    },
-    {
-      "id": "REQ-91",
-      "requirement": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user.",
-      "reason": "The diff adds a smoke-test session-log template with unchecked checkboxes and blank fields, but does not provide completed smoke test results for admin and non-admin users or evidence that the checklist was executed.",
-      "evidence": [
-        "frontend/SMOKE_TEST_21_7_SESSION_LOG.md"
-      ]
-    },
-    {
-      "id": "REQ-92",
-      "requirement": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section.",
-      "reason": "No diff evidence shows that `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` was updated; instead, other documentation files were added/mentioned.",
-      "evidence": [
-        "frontend-file-summaries.txt (mentions `frontend/UPGRADE_LINKING_VERIFICATION.md`, not `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`)"
-      ]
-    }
-  ],
-  "hallucinated_features": [
-    {
-      "description": "Added new rollout execution log document (`frontend/ROLL_OUT_21_7_EXECUTION_LOG.md`) that is not requested by REQ-90/91/92 (REQ-92 specifies updating `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` instead).",
-      "reason": "BuildRequest requires recording outcomes in a specific existing file, not introducing a new execution-log artifact.",
+      "id": "REQ-93",
+      "requirement": "Execute Rollout 21.7 build/upgrade deployment as described in `frontend/ROLLOUT_STEPS.md` Step 9.5, preserving canister state, and ensure the pipeline completes successfully (including no \"Unable to create your app\" error).",
+      "reason": "The diff only adds a partially filled execution log template and provides no evidence of actual command outputs, successful builds, successful canister upgrade, state preservation verification, or deployment pipeline completion.",
       "evidence": [
         "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md"
       ]
     },
     {
-      "description": "Added new smoke test session log document (`frontend/SMOKE_TEST_21_7_SESSION_LOG.md`) that is not requested by REQ-91/92.",
-      "reason": "REQ-91 requires executing the checklist and REQ-92 requires recording outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`; adding a separate session-log file is extra scope not requested.",
+      "id": "REQ-94",
+      "requirement": "Execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` end-to-end for both an admin user and a non-admin approved member user.",
+      "reason": "No smoke-test checklist execution evidence or results are shown in the diff; only a template execution log appears, and nothing indicates tests were run for either role.",
       "evidence": [
-        "frontend/SMOKE_TEST_21_7_SESSION_LOG.md"
+        "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md"
       ]
     },
     {
-      "description": "Substantial frontend runtime/TypeScript hardening and component behavior changes (query hooks, permission helpers, related-records components, multiple portal detail pages, Edit Links dialog/button, multiselect UI, role-aware entity options hook, etc.).",
-      "reason": "Non-goal states no new product features beyond rollout execution/smoke testing/results documentation. The diff summary indicates multiple functional frontend code changes unrelated to merely recording rollout execution and test results.",
+      "id": "REQ-95",
+      "requirement": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under “Rollout 21.7 Smoke Test Results” with required details (date, tester, env, principals, entity IDs, pass/fail, errors).",
+      "reason": "`frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` is not modified in the diff, and no filled-in “Rollout 21.7 Smoke Test Results” section is provided anywhere.",
       "evidence": [
-        "frontend-file-summaries.txt"
-      ]
-    },
-    {
-      "description": "Updated/modified `frontend/UPGRADE_LINKING_VERIFICATION.md` (manual QA checklist) as indicated in the summary, which is not requested (REQ-92 targets `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`).",
-      "reason": "BuildRequest specifically requires recording results in the results file; modifying a separate verification/checklist doc is out of requested scope based on provided requirements.",
-      "evidence": [
-        "frontend-file-summaries.txt (mentions `frontend/UPGRADE_LINKING_VERIFICATION.md` updated)"
+        "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md (not present in modified files list)",
+        "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md"
       ]
     }
   ],
-  "confidence": 0.78,
+  "hallucinated_features": [
+    {
+      "description": "Added a new Rollout 21.7 execution log document (`frontend/ROLL_OUT_21_7_EXECUTION_LOG.md`) instead of recording outcomes in the requested `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` file.",
+      "reason": "The BuildRequest only requires recording smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`; creating a separate execution log document is not requested.",
+      "evidence": [
+        "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md"
+      ]
+    }
+  ],
+  "confidence": 0.72,
   "changed_files": [
     "backend/main.mo",
     "frontend-file-summaries.txt",
     "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
-    "frontend/SMOKE_TEST_21_7_SESSION_LOG.md",
     "project_state.json"
   ]
 }

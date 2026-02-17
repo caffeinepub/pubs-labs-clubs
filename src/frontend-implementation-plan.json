@@ -1,72 +1,67 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Rollout 21.7 upgrade execution + smoke test results recording (frontend-only)",
+  "title": "Rollout 21.7 frontend build/upgrade verification and smoke-test documentation",
   "requirements": [
     {
-      "id": "REQ-90",
-      "summary": "Document and capture evidence for Rollout 21.7 build/upgrade execution (Step 9.5) to confirm the frontend build pipeline completes successfully.",
+      "id": "REQ-93",
+      "summary": "Run Rollout 21.7 build/upgrade steps (Step 9.5) and capture frontend build evidence needed for successful deployment validation.",
       "acceptanceCriteria": [
-        "Frontend build completes successfully with no TypeScript build errors.",
+        "Frontend TypeScript check completes successfully (`npm run typescript-check` in `frontend/`).",
+        "Frontend production build completes successfully (`npm run build` in `frontend/`).",
         "Backend build completes successfully with no Motoko compiler errors.",
-        "Canister upgrade completes successfully and preserves all existing canister state (no data loss).",
-        "Application starts after upgrade with no runtime traps on startup.",
-        "Deployment pipeline succeeds without the platform error \"Unable to create your app\"."
+        "Canister upgrade completes successfully while preserving existing state (no data loss).",
+        "Deployment pipeline completes successfully with no platform error \"Unable to create your app\".",
+        "Application starts after upgrade with no runtime traps on startup."
       ],
       "file_operations": [
         {
           "path": "frontend/ROLL_OUT_21_7_EXECUTION_LOG.md",
-          "operation": "create",
-          "description": "Create a run log template to record the Step 9.5 rollout execution evidence from `frontend/ROLLOUT_STEPS.md`, including timestamps, environment, commands run, and captured outputs for `npm run typescript-check` and `npm run build`, plus a dedicated field to confirm the platform did not show \"Unable to create your app\"."
+          "operation": "modify",
+          "description": "Record timestamped execution evidence for Rollout 21.7 Step 9.5, including the outputs/status for `npm run typescript-check` and `npm run build`, and notes confirming the deploy pipeline completed without the platform error \"Unable to create your app\"."
         },
         {
           "path": "frontend/ROLLOUT_STEPS.md",
           "operation": "modify",
-          "description": "Add a short note under Step 9.5 pointing to `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md` as the place to record build/deploy evidence for Rollout 21.7 (no change to the rollout procedure itself)."
+          "description": "Ensure Step 9.5 references the required execution evidence artifacts (execution log + results template) and explicitly calls out verifying the frontend router-level error handling remains stable during post-upgrade validation."
         }
       ]
     },
     {
-      "id": "REQ-91",
-      "summary": "Provide a structured session log to execute and record completion of the Rollout 21.7 post-upgrade smoke test checklist for both admin and non-admin approved member roles.",
+      "id": "REQ-94",
+      "summary": "Execute the Rollout 21.7 smoke test checklist for both admin and non-admin approved member roles and ensure the checklist/log templates fully cover required validation points.",
       "acceptanceCriteria": [
-        "Smoke test is executed twice: once as an admin user and once as a non-admin approved member user.",
-        "Landing page (`/`) loads without errors for both roles.",
-        "Authenticated portal navigation works for both roles (AuthGate and ApprovalGate behave as expected).",
-        "All five portal detail routes load without runtime crashes for both roles: `/portal/memberships/$id`, `/portal/publishing/$id`, `/portal/releases/$id`, `/portal/recordings/$id`, `/portal/artists/$id`.",
-        "The \"Edit Links\" dialog opens successfully on each of the five detail routes for both roles.",
-        "No frontend console errors related to undefined/null access occur during the smoke test.",
-        "No backend runtime traps occur during the smoke test.",
-        "Router-level error boundaries are verified per the checklist (errors render as in-app error screens, not full SPA crashes)."
+        "Smoke test is executed end-to-end as an admin user following `frontend/SMOKE_TEST_21_7.md`.",
+        "Smoke test is executed end-to-end as a non-admin approved member following `frontend/SMOKE_TEST_21_7.md`.",
+        "For both roles: landing page (`/`) loads, authentication completes, portal layout renders, all five detail routes load without crashes, and the \"Edit Links\" dialog opens on each detail page.",
+        "During testing, browser console shows no frontend errors related to undefined/null access; if any errors occur, they are captured verbatim for reporting."
       ],
       "file_operations": [
         {
-          "path": "frontend/SMOKE_TEST_21_7_SESSION_LOG.md",
-          "operation": "create",
-          "description": "Create a structured smoke-test session log aligned to `frontend/SMOKE_TEST_21_7.md` that prompts the tester to run the checklist twice (admin + non-admin approved member), capture the principals used, note entity IDs used for each of the five detail routes per role, and paste any console error text/stack traces observed during the run."
-        },
-        {
           "path": "frontend/SMOKE_TEST_21_7.md",
           "operation": "modify",
-          "description": "Add a brief reference at the top of the checklist pointing testers to `frontend/SMOKE_TEST_21_7_SESSION_LOG.md` for capturing per-role notes and entity IDs while running the checklist (no change to checklist scope)."
+          "description": "Complete/repair the Rollout 21.7 smoke test checklist so it fully includes the router error-handling verification steps and the explicit requirement to run the checklist twice (admin + non-admin approved member). This testing relies on the authorization component (role-based access control) and user-approval component (approved-member gating); verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/SMOKE_TEST_21_7_SESSION_LOG.md",
+          "operation": "modify",
+          "description": "Align the session log template with `SMOKE_TEST_21_7.md` so it captures, for both roles: the five detail-route entity IDs, confirmation that the \"Edit Links\" dialog opens on each page, and verbatim console error text/stack traces when present. This testing relies on the authorization component (admin vs user) and user-approval component (approved member access); verify the component's usage instructions before implementing."
         }
       ]
     },
     {
-      "id": "REQ-92",
-      "summary": "Update the Rollout 21.7 section in the smoke test results document with the executed outcomes and any failures, including role, route, IDs, and error text.",
+      "id": "REQ-95",
+      "summary": "Record Rollout 21.7 smoke-test outcomes in the designated results section with clear PASS/FAIL, principals, route IDs, and failure details when applicable.",
       "acceptanceCriteria": [
-        "`frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` is updated under “Rollout 21.7 Smoke Test Results”.",
-        "Recorded results include: test date, tester, environment, admin principal, non-admin approved member principal.",
-        "Recorded results include the exact entity IDs used for each of the five detail routes for both roles.",
-        "If any failures occurred, the results include route, user role, exact error text, stack trace (if available), and steps to reproduce.",
-        "The Overall Result checkbox is marked PASS only if all checklist items pass for both roles; otherwise marked FAIL with documented failures."
+        "`frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` has the “Rollout 21.7 Smoke Test Results” section filled in with: test date, tester, environment, build/upgrade status checkboxes, both test user principals, and the entity IDs used for each of the five routes for each role.",
+        "If any failures occurred, the results include (at minimum) the failing route, the user role, and the exact observed error text (and stack trace if available).",
+        "Overall result is marked PASS only if all smoke test steps completed successfully for both roles; otherwise marked FAIL with failure details recorded."
       ],
       "file_operations": [
         {
           "path": "frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md",
           "operation": "modify",
-          "description": "Fill in the “Rollout 21.7 Smoke Test Results” section with the actual test date/tester/environment, the admin and non-admin approved member principals, the exact entity IDs used for each of the five routes for both roles, and mark PASS/FAIL accordingly. If failures occurred, include route + role + exact error text + stack trace (if available) + steps to reproduce, as required by the template."
+          "description": "Fill in the “Rollout 21.7 Smoke Test Results” section after executing the checklist, including test metadata, both principals, entity IDs for each of the five routes for each role, and verbatim error text/stack traces for any failures; mark PASS only if all steps pass for both roles."
         }
       ]
     }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 57,
+  "projectStateVersion": 59,
   "summary": "Website/platform for Higgins Music to manage publishing, label operations, recordings/productions, and artist development with a co-op style membership model for artists/clients.",
   "architectural_notes": [
     "User requested proceeding to the next items and to break the work into manageable portions to ensure error-free processing.",
@@ -554,9 +554,10 @@
       "id": "feature-execute-rollout-21-7-build-upgrade-deployment-as-described-in-frontend-rollout-steps-md-step-9-5-preserving-all-existing-canister-state-and-ensuring-the-build-deploy-pipeline-completes-successfully-no-platform-error-unable-to-create-your-app",
       "title": "Execute Rollout 21.7 build/upgrade deployment as described in `frontend/ROLLOUT_STEPS.md` Step 9.5, preserving all existing canister state and ensuring the build/deploy pipeline completes successfully (no platform error \"Unable to create your app\").",
       "reqIds": [
-        "REQ-90"
+        "REQ-90",
+        "REQ-93"
       ],
-      "version": 1
+      "version": 2
     }
   ],
   "new_feature_requests": [
@@ -837,6 +838,22 @@
       "summary": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section, using clear English notes for any failures (include route, user role, and observed error text).",
       "reqIds": [
         "REQ-92"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-49",
+      "summary": "After the Rollout 21.7 canister upgrade, execute the post-upgrade smoke test checklist in `frontend/SMOKE_TEST_21_7.md` using both an admin user and a non-admin approved member user.",
+      "reqIds": [
+        "REQ-94"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-50",
+      "summary": "Record the Rollout 21.7 smoke test outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under the “Rollout 21.7 Smoke Test Results” section, using clear English notes for any failures (include route, user role, and observed error text).",
+      "reqIds": [
+        "REQ-95"
       ],
       "status": "pending"
     }

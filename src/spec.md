@@ -1,11 +1,12 @@
 # Specification
 
 ## Summary
-**Goal:** Complete the Rollout 21.7 build/upgrade deployment, run the prescribed post-upgrade smoke tests for admin and non-admin users, and record the results.
+**Goal:** Execute the Rollout 21.7 build/upgrade deployment for Higgins Music Hub, then run and record post-upgrade smoke-test results.
 
 **Planned changes:**
-- Execute the Rollout 21.7 build/upgrade deployment per `frontend/ROLLOUT_STEPS.md` Step 9.5, preserving canister state and ensuring the pipeline completes without the platform error “Unable to create your app”.
-- Run the smoke test checklist in `frontend/SMOKE_TEST_21_7.md` twice (admin and non-admin approved member), validating landing page load, gated navigation, five portal detail routes, “Edit Links” dialogs, and absence of frontend/backend runtime errors.
-- Update `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under “Rollout 21.7 Smoke Test Results” with outcomes and required details (date, tester, environment, principals, entity IDs, and failure notes if any).
+- Execute the Rollout 21.7 build/upgrade deployment per `frontend/ROLLOUT_STEPS.md` Step 9.5, preserving all existing canister state and ensuring the pipeline completes without platform errors.
+- Verify build health: run frontend TypeScript check and production build, and confirm backend builds with no Motoko compiler errors.
+- After upgrade, execute the smoke test checklist in `frontend/SMOKE_TEST_21_7.md` as both an admin user and a non-admin approved member user.
+- Record outcomes in `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` under “Rollout 21.7 Smoke Test Results”, including required metadata and detailed failure notes (route, role, exact error text) if applicable.
 
-**User-visible outcome:** The upgraded app deploys successfully without data loss, key portal routes and dialogs function for both admin and member roles, and the Rollout 21.7 smoke test results are documented.
+**User-visible outcome:** The application is upgraded to Rollout 21.7 with existing state preserved, and the documented smoke-test results confirm whether core routes and dialogs work for both admin and non-admin users.
