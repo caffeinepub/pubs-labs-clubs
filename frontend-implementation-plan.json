@@ -1,0 +1,123 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Implement Memberships Portal Section with Visible Test Content",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "summary": "Audit all five portal list pages and detail pages to identify which sections currently render no visible content and produce a prioritized list of the first unfinished area to address",
+      "acceptanceCriteria": [
+        "Each portal list page renders its entity list with at least one seeded or mock-safe row visible when data exists",
+        "Empty state components show a meaningful message and a call-to-action when no data is present",
+        "No portal page renders a completely blank or invisible content area"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "operation": "modify",
+          "description": "Audit and verify the MembershipsPage renders the membership list table with status badges, member name, and email columns. Ensure the empty state displays a clear message ('No memberships found') with a 'Create Membership' action button when the list is empty. Confirm the create membership dialog is functional and all fields are wired to the backend mutation."
+        },
+        {
+          "path": "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+          "operation": "modify",
+          "description": "Audit and verify MembershipDetail displays all profile fields (name, email, bio from UserProfile, status from MembershipProfile) in a readable card layout. Ensure the related records section (RelatedRecordsSection) is rendered and displays linked artists, works, releases, and projects as clickable badges. Confirm EditRelatedDialog can be opened via EditLinksButton and is wired correctly."
+        },
+        {
+          "path": "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "operation": "modify",
+          "description": "Audit PublishingWorksPage to verify the works list table renders title, contributors, and registration status. Ensure the empty state is present with a meaningful message and 'Create Publishing Work' CTA. Mark as secondary priority after Memberships."
+        },
+        {
+          "path": "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
+          "operation": "modify",
+          "description": "Audit PublishingWorkDetail to confirm all work metadata (title, contributors, ownership splits, ISWC, ISRC, registration status) and related records section are visible. Mark as secondary priority after Memberships."
+        },
+        {
+          "path": "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "operation": "modify",
+          "description": "Audit ReleasesPage to verify releases list table renders title, type, and owners. Ensure the empty state and create release dialog are functional. Mark as secondary priority after Memberships."
+        },
+        {
+          "path": "frontend/src/pages/portal/label/ReleaseDetail.tsx",
+          "operation": "modify",
+          "description": "Audit ReleaseDetail to confirm tracklist, key dates, owners, and related records section are visible. Mark as secondary priority after Memberships."
+        },
+        {
+          "path": "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "operation": "modify",
+          "description": "Audit RecordingProjectsPage to verify projects list table renders title, status, session date, and participants. Ensure empty state and create project dialog are functional. Mark as secondary priority after Memberships."
+        },
+        {
+          "path": "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
+          "operation": "modify",
+          "description": "Audit RecordingProjectDetail to confirm project metadata (title, status, participants, session date, notes) and related records section are visible. Mark as secondary priority after Memberships."
+        },
+        {
+          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+          "operation": "modify",
+          "description": "Audit ArtistDevelopmentPage to verify artist development list renders artist IDs, goals summary, and creation dates. Ensure empty state and create entry dialog are functional. Mark as secondary priority after Memberships."
+        },
+        {
+          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
+          "operation": "modify",
+          "description": "Audit ArtistDevelopmentDetail to confirm goals, plans, milestones, internal notes, and related records section are visible. Mark as secondary priority after Memberships."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Fully implement the Memberships portal section as the first unfinished area: ensure MembershipsPage displays a populated list with status badges, member name, email, and membership status; ensure MembershipDetail displays all profile fields with inline editing for admins and the member themselves, and shows the related records section with working EditRelatedDialog",
+      "acceptanceCriteria": [
+        "MembershipsPage lists all memberships returned by the backend with name, email, and status badge visible",
+        "Clicking a membership row navigates to MembershipDetail and all profile fields are displayed",
+        "Admin user can edit name, email, and status fields via inline controls on MembershipDetail",
+        "Related records section on MembershipDetail shows linked artists, works, releases, and projects as clickable badges",
+        "EditRelatedDialog opens, loads options, allows multi-select, and saves without error",
+        "Empty state with a clear message and 'Create Membership' CTA is shown when no memberships exist",
+        "No blank or invisible sections remain on either page"
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "operation": "modify",
+          "description": "Implement the memberships list table with columns for member name, email, status (with Badge component for visual distinction), and tier name. Wire the table rows to navigate to MembershipDetail on click using TanStack Router. Ensure the useGetAllMembershipProfiles hook is called and the results are displayed. Add an EmptyState component when the list is empty, with title 'No Memberships Found', description 'Get started by creating your first membership', and a 'Create Membership' action button that opens the create dialog. Verify the create membership dialog form has fields for ID, name, and email, and calls the useCreateMembershipProfile mutation on submit. Display ErrorBanner if the query or mutation fails. Use LoadingState while data is being fetched."
+        },
+        {
+          "path": "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+          "operation": "modify",
+          "description": "Implement the membership detail view to display all profile fields: name (editable input), email (editable input), bio (from associated UserProfile if available, read-only for now), status (dropdown with T enum values: applicant, active, inactive, paused), tier name, and created/updated timestamps. Use the useGetMembershipDetails hook to fetch the full membership record. Add inline edit controls (Input for name/email, Select for status) that are enabled only if the current user is an admin or the membership owner (check using canEditMembershipProfile from relatedRecordsPermissions.ts). Wire the edit controls to useUpdateMembershipProfileFields and useUpdateMembershipStatus mutations. Display the RelatedRecordsSection component below the profile fields, passing the membership's linkedArtists, linkedWorks, linkedReleases, and linkedProjects arrays. Include an EditLinksButton that opens EditRelatedDialog with entityType='membership' and entityId set to the membership ID. Ensure the dialog's onSave handler calls useUpdateMembershipLinks mutation. Add LoadingState, ErrorBanner, and handle missing membership gracefully with an error message."
+        },
+        {
+          "path": "frontend/src/components/related/EditRelatedDialog.tsx",
+          "operation": "modify",
+          "description": "Verify the EditRelatedDialog component correctly handles entityType='membership' by loading linkable options from useLinkableEntityOptions and mapping initialSelectedIds to the membership's current linkedArtists, linkedWorks, linkedReleases, and linkedProjects. Ensure the MultiSelectList components for each entity type are rendered and functional. Confirm the save handler calls the correct backend mutation (updateMembershipLinks) and invalidates the membership detail query cache on success. Add error handling and display an ErrorBanner if the mutation fails. Ensure the dialog can be opened and closed without errors."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Verify that useGetAllMembershipProfiles, useGetMembershipDetails, useCreateMembershipProfile, useUpdateMembershipProfileFields, useUpdateMembershipStatus, and useUpdateMembershipLinks hooks are correctly implemented and map to the backend actor methods (getAllMembershipProfiles, getMembershipDetails, createMembershipProfile, updateMembershipProfileFields, updateMembershipStatus, updateMembershipLinks). Ensure mutations invalidate the correct query keys (['membershipProfiles'], ['membershipDetails', id]) on success so the UI refreshes automatically. Add TypeScript type annotations for all hook return types and parameters."
+        },
+        {
+          "path": "frontend/src/components/related/relatedRecordsPermissions.ts",
+          "operation": "modify",
+          "description": "Verify the canEditMembershipProfile function correctly checks if the current user's principal matches the membership's profile.principal or if the user is an admin. Ensure defensive handling for missing or undefined principal values. Add unit test coverage if needed (as comments documenting expected behavior)."
+        },
+        {
+          "path": "frontend/src/components/related/RelatedRecordsSection.tsx",
+          "operation": "modify",
+          "description": "Verify the RelatedRecordsSection component correctly displays linked memberships, artists, works, releases, and projects as clickable Badge components. Ensure that for non-admin users, the component resolves entity labels from the caller's entities (via useGetEntitiesForCaller) rather than fetching all entities. Confirm each badge navigates to the correct detail route when clicked. Add error handling for missing or invalid entity IDs."
+        },
+        {
+          "path": "frontend/src/hooks/useLinkableEntityOptions.ts",
+          "operation": "modify",
+          "description": "Verify the useLinkableEntityOptions hook returns formatted options for memberships, artists, works, releases, and projects. Ensure that for admin users, it fetches from admin-wide queries (useGetAllMembershipProfiles, useGetAllArtistDevelopment, etc.), and for non-admin users, it fetches from caller-specific queries (useGetCallerMemberships, useGetEntitiesForCaller). Confirm the returned options have { id, label } format suitable for MultiSelectList."
+        },
+        {
+          "path": "frontend/src/components/feedback/EmptyState.tsx",
+          "operation": "modify",
+          "description": "Verify the EmptyState component accepts title, description, actionLabel, and onAction props, and renders a centered card with an optional icon, descriptive text, and an optional action button. Ensure the component uses shadcn/ui Card, Button, and typography components for consistent styling."
+        }
+      ]
+    }
+  ]
+}

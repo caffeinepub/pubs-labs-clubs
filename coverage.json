@@ -1,0 +1,86 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-28T00:33:32.373Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 3,
+    "implemented": 2,
+    "items": [
+      {
+        "id": "REQ-1",
+        "summary": "Audit all five portal list pages (MembershipsPage, PublishingWorksPage, ReleasesPage, RecordingProjectsPage, ArtistDevelopmentPage) and their corresponding detail pages to identify which sections currently render no visible content (empty states, blank cards, missing field displays, or unimplemented UI sections). Produce a prioritized list of the first unfinished area to address.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
+          "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "frontend/src/pages/portal/label/ReleaseDetail.tsx",
+          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/memberships/MembershipDetail.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Fully implement the Memberships portal section as the first unfinished area: ensure MembershipsPage displays a populated list with status badges, member name, email, and membership status; ensure MembershipDetail displays all profile fields (name, email, bio, status) with inline editing for admins and the member themselves, and shows the related records section (artists, works, releases, projects) with working EditRelatedDialog. Seed or wire real backend data so the page is non-empty during testing.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+          "frontend/src/components/related/EditRelatedDialog.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/related/relatedRecordsPermissions.ts",
+          "frontend/src/components/related/RelatedRecordsSection.tsx",
+          "frontend/src/hooks/useLinkableEntityOptions.ts",
+          "frontend/src/components/feedback/EmptyState.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/related/RelatedRecordsSection.tsx",
+          "frontend/src/hooks/useLinkableEntityOptions.ts"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Ensure the backend exposes all necessary query and update methods to support the Memberships section: listing all memberships (admin), listing caller-owned memberships (member), getting a single membership by ID, updating membership profile fields, and managing related-record links for memberships. Verify these are correctly wired to the frontend hooks in useQueries.ts.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      }
+    ]
+  },
+  "changedFiles": [
+    "backend/main.mo",
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/related/RelatedRecordsSection.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useLinkableEntityOptions.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/portal/admin/RoleAssignmentPage.tsx",
+    "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+    "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

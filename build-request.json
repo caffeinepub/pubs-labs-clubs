@@ -1,0 +1,81 @@
+{
+  "kind": "build_request",
+  "title": "Implement next unfinished portal feature with visible test content",
+  "projectName": "Higgins Music Hub",
+  "priority": "normal",
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "text": "Audit all five portal list pages (MembershipsPage, PublishingWorksPage, ReleasesPage, RecordingProjectsPage, ArtistDevelopmentPage) and their corresponding detail pages to identify which sections currently render no visible content (empty states, blank cards, missing field displays, or unimplemented UI sections). Produce a prioritized list of the first unfinished area to address.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "None of the test areas have anything visible for testing at this time so please to proceed to the next unfinished project items and fill them in properly one at a time"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Each portal list page renders its entity list with at least one seeded or mock-safe row visible when data exists",
+        "Empty state components show a meaningful message and a call-to-action when no data is present",
+        "No portal page renders a completely blank or invisible content area"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Fully implement the Memberships portal section as the first unfinished area: ensure MembershipsPage displays a populated list with status badges, member name, email, and membership status; ensure MembershipDetail displays all profile fields (name, email, bio, status) with inline editing for admins and the member themselves, and shows the related records section (artists, works, releases, projects) with working EditRelatedDialog. Seed or wire real backend data so the page is non-empty during testing.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "fill them in properly one at a time with confirmation before moving on to the next"
+        ]
+      },
+      "acceptanceCriteria": [
+        "MembershipsPage lists all memberships returned by the backend with name, email, and status badge visible",
+        "Clicking a membership row navigates to MembershipDetail and all profile fields are displayed",
+        "Admin user can edit name, email, and status fields via inline controls on MembershipDetail",
+        "Related records section on MembershipDetail shows linked artists, works, releases, and projects as clickable badges",
+        "EditRelatedDialog opens, loads options, allows multi-select, and saves without error",
+        "Empty state with a clear message and 'Create Membership' CTA is shown when no memberships exist",
+        "No blank or invisible sections remain on either page"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Ensure the backend exposes all necessary query and update methods to support the Memberships section: listing all memberships (admin), listing caller-owned memberships (member), getting a single membership by ID, updating membership profile fields, and managing related-record links for memberships. Verify these are correctly wired to the frontend hooks in useQueries.ts.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-4"
+        ],
+        "quotes": [
+          "fill them in properly one at a time"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend actor exposes getMemberships (admin), getCallerMemberships, getMembership(id), updateMembership, and related-link mutation methods",
+        "Frontend useQueries.ts hooks map correctly to each backend method with proper argument types",
+        "Mutations invalidate the memberships query cache on success so the list refreshes automatically"
+      ]
+    }
+  ],
+  "constraints": [
+    "Do not remove or alter the temporary ApprovalGate bypass or AccessDeniedScreen bypass — keep test-mode gates as-is",
+    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
+    "Address only one portal section (Memberships) in this build; do not implement other sections yet — await confirmation before proceeding"
+  ],
+  "nonGoals": [
+    "Implementing PublishingWorks, Releases, RecordingProjects, or ArtistDevelopment sections in this build",
+    "Restoring the ApprovalGate or admin-only access guards",
+    "Any changes to authentication flow or Internet Identity integration",
+    "New backend data models or schema changes beyond what is needed for the Memberships section"
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

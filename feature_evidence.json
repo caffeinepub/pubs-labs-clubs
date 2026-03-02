@@ -1,0 +1,50 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-audit-all-five-portal-list-pages-membershipspage-publishingworkspage-releasespage-recordingprojectspage-artistdevelopmentpage-and-their-corresponding-detail-pages-to-identify-which-sections-currently-render-no-visible-content-empty-states-blank-cards-missing-field-displays-or-unimplemented-ui-sections-produce-a-prioritized-list-of-the-first-unfinished-area-to-address",
+      "featureTitle": "Audit all five portal list pages (MembershipsPage, PublishingWorksPage, ReleasesPage, RecordingProjectsPage, ArtistDevelopmentPage) and their corresponding detail pages to identify which sections currently render no visible content (empty states, blank cards, missing field displays, or unimplemented UI sections). Produce a prioritized list of the first unfinished area to address.",
+      "files": [
+        "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+        "frontend/src/pages/portal/memberships/MembershipsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-fully-implement-the-memberships-portal-section-as-the-first-unfinished-area-ensure-membershipspage-displays-a-populated-list-with-status-badges-member-name-email-and-membership-status-ensure-membershipdetail-displays-all-profile-fields-name-email-bio-status-with-inline-editing-for-admins-and-the-member-themselves-and-shows-the-related-records-section-artists-works-releases-projects-with-working-editrelateddialog-seed-or-wire-real-backend-data-so-the-page-is-non-empty-during-testing",
+      "featureTitle": "Fully implement the Memberships portal section as the first unfinished area: ensure MembershipsPage displays a populated list with status badges, member name, email, and membership status; ensure MembershipDetail displays all profile fields (name, email, bio, status) with inline editing for admins and the member themselves, and shows the related records section (artists, works, releases, projects) with working EditRelatedDialog. Seed or wire real backend data so the page is non-empty during testing.",
+      "files": [
+        "frontend/src/components/related/RelatedRecordsSection.tsx",
+        "frontend/src/hooks/useLinkableEntityOptions.ts",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+        "frontend/src/pages/portal/memberships/MembershipsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

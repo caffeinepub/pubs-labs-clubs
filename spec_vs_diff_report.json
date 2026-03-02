@@ -1,0 +1,62 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-28T00:33:32.370Z",
+  "summary": "The diff implements the Memberships portal section (REQ-2, REQ-3) with MembershipsPage, MembershipDetail, backend methods, and frontend hooks. REQ-1 (audit of all five portal pages with documented prioritized list) is partially addressed — the implementation focuses on Memberships but no explicit audit report or prioritized list artifact is produced. Related list pages (PublishingWorksPage, ReleasesPage, RecordingProjectsPage, ArtistDevelopmentPage) receive only array-normalization fixes on their detail pages but no audit of blank/empty states is documented. Bio field display/editing on MembershipDetail is not clearly evidenced. The empty state CTA uses 'New Membership' rather than the specified 'Create Membership'.",
+  "missing_requirements": [
+    {
+      "id": "REQ-1",
+      "requirement": "Audit all five portal list pages and their detail pages to identify unfinished areas; produce a prioritized list of the first unfinished area to address.",
+      "reason": "No audit document or prioritized list artifact is present in the diff. The frontend-file-summaries.txt and UPGRADE_LINKING_VERIFICATION.md mention QA checklists but not a formal audit of all five portal list pages identifying blank/empty content areas with a prioritized ordering.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "id": "REQ-1",
+      "requirement": "Each portal list page (PublishingWorksPage, ReleasesPage, RecordingProjectsPage, ArtistDevelopmentPage) renders its entity list with at least one seeded or mock-safe row visible when data exists, and empty state components show a meaningful message and CTA.",
+      "reason": "The diff only modifies detail pages for publishing, label, recordings, and artists (array normalization fixes). No changes to the corresponding list pages are shown to add empty states with CTAs or ensure visible rows.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "MembershipDetail displays the bio profile field with inline editing for admins and the member themselves.",
+      "reason": "The MembershipDetail diff shows inline editing for name, email, and status fields but the bio field editing is not evidenced in the truncated diff. The file summary mentions only 'name/email for owner or admin' without mentioning bio.",
+      "evidence": [
+        "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Empty state shows a 'Create Membership' CTA when no memberships exist.",
+      "reason": "MembershipsPage uses a 'New Membership' button label rather than 'Create Membership' as specified in the acceptance criteria.",
+      "evidence": [
+        "frontend/src/pages/portal/memberships/MembershipsPage.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "UPGRADE_LINKING_VERIFICATION.md manual QA checklist document added or updated",
+      "reason": "The build request does not request any QA checklist or verification markdown document. This file appears in the file summaries but was not requested.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    }
+  ],
+  "confidence": 0.72,
+  "changed_files": [
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/src/components/related/RelatedRecordsSection.tsx",
+    "frontend/src/hooks/useLinkableEntityOptions.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/portal/admin/RoleAssignmentPage.tsx",
+    "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+    "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+    "project_state.json"
+  ]
+}

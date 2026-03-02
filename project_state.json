@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
+  "existing_features": [
+    {
+      "id": "feature-audit-all-five-portal-list-pages-membershipspage-publishingworkspage-releasespage-recordingprojectspage-artistdevelopmentpage-and-their-corresponding-detail-pages-to-identify-which-sections-currently-render-no-visible-content-empty-states-blank-cards-missing-field-displays-or-unimplemented-ui-sections-produce-a-prioritized-list-of-the-first-unfinished-area-to-address",
+      "title": "Audit all five portal list pages (MembershipsPage, PublishingWorksPage, ReleasesPage, RecordingProjectsPage, ArtistDevelopmentPage) and their corresponding detail pages to identify which sections currently render no visible content (empty states, blank cards, missing field displays, or unimplemented UI sections). Produce a prioritized list of the first unfinished area to address.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fully-implement-the-memberships-portal-section-as-the-first-unfinished-area-ensure-membershipspage-displays-a-populated-list-with-status-badges-member-name-email-and-membership-status-ensure-membershipdetail-displays-all-profile-fields-name-email-bio-status-with-inline-editing-for-admins-and-the-member-themselves-and-shows-the-related-records-section-artists-works-releases-projects-with-working-editrelateddialog-seed-or-wire-real-backend-data-so-the-page-is-non-empty-during-testing",
+      "title": "Fully implement the Memberships portal section as the first unfinished area: ensure MembershipsPage displays a populated list with status badges, member name, email, and membership status; ensure MembershipDetail displays all profile fields (name, email, bio, status) with inline editing for admins and the member themselves, and shows the related records section (artists, works, releases, projects) with working EditRelatedDialog. Seed or wire real backend data so the page is non-empty during testing.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-3",
+      "summary": "Ensure the backend exposes all necessary query and update methods to support the Memberships section: listing all memberships (admin), listing caller-owned memberships (member), getting a single membership by ID, updating membership profile fields, and managing related-record links for memberships. Verify these are correctly wired to the frontend hooks in useQueries.ts.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Higgins Music Hub",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
