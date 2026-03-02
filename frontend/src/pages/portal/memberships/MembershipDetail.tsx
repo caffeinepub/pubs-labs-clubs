@@ -28,6 +28,8 @@ import EditLinksButton from '@/components/related/EditLinksButton';
 import EditRelatedDialog from '@/components/related/EditRelatedDialog';
 import { normalizeToArray } from '@/utils/arrays';
 import { T as MemberStatusT } from '../../../backend';
+import SectionPlaceholder from '@/components/feedback/SectionPlaceholder';
+import { findingsForSection } from '@/utils/portalAudit';
 
 function statusBadgeVariant(
   status: MemberStatusT
@@ -54,6 +56,11 @@ function formatDate(ts: bigint): string {
   }
 }
 
+// Detail-page specific findings (tier benefits, agreements, notes)
+const detailFindings = findingsForSection('Memberships').filter((f) =>
+  ['mem-tier-management', 'mem-benefits-display', 'mem-agreements', 'mem-notes-admin'].includes(f.id)
+);
+
 export default function MembershipDetail() {
   const { id } = useParams({ strict: false }) as { id: string };
   const navigate = useNavigate();
@@ -74,36 +81,59 @@ export default function MembershipDetail() {
   const [editEmail, setEditEmail] = useState('');
   const [profileError, setProfileError] = useState('');
 
-  // Status editing state (admin only)
+  // Admin status editing state
   const [editingStatus, setEditingStatus] = useState(false);
-  const [editStatus, setEditStatus] = useState<MemberStatusT>(MemberStatusT.applicant);
-  const [statusError, setStatusError] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<MemberStatusT>(MemberStatusT.applicant);
 
-  // Edit links dialog
-  const [editLinksOpen, setEditLinksOpen] = useState(false);
+  // Related records editing state
+  const [isEditingRelated, setIsEditingRelated] = useState(false);
 
   const updateProfileMutation = useUpdateMembershipProfileFields();
   const updateStatusMutation = useUpdateMembershipStatus();
   const updateLinksMutation = useUpdateMembershipLinks();
 
-  // Linkable entity options for the Edit Links dialog
   const {
-    artists: availableArtists,
-    works: availableWorks,
-    releases: availableReleases,
-    projects: availableProjects,
+    memberships: linkableMemberships,
+    artists,
+    works,
+    releases,
+    projects,
     isLoading: optionsLoading,
     error: optionsError,
   } = useLinkableEntityOptions();
 
-  // Sync edit fields when membership loads
+  // Sync editing state when membership data loads
   useEffect(() => {
     if (membership?.profile) {
-      setEditName(membership.profile.name ?? '');
-      setEditEmail(membership.profile.email ?? '');
-      setEditStatus(membership.profile.status ?? MemberStatusT.applicant);
+      setEditName(membership.profile.name);
+      setEditEmail(membership.profile.email);
+      setSelectedStatus(membership.profile.status as MemberStatusT);
     }
   }, [membership]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (isError || !membership) {
+    return (
+      <div className="text-center py-16 text-destructive">
+        Failed to load membership details.
+      </div>
+    );
+  }
+
+  const profile = membership.profile;
+
+  // Normalize linked IDs
+  const safeLinkedArtists = normalizeToArray<string>(membership.linkedArtists);
+  const safeLinkedWorks = normalizeToArray<string>(membership.linkedWorks);
+  const safeLinkedReleases = normalizeToArray<string>(membership.linkedReleases);
+  const safeLinkedProjects = normalizeToArray<string>(membership.linkedProjects);
 
   const handleSaveProfile = async () => {
     setProfileError('');
@@ -124,132 +154,106 @@ export default function MembershipDetail() {
   };
 
   const handleSaveStatus = async () => {
-    setStatusError('');
     try {
-      await updateStatusMutation.mutateAsync({ id, status: editStatus });
+      await updateStatusMutation.mutateAsync({ id, status: selectedStatus });
       setEditingStatus(false);
-    } catch (err: unknown) {
-      setStatusError(err instanceof Error ? err.message : 'Failed to update status.');
+    } catch {
+      // error handled by mutation
     }
   };
 
-  const handleSaveLinks = async (selected: {
+  const handleSaveRelated = (data: {
     memberIds: string[];
     artistIds: string[];
     workIds: string[];
     releaseIds: string[];
     projectIds: string[];
   }) => {
-    await updateLinksMutation.mutateAsync({
-      id,
-      artistIds: selected.artistIds,
-      workIds: selected.workIds,
-      releaseIds: selected.releaseIds,
-      projectIds: selected.projectIds,
-    });
-    setEditLinksOpen(false);
+    updateLinksMutation.mutate(
+      {
+        id,
+        artistIds: data.artistIds,
+        workIds: data.workIds,
+        releaseIds: data.releaseIds,
+        projectIds: data.projectIds,
+      },
+      {
+        onSuccess: () => setIsEditingRelated(false),
+      }
+    );
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (isError || !membership) {
-    return (
-      <div className="space-y-4">
+  return (
+    <div className="space-y-6 max-w-3xl">
+      {/* Back navigation */}
+      <div className="flex items-center gap-4">
         <Button
           variant="ghost"
+          size="icon"
           onClick={() => navigate({ to: '/portal/memberships' })}
-          className="gap-2"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Memberships
+          <ArrowLeft className="h-4 w-4" />
         </Button>
-        <Card>
-          <CardContent className="py-10 text-center text-destructive">
-            Membership not found or you do not have permission to view it.
-          </CardContent>
-        </Card>
+        <div>
+          <h1 className="text-3xl font-bold">{profile.name || 'Unnamed Member'}</h1>
+          <p className="text-muted-foreground">Member ID: {profile.id}</p>
+        </div>
       </div>
-    );
-  }
-
-  const profile = membership.profile;
-  const tier = membership.tier;
-  const linkedArtists = normalizeToArray<string>(membership.linkedArtists);
-  const linkedWorks = normalizeToArray<string>(membership.linkedWorks);
-  const linkedReleases = normalizeToArray<string>(membership.linkedReleases);
-  const linkedProjects = normalizeToArray<string>(membership.linkedProjects);
-
-  return (
-    <div className="space-y-6">
-      {/* Back navigation */}
-      <Button
-        variant="ghost"
-        onClick={() => navigate({ to: '/portal/memberships' })}
-        className="gap-2 -ml-2"
-      >
-        <ArrowLeft className="h-4 w-4" /> Back to Memberships
-      </Button>
 
       {/* Profile Card */}
       <Card>
-        <CardHeader className="flex flex-row items-start justify-between gap-4">
-          <div>
-            <CardTitle className="text-xl">{profile.name || 'Unnamed Member'}</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">ID: {profile.id}</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge variant={statusBadgeVariant(profile.status)}>{profile.status}</Badge>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Profile</span>
             {canEdit && !editingProfile && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setEditName(profile.name ?? '');
-                  setEditEmail(profile.email ?? '');
+                  setEditName(profile.name);
+                  setEditEmail(profile.email);
                   setEditingProfile(true);
                 }}
-                className="gap-1"
               >
-                <Pencil className="h-3 w-3" /> Edit
+                <Pencil className="h-3 w-3 mr-1" />
+                Edit
               </Button>
             )}
-          </div>
+          </CardTitle>
         </CardHeader>
-
         <CardContent className="space-y-4">
           {editingProfile ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label>Full Name</Label>
-                  <Input value={editName} onChange={(e) => setEditName(e.target.value)} />
-                </div>
-                <div className="space-y-1">
-                  <Label>Email</Label>
-                  <Input
-                    type="email"
-                    value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
-                  />
-                </div>
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="edit-name">Full Name</Label>
+                <Input
+                  id="edit-name"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                />
               </div>
-              {profileError && <p className="text-sm text-destructive">{profileError}</p>}
+              <div className="space-y-1">
+                <Label htmlFor="edit-email">Email</Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  value={editEmail}
+                  onChange={(e) => setEditEmail(e.target.value)}
+                />
+              </div>
+              {profileError && (
+                <p className="text-sm text-destructive">{profileError}</p>
+              )}
               <div className="flex gap-2">
                 <Button
                   size="sm"
                   onClick={handleSaveProfile}
                   disabled={updateProfileMutation.isPending}
-                  className="gap-1"
                 >
                   {updateProfileMutation.isPending ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
                   ) : (
-                    <Check className="h-3 w-3" />
+                    <Check className="h-3 w-3 mr-1" />
                   )}
                   Save
                 </Button>
@@ -257,182 +261,154 @@ export default function MembershipDetail() {
                   size="sm"
                   variant="outline"
                   onClick={() => setEditingProfile(false)}
-                  className="gap-1"
                 >
-                  <X className="h-3 w-3" /> Cancel
+                  <X className="h-3 w-3 mr-1" />
+                  Cancel
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-3">
               <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Name</p>
-                <p className="font-medium">{profile.name || '—'}</p>
+                <Label className="text-muted-foreground text-xs">Name</Label>
+                <p className="text-base font-medium">{profile.name || '—'}</p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Email</p>
-                <p className="font-medium">{profile.email || '—'}</p>
+                <Label className="text-muted-foreground text-xs">Email</Label>
+                <p className="text-base">{profile.email || '—'}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground text-xs">Tier</Label>
+                <p className="text-base">{profile.tier || 'Basic'}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground text-xs">Created</Label>
+                <p className="text-base">{formatDate(profile.created_at)}</p>
+              </div>
+              <div>
+                <Label className="text-muted-foreground text-xs">Last Updated</Label>
+                <p className="text-base">{formatDate(profile.updated_at)}</p>
               </div>
             </div>
           )}
+        </CardContent>
+      </Card>
 
-          <Separator />
-
-          {/* Tier info */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Tier</p>
-              <p className="font-medium">{tier?.name || profile.tier || 'Basic'}</p>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Tier Fee</p>
-              <p className="font-medium">
-                {tier?.fee !== undefined ? String(tier.fee) : '—'}
-              </p>
-            </div>
-          </div>
-
-          {tier?.description && (
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
-                Tier Description
-              </p>
-              <p className="text-sm">{tier.description}</p>
-            </div>
-          )}
-
-          {normalizeToArray<string>(tier?.benefits).length > 0 && (
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Benefits</p>
-              <ul className="list-disc list-inside text-sm space-y-1">
-                {normalizeToArray<string>(tier?.benefits).map((b, i) => (
-                  <li key={i}>{b}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <Separator />
-
-          {/* Status section */}
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Status</p>
-              {editingStatus ? (
-                <div className="flex items-center gap-2 mt-1">
-                  <Select
-                    value={editStatus}
-                    onValueChange={(v) => setEditStatus(v as MemberStatusT)}
-                  >
-                    <SelectTrigger className="w-36">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={MemberStatusT.applicant}>Applicant</SelectItem>
-                      <SelectItem value={MemberStatusT.active}>Active</SelectItem>
-                      <SelectItem value={MemberStatusT.paused}>Paused</SelectItem>
-                      <SelectItem value={MemberStatusT.inactive}>Inactive</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    size="sm"
-                    onClick={handleSaveStatus}
-                    disabled={updateStatusMutation.isPending}
-                    className="gap-1"
-                  >
-                    {updateStatusMutation.isPending ? (
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                    ) : (
-                      <Check className="h-3 w-3" />
-                    )}
-                    Save
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setEditingStatus(false)}
-                    className="gap-1"
-                  >
-                    <X className="h-3 w-3" /> Cancel
-                  </Button>
-                </div>
-              ) : (
-                <Badge variant={statusBadgeVariant(profile.status)}>{profile.status}</Badge>
-              )}
-              {statusError && <p className="text-sm text-destructive mt-1">{statusError}</p>}
-            </div>
+      {/* Status Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Status</span>
             {isAdmin && !editingStatus && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  setEditStatus(profile.status);
+                  setSelectedStatus(profile.status as MemberStatusT);
                   setEditingStatus(true);
                 }}
-                className="gap-1"
               >
-                <Pencil className="h-3 w-3" /> Change Status
+                <Pencil className="h-3 w-3 mr-1" />
+                Change
               </Button>
             )}
-          </div>
-
-          <Separator />
-
-          {/* Timestamps */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-muted-foreground">
-            <div>
-              <span className="font-medium text-foreground">Created: </span>
-              {formatDate(profile.created_at)}
-            </div>
-            <div>
-              <span className="font-medium text-foreground">Updated: </span>
-              {formatDate(profile.updated_at)}
-            </div>
-          </div>
-
-          {profile.notes && (
-            <>
-              <Separator />
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Notes</p>
-                <p className="text-sm">{profile.notes}</p>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {editingStatus ? (
+            <div className="space-y-3">
+              <Select
+                value={selectedStatus}
+                onValueChange={(v) => setSelectedStatus(v as MemberStatusT)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={MemberStatusT.applicant}>Applicant</SelectItem>
+                  <SelectItem value={MemberStatusT.active}>Active</SelectItem>
+                  <SelectItem value={MemberStatusT.paused}>Paused</SelectItem>
+                  <SelectItem value={MemberStatusT.inactive}>Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleSaveStatus}
+                  disabled={updateStatusMutation.isPending}
+                >
+                  {updateStatusMutation.isPending ? (
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                  ) : (
+                    <Check className="h-3 w-3 mr-1" />
+                  )}
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setEditingStatus(false)}
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Cancel
+                </Button>
               </div>
-            </>
+            </div>
+          ) : (
+            <Badge variant={statusBadgeVariant(profile.status as MemberStatusT)}>
+              {String(profile.status).charAt(0).toUpperCase() + String(profile.status).slice(1)}
+            </Badge>
           )}
         </CardContent>
       </Card>
 
-      {/* Related Records */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-base">Related Records</CardTitle>
-          {canEdit && <EditLinksButton onClick={() => setEditLinksOpen(true)} />}
-        </CardHeader>
-        <CardContent>
-          <RelatedRecordsSection
-            linkedMembers={[]}
-            linkedArtists={linkedArtists}
-            linkedWorks={linkedWorks}
-            linkedReleases={linkedReleases}
-            linkedProjects={linkedProjects}
+      {/* Tier & Benefits Placeholder */}
+      <div className="space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Planned Features for This Page
+        </p>
+        {detailFindings.map((finding) => (
+          <SectionPlaceholder
+            key={finding.id}
+            title={finding.featureDescription}
+            description={finding.context ?? finding.featureDescription}
+            priority={finding.suggestedPriority}
           />
-        </CardContent>
-      </Card>
+        ))}
+      </div>
 
-      {/* Edit Links Dialog */}
+      <Separator />
+
+      {/* Related Records */}
+      <div className="space-y-4">
+        {canEdit && (
+          <div className="flex justify-end">
+            <EditLinksButton onClick={() => setIsEditingRelated(true)} />
+          </div>
+        )}
+        <RelatedRecordsSection
+          linkedArtists={safeLinkedArtists}
+          linkedWorks={safeLinkedWorks}
+          linkedReleases={safeLinkedReleases}
+          linkedProjects={safeLinkedProjects}
+        />
+      </div>
+
       <EditRelatedDialog
-        open={editLinksOpen}
-        onOpenChange={setEditLinksOpen}
-        title="Edit Linked Records"
-        availableArtists={availableArtists}
-        availableWorks={availableWorks}
-        availableReleases={availableReleases}
-        availableProjects={availableProjects}
-        selectedArtistIds={linkedArtists}
-        selectedWorkIds={linkedWorks}
-        selectedReleaseIds={linkedReleases}
-        selectedProjectIds={linkedProjects}
-        onSave={handleSaveLinks}
+        open={isEditingRelated}
+        onOpenChange={setIsEditingRelated}
+        title="Edit Links"
+        availableMemberships={linkableMemberships}
+        availableArtists={artists}
+        availableWorks={works}
+        availableReleases={releases}
+        availableProjects={projects}
+        selectedMemberIds={[]}
+        selectedArtistIds={safeLinkedArtists}
+        selectedWorkIds={safeLinkedWorks}
+        selectedReleaseIds={safeLinkedReleases}
+        selectedProjectIds={safeLinkedProjects}
+        onSave={handleSaveRelated}
         isSaving={updateLinksMutation.isPending}
         isLoadingOptions={optionsLoading}
         optionsError={optionsError}

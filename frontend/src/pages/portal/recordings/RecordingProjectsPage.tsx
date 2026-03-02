@@ -1,180 +1,197 @@
 import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { useGetAllRecordingProjects, useCreateRecordingProject } from '../../../hooks/useQueries';
-import { useCurrentUser } from '../../../hooks/useCurrentUser';
+import {
+  useGetAllRecordingProjects,
+  useGetCallerUserRole,
+  useGetEntitiesForCaller,
+  useCreateRecordingProject,
+} from '../../../hooks/useQueries';
+import { UserRole, RecordingProject, ProjectStatus } from '../../../backend';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mic, Plus } from 'lucide-react';
-import EmptyState from '../../../components/feedback/EmptyState';
-import LoadingState from '../../../components/feedback/LoadingState';
-import { ProjectStatus } from '../../../backend';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Plus, Mic2, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+
+function formatDate(ts: bigint) {
+  try {
+    return new Date(Number(ts) / 1_000_000).toLocaleDateString();
+  } catch {
+    return '—';
+  }
+}
+
+function statusColor(status: string) {
+  switch (status) {
+    case 'in_progress': return 'default';
+    case 'completed': return 'secondary';
+    case 'planned': return 'outline';
+    case 'archived': return 'destructive';
+    default: return 'secondary';
+  }
+}
 
 export default function RecordingProjectsPage() {
   const navigate = useNavigate();
-  const { isAdmin } = useCurrentUser();
-  const { data: projects = [], isLoading } = useGetAllRecordingProjects();
+  const { data: userRole } = useGetCallerUserRole();
+  const isAdmin = userRole === UserRole.admin;
+
+  const { data: allProjects, isLoading: loadingAll } = useGetAllRecordingProjects();
+  const { data: callerEntities, isLoading: loadingCaller } = useGetEntitiesForCaller();
+
   const createMutation = useCreateRecordingProject();
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    participants: '',
-    sessionDate: '',
-    status: ProjectStatus.planned,
-    notes: ''
-  });
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newNotes, setNewNotes] = useState('');
 
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    const sessionDateMs = new Date(formData.sessionDate).getTime();
-    createMutation.mutate({
-      title: formData.title,
-      participants: formData.participants.split(',').map(p => p.trim()).filter(Boolean),
-      sessionDate: BigInt(sessionDateMs * 1000000),
-      status: formData.status,
-      notes: formData.notes
-    }, {
-      onSuccess: () => {
-        setDialogOpen(false);
-        setFormData({
-          title: '',
-          participants: '',
-          sessionDate: '',
-          status: ProjectStatus.planned,
-          notes: ''
-        });
-      }
-    });
+  const isLoading = isAdmin ? loadingAll : loadingCaller;
+
+  const projects: RecordingProject[] = isAdmin
+    ? (allProjects ?? [])
+    : (callerEntities?.recordingProjects ?? []);
+
+  const handleCreate = async () => {
+    if (!newTitle.trim()) {
+      toast.error('Title is required');
+      return;
+    }
+    try {
+      await createMutation.mutateAsync({
+        title: newTitle.trim(),
+        participants: [],
+        sessionDate: BigInt(Date.now()) * BigInt(1_000_000),
+        status: ProjectStatus.planned,
+        notes: newNotes.trim(),
+      });
+      toast.success('Recording project created');
+      setCreateOpen(false);
+      setNewTitle('');
+      setNewNotes('');
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to create recording project');
+    }
   };
 
-  if (isLoading) {
-    return <LoadingState />;
-  }
-
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-6 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Recording Projects</h1>
-          <p className="text-muted-foreground">Manage production projects and sessions (reference links only)</p>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Mic2 size={24} className="text-primary" />
+            Recording Projects
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {isAdmin ? 'All recording projects' : 'Your recording projects'}
+          </p>
         </div>
-        {isAdmin && (
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                New Project
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Create Recording Project</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleCreate} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title *</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Project title"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="participants">Participants (comma-separated)</Label>
-                  <Input
-                    id="participants"
-                    value={formData.participants}
-                    onChange={(e) => setFormData({ ...formData, participants: e.target.value })}
-                    placeholder="Artist, Producer, Engineer"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sessionDate">Session Date *</Label>
-                  <Input
-                    id="sessionDate"
-                    type="date"
-                    value={formData.sessionDate}
-                    onChange={(e) => setFormData({ ...formData, sessionDate: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) => setFormData({ ...formData, status: value as ProjectStatus })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={ProjectStatus.planned}>Planned</SelectItem>
-                      <SelectItem value={ProjectStatus.in_progress}>In Progress</SelectItem>
-                      <SelectItem value={ProjectStatus.completed}>Completed</SelectItem>
-                      <SelectItem value={ProjectStatus.archived}>Archived</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notes</Label>
-                  <Textarea
-                    id="notes"
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="Project notes..."
-                    rows={3}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? 'Creating...' : 'Create Project'}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        )}
+        <Button onClick={() => setCreateOpen(true)} size="sm" className="gap-2">
+          <Plus size={16} />
+          New Project
+        </Button>
       </div>
 
-      {projects.length === 0 ? (
-        <EmptyState
-          icon={Mic}
-          title="No recording projects yet"
-          description="Create your first recording project to start managing production sessions."
-          actionLabel={isAdmin ? "Create Project" : undefined}
-          onAction={isAdmin ? () => setDialogOpen(true) : undefined}
-        />
+      {isLoading ? (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="animate-spin text-primary" size={32} />
+        </div>
+      ) : projects.length === 0 ? (
+        <div className="text-center py-16 border border-dashed border-border rounded-xl">
+          <Mic2 size={40} className="mx-auto text-muted-foreground mb-3" />
+          <p className="text-muted-foreground font-medium">No recording projects yet</p>
+          <p className="text-sm text-muted-foreground/70 mt-1 mb-4">Start your first recording project to get started.</p>
+          <Button onClick={() => setCreateOpen(true)} size="sm" variant="outline" className="gap-2">
+            <Plus size={14} />
+            Create Project
+          </Button>
+        </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
-            <Card 
-              key={project.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => navigate({ to: '/portal/recordings/$id', params: { id: project.id } })}
-            >
-              <CardHeader>
-                <CardTitle className="truncate">{project.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1 text-sm">
-                  <p className="text-muted-foreground capitalize">{project.status.replace('_', ' ')}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {project.participants.length} participant{project.participants.length !== 1 ? 's' : ''}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(Number(project.sessionDate) / 1000000).toLocaleDateString()}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="rounded-xl border border-border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Participants</TableHead>
+                <TableHead>Session Date</TableHead>
+                <TableHead>Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {projects.map((project) => (
+                <TableRow
+                  key={project.id}
+                  className="cursor-pointer hover:bg-accent/50 transition-colors"
+                  onClick={() => navigate({ to: `/portal/recordings/${project.id}` })}
+                >
+                  <TableCell className="font-medium">{project.title || '—'}</TableCell>
+                  <TableCell>
+                    <Badge variant={statusColor(project.status as string) as any}>
+                      {String(project.status).replace('_', ' ')}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">
+                    {Array.isArray(project.participants) ? project.participants.length : 0}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{formatDate(project.sessionDate)}</TableCell>
+                  <TableCell className="text-muted-foreground">{formatDate(project.created_at)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
+
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Recording Project</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="project-title">Title</Label>
+              <Input
+                id="project-title"
+                value={newTitle}
+                onChange={e => setNewTitle(e.target.value)}
+                placeholder="Project title"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="project-notes">Notes</Label>
+              <Input
+                id="project-notes"
+                value={newNotes}
+                onChange={e => setNewNotes(e.target.value)}
+                placeholder="Optional notes"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createMutation.isPending} className="gap-2">
+              {createMutation.isPending && <Loader2 size={14} className="animate-spin" />}
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

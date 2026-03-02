@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { PlusCircle, Users, Loader2 } from 'lucide-react';
+import { useInternetIdentity } from '../../../hooks/useInternetIdentity';
+import {
+  useGetAllMembershipProfiles,
+  useGetCallerMemberships,
+  useGetCallerUserRole,
+  useCreateMembershipProfile,
+} from '../../../hooks/useQueries';
+import { UserRole, MembershipProfile } from '../../../backend';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -11,7 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Table,
@@ -21,16 +27,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Card, CardContent } from '@/components/ui/card';
-import {
-  useGetAllMembershipProfiles,
-  useGetCallerMemberships,
-  useCreateMembershipProfile,
-} from '@/hooks/useQueries';
-import { useGetCallerUserRole } from '@/hooks/useQueries';
-import type { MembershipProfile, T as MemberStatusT } from '../../../backend';
+import { Plus, Users, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
-function statusBadgeVariant(status: MemberStatusT): 'default' | 'secondary' | 'destructive' | 'outline' {
+function statusColor(status: string) {
   switch (status) {
     case 'active': return 'default';
     case 'applicant': return 'secondary';
@@ -40,17 +40,7 @@ function statusBadgeVariant(status: MemberStatusT): 'default' | 'secondary' | 'd
   }
 }
 
-function statusLabel(status: MemberStatusT): string {
-  switch (status) {
-    case 'active': return 'Active';
-    case 'applicant': return 'Applicant';
-    case 'paused': return 'Paused';
-    case 'inactive': return 'Inactive';
-    default: return String(status);
-  }
-}
-
-function formatDate(ts: bigint): string {
+function formatDate(ts: bigint) {
   try {
     return new Date(Number(ts) / 1_000_000).toLocaleDateString();
   } catch {
@@ -60,176 +50,139 @@ function formatDate(ts: bigint): string {
 
 export default function MembershipsPage() {
   const navigate = useNavigate();
-  const { data: role } = useGetCallerUserRole();
-  const isAdmin = role === 'admin';
+  const { identity } = useInternetIdentity();
+  const { data: userRole } = useGetCallerUserRole();
+  const isAdmin = userRole === UserRole.admin;
 
-  // Admins see all profiles; regular users see their own memberships
-  const adminQuery = useGetAllMembershipProfiles();
-  const callerQuery = useGetCallerMemberships();
-
-  const isLoading = isAdmin ? adminQuery.isLoading : callerQuery.isLoading;
-  const isError = isAdmin ? adminQuery.isError : callerQuery.isError;
-
-  // Normalize to MembershipProfile[]
-  const profiles: MembershipProfile[] = isAdmin
-    ? (adminQuery.data ?? [])
-    : (callerQuery.data ?? []).map((m) => m.profile);
-
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [newId, setNewId] = useState('');
-  const [newName, setNewName] = useState('');
-  const [newEmail, setNewEmail] = useState('');
-  const [formError, setFormError] = useState('');
+  const { data: allProfiles, isLoading: loadingAll } = useGetAllMembershipProfiles();
+  const { data: callerMemberships, isLoading: loadingCaller } = useGetCallerMemberships();
 
   const createMutation = useCreateMembershipProfile();
 
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+
+  const isLoading = isAdmin ? loadingAll : loadingCaller;
+
+  const profiles: MembershipProfile[] = isAdmin
+    ? (allProfiles ?? [])
+    : (callerMemberships ?? []).map(m => m.profile);
+
   const handleCreate = async () => {
-    setFormError('');
-    if (!newId.trim() || !newName.trim() || !newEmail.trim()) {
-      setFormError('All fields are required.');
+    if (!newName.trim() || !newEmail.trim()) {
+      toast.error('Name and email are required');
       return;
     }
+    const id = `member-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     try {
-      await createMutation.mutateAsync({ id: newId.trim(), name: newName.trim(), email: newEmail.trim() });
-      setDialogOpen(false);
-      setNewId('');
+      await createMutation.mutateAsync({ id, name: newName.trim(), email: newEmail.trim() });
+      toast.success('Membership profile created');
+      setCreateOpen(false);
       setNewName('');
       setNewEmail('');
-    } catch (err: unknown) {
-      setFormError(err instanceof Error ? err.message : 'Failed to create membership.');
+    } catch (err: any) {
+      toast.error(err?.message ?? 'Failed to create membership');
     }
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="p-6 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Memberships</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {isAdmin ? 'Manage all member profiles and statuses.' : 'View and manage your membership.'}
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+            <Users size={24} className="text-primary" />
+            Memberships
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {isAdmin ? 'All membership profiles' : 'Your membership profiles'}
           </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)} className="gap-2">
-          <PlusCircle className="h-4 w-4" />
+        <Button onClick={() => setCreateOpen(true)} size="sm" className="gap-2">
+          <Plus size={16} />
           New Membership
         </Button>
       </div>
 
-      {/* Content */}
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Loader2 className="animate-spin text-primary" size={32} />
         </div>
-      ) : isError ? (
-        <Card>
-          <CardContent className="py-10 text-center text-destructive">
-            Failed to load memberships. Please try again.
-          </CardContent>
-        </Card>
       ) : profiles.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16 gap-4">
-            <Users className="h-12 w-12 text-muted-foreground" />
-            <div className="text-center">
-              <p className="text-lg font-semibold text-foreground">No Memberships Found</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Get started by creating your first membership.
-              </p>
-            </div>
-            <Button onClick={() => setDialogOpen(true)} className="gap-2">
-              <PlusCircle className="h-4 w-4" />
-              Create Membership
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="text-center py-16 border border-dashed border-border rounded-xl">
+          <Users size={40} className="mx-auto text-muted-foreground mb-3" />
+          <p className="text-muted-foreground font-medium">No memberships yet</p>
+          <p className="text-sm text-muted-foreground/70 mt-1 mb-4">Create your first membership profile to get started.</p>
+          <Button onClick={() => setCreateOpen(true)} size="sm" variant="outline" className="gap-2">
+            <Plus size={14} />
+            Create Membership
+          </Button>
+        </div>
       ) : (
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Tier</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created</TableHead>
+        <div className="rounded-xl border border-border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Tier</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {profiles.map((profile) => (
+                <TableRow
+                  key={profile.id}
+                  className="cursor-pointer hover:bg-accent/50 transition-colors"
+                  onClick={() => navigate({ to: `/portal/memberships/${profile.id}` })}
+                >
+                  <TableCell className="font-medium">{profile.name || '—'}</TableCell>
+                  <TableCell className="text-muted-foreground">{profile.email || '—'}</TableCell>
+                  <TableCell>{profile.tier || 'Basic'}</TableCell>
+                  <TableCell>
+                    <Badge variant={statusColor(profile.status as string) as any}>
+                      {String(profile.status)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{formatDate(profile.created_at)}</TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {profiles.map((profile) => (
-                  <TableRow
-                    key={profile.id}
-                    className="cursor-pointer hover:bg-muted/50 transition-colors"
-                    onClick={() => navigate({ to: `/portal/memberships/${profile.id}` })}
-                  >
-                    <TableCell className="font-medium">{profile.name || '—'}</TableCell>
-                    <TableCell className="text-muted-foreground">{profile.email || '—'}</TableCell>
-                    <TableCell>{profile.tier || 'Basic'}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusBadgeVariant(profile.status)}>
-                        {statusLabel(profile.status)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-sm">
-                      {formatDate(profile.created_at)}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
 
-      {/* Create Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Membership</DialogTitle>
-            <DialogDescription>
-              Enter a unique ID, name, and email for the new member.
-            </DialogDescription>
+            <DialogTitle>Create Membership Profile</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
-            <div className="space-y-1">
-              <Label htmlFor="member-id">Member ID</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-name">Name</Label>
               <Input
-                id="member-id"
-                placeholder="e.g. member-001"
-                value={newId}
-                onChange={(e) => setNewId(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="member-name">Full Name</Label>
-              <Input
-                id="member-name"
-                placeholder="Jane Smith"
+                id="new-name"
                 value={newName}
-                onChange={(e) => setNewName(e.target.value)}
+                onChange={e => setNewName(e.target.value)}
+                placeholder="Full name"
               />
             </div>
-            <div className="space-y-1">
-              <Label htmlFor="member-email">Email</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="new-email">Email</Label>
               <Input
-                id="member-email"
+                id="new-email"
                 type="email"
-                placeholder="jane@example.com"
                 value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
+                onChange={e => setNewEmail(e.target.value)}
+                placeholder="email@example.com"
               />
             </div>
-            {formError && (
-              <p className="text-sm text-destructive">{formError}</p>
-            )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreate} disabled={createMutation.isPending}>
-              {createMutation.isPending && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createMutation.isPending} className="gap-2">
+              {createMutation.isPending && <Loader2 size={14} className="animate-spin" />}
               Create
             </Button>
           </DialogFooter>

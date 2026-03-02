@@ -13,11 +13,17 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft } from 'lucide-react';
 import LoadingState from '../../../components/feedback/LoadingState';
 import ErrorBanner from '../../../components/feedback/ErrorBanner';
+import SectionPlaceholder from '../../../components/feedback/SectionPlaceholder';
 import RelatedRecordsSection from '../../../components/related/RelatedRecordsSection';
 import EditRelatedDialog from '../../../components/related/EditRelatedDialog';
 import EditLinksButton from '../../../components/related/EditLinksButton';
 import { canEditRecordingProject } from '../../../components/related/relatedRecordsPermissions';
 import { normalizeToArray } from '../../../utils/arrays';
+import { findingsForSection } from '../../../utils/portalAudit';
+
+const detailFindings = findingsForSection('Recording Projects').filter((f) =>
+  ['rec-asset-references', 'rec-status-workflow', 'rec-participant-roles', 'rec-session-metadata'].includes(f.id)
+);
 
 export default function RecordingProjectDetail() {
   const { id } = useParams({ from: '/portal/recordings/$id' });
@@ -109,14 +115,20 @@ export default function RecordingProjectDetail() {
             <p className="text-lg capitalize">{statusDisplay}</p>
           </div>
           <div>
-            <Label className="text-muted-foreground">Participants</Label>
-            <p className="text-lg">{safeParticipants.join(', ') || 'None'}</p>
-          </div>
-          <div>
             <Label className="text-muted-foreground">Session Date</Label>
             <p className="text-lg">
               {new Date(Number(project.sessionDate) / 1000000).toLocaleDateString()}
             </p>
+          </div>
+          <div>
+            <Label className="text-muted-foreground">Participants</Label>
+            {safeParticipants.length > 0 ? (
+              <ul className="list-disc list-inside text-lg">
+                {safeParticipants.map((p, idx) => <li key={idx}>{p}</li>)}
+              </ul>
+            ) : (
+              <p className="text-muted-foreground">No participants listed</p>
+            )}
           </div>
           {safeAssetReferences.length > 0 && (
             <div>
@@ -138,6 +150,23 @@ export default function RecordingProjectDetail() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Planned features for this detail page */}
+      {detailFindings.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Planned Features for This Page
+          </p>
+          {detailFindings.map((finding) => (
+            <SectionPlaceholder
+              key={finding.id}
+              title={finding.featureDescription}
+              description={finding.context ?? finding.featureDescription}
+              priority={finding.suggestedPriority}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="space-y-4">
         {canEdit && (

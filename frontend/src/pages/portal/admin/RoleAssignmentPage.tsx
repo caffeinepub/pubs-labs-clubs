@@ -1,6 +1,7 @@
 // TEMP: admin-only guard disabled for testing
 // To re-enable: restore the `if (!isAdmin)` check that renders the Access Denied card
 import { useState } from 'react';
+import { Principal } from '@dfinity/principal';
 import { useCurrentUser } from '../../../hooks/useCurrentUser';
 import { useGetAllKnownUsers, useAssignCallerUserRole } from '../../../hooks/useQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,7 +41,8 @@ export default function RoleAssignmentPage() {
   const handleRoleChange = async (principalString: string, newRole: UserRole) => {
     setChangingRole(principalString);
     try {
-      await assignRole.mutateAsync({ user: principalString, role: newRole });
+      const principal = Principal.fromText(principalString);
+      await assignRole.mutateAsync({ user: principal, role: newRole });
     } finally {
       setChangingRole(null);
     }

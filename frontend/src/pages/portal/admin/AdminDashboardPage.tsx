@@ -9,10 +9,11 @@ import {
   useGetAllArtistDevelopment
 } from '../../../hooks/useQueries';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Music, Disc, Mic, TrendingUp, ClipboardCheck } from 'lucide-react';
+import { Users, Music, Disc, Mic, TrendingUp } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import LoadingState from '../../../components/feedback/LoadingState';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import PortalAuditSummary from '../../../components/admin/PortalAuditSummary';
+import { Separator } from '@/components/ui/separator';
 
 export default function AdminDashboardPage() {
   const { isLoading: userLoading } = useCurrentUser();
@@ -90,27 +91,6 @@ export default function AdminDashboardPage() {
         <p className="text-muted-foreground">Overview of all Higgins Music operations</p>
       </div>
 
-      {/* Rollout 21.7 Smoke Test Helper */}
-      <Alert className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-        <ClipboardCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-        <AlertTitle className="text-blue-900 dark:text-blue-100">Rollout 21.7 Smoke Test</AlertTitle>
-        <AlertDescription className="text-blue-800 dark:text-blue-200">
-          <p className="mb-2">
-            After upgrade, verify the application works correctly by testing with both admin and non-admin approved member accounts.
-          </p>
-          <ul className="list-disc list-inside space-y-1 text-sm">
-            <li>Confirm <strong>AuthGate</strong> blocks unauthenticated users and allows authenticated users through</li>
-            <li>Confirm <strong>ApprovalGate</strong> allows admins and approved members through</li>
-            <li>Test all five detail routes load without crashes: Memberships, Publishing, Releases, Recordings, Artists</li>
-            <li>Verify "Edit Links" dialogs open successfully on all five detail routes</li>
-            <li>Watch browser console for errors (undefined/null access, runtime traps)</li>
-          </ul>
-          <p className="mt-2 text-sm">
-            <strong>Checklist:</strong> <code className="text-xs bg-blue-100 dark:bg-blue-900 px-1 py-0.5 rounded">frontend/SMOKE_TEST_21_7.md</code>
-          </p>
-        </AlertDescription>
-      </Alert>
-
       {isLoading ? (
         <LoadingState />
       ) : (
@@ -160,6 +140,11 @@ export default function AdminDashboardPage() {
               )}
             </CardContent>
           </Card>
+
+          <Separator />
+
+          {/* Portal Development Priorities — admin-visible audit summary */}
+          <PortalAuditSummary />
         </>
       )}
     </div>

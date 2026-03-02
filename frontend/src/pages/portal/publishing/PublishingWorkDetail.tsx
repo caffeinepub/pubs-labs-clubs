@@ -15,11 +15,17 @@ import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft } from 'lucide-react';
 import LoadingState from '../../../components/feedback/LoadingState';
 import ErrorBanner from '../../../components/feedback/ErrorBanner';
+import SectionPlaceholder from '../../../components/feedback/SectionPlaceholder';
 import RelatedRecordsSection from '../../../components/related/RelatedRecordsSection';
 import EditRelatedDialog from '../../../components/related/EditRelatedDialog';
 import EditLinksButton from '../../../components/related/EditLinksButton';
 import { canEditPublishingWork } from '../../../components/related/relatedRecordsPermissions';
 import { normalizeToArray } from '../../../utils/arrays';
+import { findingsForSection } from '../../../utils/portalAudit';
+
+const detailFindings = findingsForSection('Publishing Works').filter((f) =>
+  ['pub-ownership-viz', 'pub-isrc-iswc-validation', 'pub-contributor-roles'].includes(f.id)
+);
 
 export default function PublishingWorkDetail() {
   const { id } = useParams({ from: '/portal/publishing/$id' });
@@ -193,6 +199,23 @@ export default function PublishingWorkDetail() {
           )}
         </CardContent>
       </Card>
+
+      {/* Planned features for this detail page */}
+      {detailFindings.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Planned Features for This Page
+          </p>
+          {detailFindings.map((finding) => (
+            <SectionPlaceholder
+              key={finding.id}
+              title={finding.featureDescription}
+              description={finding.context ?? finding.featureDescription}
+              priority={finding.suggestedPriority}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="space-y-4">
         {canEdit && (

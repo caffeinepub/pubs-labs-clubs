@@ -13,11 +13,17 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeft } from 'lucide-react';
 import LoadingState from '../../../components/feedback/LoadingState';
 import ErrorBanner from '../../../components/feedback/ErrorBanner';
+import SectionPlaceholder from '../../../components/feedback/SectionPlaceholder';
 import RelatedRecordsSection from '../../../components/related/RelatedRecordsSection';
 import EditRelatedDialog from '../../../components/related/EditRelatedDialog';
 import EditLinksButton from '../../../components/related/EditLinksButton';
 import { canEditRelease } from '../../../components/related/relatedRecordsPermissions';
 import { normalizeToArray } from '../../../utils/arrays';
+import { findingsForSection } from '../../../utils/portalAudit';
+
+const detailFindings = findingsForSection('Releases').filter((f) =>
+  ['rel-workflow-checklist', 'rel-key-dates-calendar', 'rel-tracklist-edit', 'rel-owner-collab'].includes(f.id)
+);
 
 export default function ReleaseDetail() {
   const { id } = useParams({ from: '/portal/releases/$id' });
@@ -147,6 +153,23 @@ export default function ReleaseDetail() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Planned features for this detail page */}
+      {detailFindings.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Planned Features for This Page
+          </p>
+          {detailFindings.map((finding) => (
+            <SectionPlaceholder
+              key={finding.id}
+              title={finding.featureDescription}
+              description={finding.context ?? finding.featureDescription}
+              priority={finding.suggestedPriority}
+            />
+          ))}
+        </div>
+      )}
 
       <div className="space-y-4">
         {canEdit && (

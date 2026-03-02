@@ -1,15 +1,13 @@
 # Specification
 
 ## Summary
-**Goal:** Fully implement the Memberships portal section (list and detail pages) with visible data, inline editing, and related records support — wired to a complete backend.
+**Goal:** Fix the portal sections not rendering after the Version 36 deployment so that all portal areas are visible and navigable for authenticated users.
 
 **Planned changes:**
-- Audit all five portal list/detail pages to identify the first unfinished area (Memberships)
-- Implement `MembershipsPage` to display a list of memberships with name, email, and status badge; show a meaningful empty state with a "Create Membership" CTA when no data exists
-- Implement `MembershipDetail` to display all profile fields (name, email, bio, status) with inline editing for admins and the member themselves
-- Add a related records section on `MembershipDetail` showing linked artists, works, releases, and projects as clickable badges, with a working `EditRelatedDialog` for multi-select and save
-- Expose backend methods: `getMemberships` (admin), `getCallerMemberships`, `getMembership(id)`, `updateMembership`, and related-link mutation methods
-- Wire backend methods to frontend hooks in `useQueries.ts` with correct argument types and cache invalidation on mutation success
-- Seed or ensure real backend data is returned so pages are non-empty during testing
+- Audit and fix the TanStack Router route tree in App.tsx to ensure all portal child routes (Memberships, Publishing Works, Releases, Recording Projects, Artist Development, Admin) are correctly nested under the portal parent route
+- Verify that AuthGate does not incorrectly redirect authenticated users away from portal routes
+- Ensure ApprovalGate remains disabled (renders children unconditionally) and does not block portal sections
+- Fix PortalLayout to correctly render the sidebar navigation links and the main content `Outlet` so child route components are mounted and displayed
+- Ensure direct navigation to portal sub-route URLs renders the correct page content without console errors
 
-**User-visible outcome:** Users can navigate to the Memberships portal section, see a populated list of memberships, click through to a detail page with all profile fields displayed, edit fields inline (if admin or owner), and manage related records — with no blank or invisible content areas.
+**User-visible outcome:** After logging in, authenticated users can see and navigate all five portal sections (Memberships, Publishing Works, Releases, Recording Projects, Artist Development) in the sidebar, and each section displays its content correctly including on page refresh.
