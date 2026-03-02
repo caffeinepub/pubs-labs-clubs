@@ -166,13 +166,13 @@ actor {
     };
   };
 
+  // Persistent storage
+  var nextEntityId = 0;
+
   // COMPONENT INTEGRATION
   let accessControlState = AccessControl.initState();
   let approvalState = UserApproval.initState(accessControlState);
   include MixinAuthorization(accessControlState);
-
-  // Persistent storage
-  var nextEntityId = 0;
 
   let userProfiles = Map.empty<Principal, UserProfile>();
   let memberships = Map.empty<MemberId, Membership>();
@@ -342,6 +342,56 @@ actor {
     };
   };
 
+  // Owner or admin: update name, email, and status together.
+  // Status can only be changed by an admin; if the caller is not an admin the existing status is preserved.
+  public shared ({ caller }) func updateMembership(
+    id : MemberId,
+    name : Text,
+    email : Text,
+    status : MemberStatus.T,
+  ) : async MembershipProfile {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can update memberships");
+    };
+    switch (memberships.get(id)) {
+      case (null) { Runtime.trap("Membership profile not found") };
+      case (?existingMembership) {
+        // Only the owner or an admin may update this record
+        if (caller != existingMembership.profile.principal and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: You do not have permission to update this membership");
+        };
+        // Non-admins cannot change the status field
+        let resolvedStatus = if (AccessControl.isAdmin(accessControlState, caller)) {
+          status;
+        } else {
+          existingMembership.profile.status;
+        };
+        let updatedProfile : MembershipProfile = {
+          id;
+          principal = existingMembership.profile.principal;
+          name;
+          email;
+          status = resolvedStatus;
+          tier = existingMembership.profile.tier;
+          notes = existingMembership.profile.notes;
+          agreements = existingMembership.profile.agreements;
+          created_at = existingMembership.profile.created_at;
+          updated_at = Time.now();
+        };
+        let updatedMembership : Membership = {
+          profile = updatedProfile;
+          tier = existingMembership.tier;
+          linkedArtists = existingMembership.linkedArtists;
+          linkedWorks = existingMembership.linkedWorks;
+          linkedReleases = existingMembership.linkedReleases;
+          linkedProjects = existingMembership.linkedProjects;
+        };
+        memberships.add(id, updatedMembership);
+        updatedProfile;
+      };
+    };
+  };
+
   // Admin-only: change the status of a membership (applicant -> active, active -> paused, etc.)
   public shared ({ caller }) func updateMembershipStatus(
     id : MemberId,
@@ -490,6 +540,47 @@ actor {
     };
   };
 
+  // Owner or admin: update title, registration status, contributors, ownership splits, and notes.
+  public shared ({ caller }) func updatePublishingWork(
+    id : Text,
+    title : Text,
+    registrationStatus : Text,
+    contributors : [Text],
+    ownershipSplits : [(Text, Nat)],
+    notes : Text,
+  ) : async PublishingWork {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can update publishing work");
+    };
+    switch (publishingCatalog.get(id)) {
+      case (null) { Runtime.trap("Publishing work not found") };
+      case (?work) {
+        // Only the owner or an admin may update this record
+        if (caller != work.owner and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: You can only update your own publishing work");
+        };
+        let updatedWork : PublishingWork = {
+          id = work.id;
+          owner = work.owner;
+          title;
+          contributors;
+          ownershipSplits;
+          iswc = work.iswc;
+          isrc = work.isrc;
+          registrationStatus;
+          notes;
+          linkedMembers = work.linkedMembers;
+          linkedArtists = work.linkedArtists;
+          linkedReleases = work.linkedReleases;
+          linkedProjects = work.linkedProjects;
+          created_at = work.created_at;
+        };
+        publishingCatalog.add(id, updatedWork);
+        updatedWork;
+      };
+    };
+  };
+
   public shared ({ caller }) func addPublishingWorkNotes(id : Text, notes : Text) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can add notes");
@@ -547,6 +638,46 @@ actor {
           Runtime.trap("Unauthorized: you can only view your own releases");
         };
         release;
+      };
+    };
+  };
+
+  // Owner or admin: update title, release type, tracklist, key dates, and workflow checklist.
+  public shared ({ caller }) func updateRelease(
+    releaseId : LabelEntityId,
+    title : Text,
+    releaseType : Text,
+    tracklist : [Text],
+    keyDates : [Text],
+    workflowChecklist : [Text],
+  ) : async Release {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can update releases");
+    };
+    switch (releases.get(releaseId)) {
+      case (null) { Runtime.trap("Release not found") };
+      case (?release) {
+        // Only the owner or an admin may update this record
+        if (caller != release.owner and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: You can only update your own releases");
+        };
+        let updatedRelease : Release = {
+          id = release.id;
+          owner = release.owner;
+          title;
+          releaseType;
+          tracklist;
+          keyDates;
+          owners = release.owners;
+          workflowChecklist;
+          linkedMembers = release.linkedMembers;
+          linkedArtists = release.linkedArtists;
+          linkedWorks = release.linkedWorks;
+          linkedProjects = release.linkedProjects;
+          created_at = release.created_at;
+        };
+        releases.add(releaseId, updatedRelease);
+        updatedRelease;
       };
     };
   };
@@ -617,6 +748,46 @@ actor {
     };
   };
 
+  // Owner or admin: update project metadata fields.
+  public shared ({ caller }) func updateRecordingProject(
+    projectId : RecodingId,
+    title : Text,
+    participants : [Text],
+    sessionDate : Time.Time,
+    status : ProjectStatus,
+    notes : Text,
+  ) : async RecordingProject {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can update recording projects");
+    };
+    switch (recordingProjects.get(projectId)) {
+      case (null) { Runtime.trap("Recording project not found") };
+      case (?project) {
+        // Only the owner or an admin may update this record
+        if (caller != project.owner and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: You can only update your own recording projects");
+        };
+        let updatedProject : RecordingProject = {
+          id = project.id;
+          owner = project.owner;
+          title;
+          participants;
+          sessionDate;
+          status;
+          notes;
+          assetReferences = project.assetReferences;
+          linkedMembers = project.linkedMembers;
+          linkedArtists = project.linkedArtists;
+          linkedWorks = project.linkedWorks;
+          linkedReleases = project.linkedReleases;
+          created_at = project.created_at;
+        };
+        recordingProjects.add(projectId, updatedProject);
+        updatedProject;
+      };
+    };
+  };
+
   // ARTIST DEVELOPMENT FUNCTIONS
   public shared ({ caller }) func createArtistDevelopment(
     artistId : Text,
@@ -662,6 +833,45 @@ actor {
           Runtime.trap("Unauthorized: you can only view your own artist development entries");
         };
         entry;
+      };
+    };
+  };
+
+  // Owner or admin: update goals, plans, milestones, and internal notes.
+  public shared ({ caller }) func updateArtistDevelopment(
+    entryId : ArtistDevelopmentId,
+    goals : [Text],
+    plans : [Text],
+    milestones : [Text],
+    internalNotes : Text,
+  ) : async ArtistDevelopment {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can update artist development entries");
+    };
+    switch (artistDevelopment.get(entryId)) {
+      case (null) { Runtime.trap("Artist development entry not found") };
+      case (?entry) {
+        // Only the owner or an admin may update this record
+        if (caller != entry.owner and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: You can only update your own artist development entries");
+        };
+        let updatedEntry : ArtistDevelopment = {
+          id = entry.id;
+          owner = entry.owner;
+          artistId = entry.artistId;
+          goals;
+          plans;
+          milestones;
+          internalNotes;
+          relatedMemberships = entry.relatedMemberships;
+          relatedPublishing = entry.relatedPublishing;
+          relatedLabelEntities = entry.relatedLabelEntities;
+          relatedRecordingProjects = entry.relatedRecordingProjects;
+          relatedArtistDevelopment = entry.relatedArtistDevelopment;
+          created_at = entry.created_at;
+        };
+        artistDevelopment.add(entryId, updatedEntry);
+        updatedEntry;
       };
     };
   };

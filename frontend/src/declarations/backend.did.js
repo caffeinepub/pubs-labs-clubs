@@ -303,6 +303,17 @@ export const idlService = IDL.Service({
   'requestApproval' : IDL.Func([], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'setApproval' : IDL.Func([IDL.Principal, ApprovalStatus], [], []),
+  'updateArtistDevelopment' : IDL.Func(
+      [
+        ArtistDevelopmentId,
+        IDL.Vec(IDL.Text),
+        IDL.Vec(IDL.Text),
+        IDL.Vec(IDL.Text),
+        IDL.Text,
+      ],
+      [ArtistDevelopment],
+      [],
+    ),
   'updateArtistDevelopmentLinks' : IDL.Func(
       [
         ArtistDevelopmentId,
@@ -316,6 +327,11 @@ export const idlService = IDL.Service({
       [],
     ),
   'updateKnownUserRole' : IDL.Func([], [], []),
+  'updateMembership' : IDL.Func(
+      [MemberId, IDL.Text, IDL.Text, T],
+      [MembershipProfile],
+      [],
+    ),
   'updateMembershipLinks' : IDL.Func(
       [
         MemberId,
@@ -333,6 +349,35 @@ export const idlService = IDL.Service({
       [],
     ),
   'updateMembershipStatus' : IDL.Func([MemberId, T], [MembershipProfile], []),
+  'updatePublishingWork' : IDL.Func(
+      [
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Vec(IDL.Text),
+        IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+        IDL.Text,
+      ],
+      [PublishingWork],
+      [],
+    ),
+  'updateRecordingProject' : IDL.Func(
+      [RecodingId, IDL.Text, IDL.Vec(IDL.Text), Time, ProjectStatus, IDL.Text],
+      [RecordingProject],
+      [],
+    ),
+  'updateRelease' : IDL.Func(
+      [
+        LabelEntityId,
+        IDL.Text,
+        IDL.Text,
+        IDL.Vec(IDL.Text),
+        IDL.Vec(IDL.Text),
+        IDL.Vec(IDL.Text),
+      ],
+      [Release],
+      [],
+    ),
 });
 
 export const idlInitArgs = [];
@@ -649,6 +694,17 @@ export const idlFactory = ({ IDL }) => {
     'requestApproval' : IDL.Func([], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'setApproval' : IDL.Func([IDL.Principal, ApprovalStatus], [], []),
+    'updateArtistDevelopment' : IDL.Func(
+        [
+          ArtistDevelopmentId,
+          IDL.Vec(IDL.Text),
+          IDL.Vec(IDL.Text),
+          IDL.Vec(IDL.Text),
+          IDL.Text,
+        ],
+        [ArtistDevelopment],
+        [],
+      ),
     'updateArtistDevelopmentLinks' : IDL.Func(
         [
           ArtistDevelopmentId,
@@ -662,6 +718,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'updateKnownUserRole' : IDL.Func([], [], []),
+    'updateMembership' : IDL.Func(
+        [MemberId, IDL.Text, IDL.Text, T],
+        [MembershipProfile],
+        [],
+      ),
     'updateMembershipLinks' : IDL.Func(
         [
           MemberId,
@@ -679,6 +740,42 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'updateMembershipStatus' : IDL.Func([MemberId, T], [MembershipProfile], []),
+    'updatePublishingWork' : IDL.Func(
+        [
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Vec(IDL.Text),
+          IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+          IDL.Text,
+        ],
+        [PublishingWork],
+        [],
+      ),
+    'updateRecordingProject' : IDL.Func(
+        [
+          RecodingId,
+          IDL.Text,
+          IDL.Vec(IDL.Text),
+          Time,
+          ProjectStatus,
+          IDL.Text,
+        ],
+        [RecordingProject],
+        [],
+      ),
+    'updateRelease' : IDL.Func(
+        [
+          LabelEntityId,
+          IDL.Text,
+          IDL.Text,
+          IDL.Vec(IDL.Text),
+          IDL.Vec(IDL.Text),
+          IDL.Vec(IDL.Text),
+        ],
+        [Release],
+        [],
+      ),
   });
 };
 

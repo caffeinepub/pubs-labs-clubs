@@ -250,6 +250,10 @@ export interface _SERVICE {
   'requestApproval' : ActorMethod<[], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setApproval' : ActorMethod<[Principal, ApprovalStatus], undefined>,
+  'updateArtistDevelopment' : ActorMethod<
+    [ArtistDevelopmentId, Array<string>, Array<string>, Array<string>, string],
+    ArtistDevelopment
+  >,
   'updateArtistDevelopmentLinks' : ActorMethod<
     [
       ArtistDevelopmentId,
@@ -262,6 +266,10 @@ export interface _SERVICE {
     undefined
   >,
   'updateKnownUserRole' : ActorMethod<[], undefined>,
+  'updateMembership' : ActorMethod<
+    [MemberId, string, string, T],
+    MembershipProfile
+  >,
   'updateMembershipLinks' : ActorMethod<
     [
       MemberId,
@@ -277,6 +285,25 @@ export interface _SERVICE {
     MembershipProfile
   >,
   'updateMembershipStatus' : ActorMethod<[MemberId, T], MembershipProfile>,
+  'updatePublishingWork' : ActorMethod<
+    [string, string, string, Array<string>, Array<[string, bigint]>, string],
+    PublishingWork
+  >,
+  'updateRecordingProject' : ActorMethod<
+    [RecodingId, string, Array<string>, Time, ProjectStatus, string],
+    RecordingProject
+  >,
+  'updateRelease' : ActorMethod<
+    [
+      LabelEntityId,
+      string,
+      string,
+      Array<string>,
+      Array<string>,
+      Array<string>,
+    ],
+    Release
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

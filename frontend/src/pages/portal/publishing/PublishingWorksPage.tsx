@@ -1,23 +1,19 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import {
-  useGetAllPublishingWorks,
-  useGetCallerUserRole,
-  useGetEntitiesForCaller,
-  useCreatePublishingWork,
-} from '../../../hooks/useQueries';
-import { UserRole, PublishingWork } from '../../../backend';
+import { Plus, BookOpen, Loader2, AlertCircle, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Table,
   TableBody,
@@ -26,118 +22,133 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Music, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-
-function formatDate(ts: bigint) {
-  try {
-    return new Date(Number(ts) / 1_000_000).toLocaleDateString();
-  } catch {
-    return '—';
-  }
-}
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  useGetAllPublishingWorks,
+  useGetEntitiesForCaller,
+  useCreatePublishingWork,
+  useIsCallerAdmin,
+} from '@/hooks/useQueries';
+import type { PublishingWork } from '../../../backend';
 
 export default function PublishingWorksPage() {
   const navigate = useNavigate();
-  const { data: userRole } = useGetCallerUserRole();
-  const isAdmin = userRole === UserRole.admin;
-
+  const { data: isAdmin } = useIsCallerAdmin();
   const { data: allWorks, isLoading: loadingAll } = useGetAllPublishingWorks();
   const { data: callerEntities, isLoading: loadingCaller } = useGetEntitiesForCaller();
+  const createWork = useCreatePublishingWork();
 
-  const createMutation = useCreatePublishingWork();
-
-  const [createOpen, setCreateOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newStatus, setNewStatus] = useState('unregistered');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formTitle, setFormTitle] = useState('');
+  const [formRegistrationStatus, setFormRegistrationStatus] = useState('');
+  const [formContributors, setFormContributors] = useState('');
+  const [formIswc, setFormIswc] = useState('');
+  const [formIsrc, setFormIsrc] = useState('');
+  const [formError, setFormError] = useState('');
 
   const isLoading = isAdmin ? loadingAll : loadingCaller;
-
   const works: PublishingWork[] = isAdmin
     ? (allWorks ?? [])
     : (callerEntities?.publishingWorks ?? []);
 
+  const handleOpenDialog = () => {
+    setFormTitle('');
+    setFormRegistrationStatus('');
+    setFormContributors('');
+    setFormIswc('');
+    setFormIsrc('');
+    setFormError('');
+    setDialogOpen(true);
+  };
+
   const handleCreate = async () => {
-    if (!newTitle.trim()) {
-      toast.error('Title is required');
+    setFormError('');
+    if (!formTitle.trim()) {
+      setFormError('Title is required.');
       return;
     }
+
+    const contributors = formContributors
+      .split('\n')
+      .map((c) => c.trim())
+      .filter(Boolean);
+
     try {
-      await createMutation.mutateAsync({
-        title: newTitle.trim(),
-        contributors: [],
+      await createWork.mutateAsync({
+        title: formTitle.trim(),
+        contributors,
         ownershipSplits: [],
-        iswc: null,
-        isrc: null,
-        registrationStatus: newStatus,
+        iswc: formIswc.trim() || null,
+        isrc: formIsrc.trim() || null,
+        registrationStatus: formRegistrationStatus.trim() || 'unregistered',
       });
-      toast.success('Publishing work created');
-      setCreateOpen(false);
-      setNewTitle('');
-      setNewStatus('unregistered');
-    } catch (err: any) {
-      toast.error(err?.message ?? 'Failed to create publishing work');
+      toast.success('Publishing work created successfully!');
+      setDialogOpen(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to create publishing work.';
+      setFormError(msg);
     }
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Music size={24} className="text-primary" />
-            Publishing Works
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {isAdmin ? 'All publishing works' : 'Your publishing works'}
-          </p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <BookOpen className="h-6 w-6 text-primary" />
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Publishing Works</h1>
+            <p className="text-sm text-muted-foreground">
+              {isAdmin ? 'All publishing works' : 'Your publishing catalog'}
+            </p>
+          </div>
         </div>
-        <Button onClick={() => setCreateOpen(true)} size="sm" className="gap-2">
-          <Plus size={16} />
+        <Button onClick={handleOpenDialog} className="gap-2">
+          <Plus className="h-4 w-4" />
           New Work
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="animate-spin text-primary" size={32} />
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : works.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-border rounded-xl">
-          <Music size={40} className="mx-auto text-muted-foreground mb-3" />
-          <p className="text-muted-foreground font-medium">No publishing works yet</p>
-          <p className="text-sm text-muted-foreground/70 mt-1 mb-4">Add your first publishing work to get started.</p>
-          <Button onClick={() => setCreateOpen(true)} size="sm" variant="outline" className="gap-2">
-            <Plus size={14} />
-            Create Work
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <BookOpen className="h-12 w-12 text-muted-foreground/40 mb-4" />
+          <p className="text-muted-foreground text-lg font-medium">No publishing works yet</p>
+          <p className="text-muted-foreground/60 text-sm mt-1">Add your first publishing work to get started.</p>
+          <Button onClick={handleOpenDialog} className="mt-4 gap-2">
+            <Plus className="h-4 w-4" />
+            New Work
           </Button>
         </div>
       ) : (
-        <div className="rounded-xl border border-border overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
                 <TableHead>Registration Status</TableHead>
                 <TableHead>Contributors</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>ID</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {works.map((work) => (
                 <TableRow
                   key={work.id}
-                  className="cursor-pointer hover:bg-accent/50 transition-colors"
+                  className="cursor-pointer hover:bg-muted/50"
                   onClick={() => navigate({ to: `/portal/publishing/${work.id}` })}
                 >
-                  <TableCell className="font-medium">{work.title || '—'}</TableCell>
+                  <TableCell className="font-medium">{work.title}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{work.registrationStatus || '—'}</Badge>
+                    <Badge variant="outline">{work.registrationStatus || 'unregistered'}</Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {Array.isArray(work.contributors) ? work.contributors.length : 0}
+                    {work.contributors?.length ?? 0} contributor(s)
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{formatDate(work.created_at)}</TableCell>
+                  <TableCell className="text-muted-foreground font-mono text-xs">{work.id}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -145,36 +156,77 @@ export default function PublishingWorksPage() {
         </div>
       )}
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create Publishing Work</DialogTitle>
+            <DialogTitle>Create New Publishing Work</DialogTitle>
+            <DialogDescription>
+              Add a new work to your publishing catalog.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {formError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{formError}</AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-1.5">
-              <Label htmlFor="work-title">Title</Label>
+              <Label htmlFor="work-title">Title <span className="text-destructive">*</span></Label>
               <Input
                 id="work-title"
-                value={newTitle}
-                onChange={e => setNewTitle(e.target.value)}
+                value={formTitle}
+                onChange={(e) => setFormTitle(e.target.value)}
                 placeholder="Song or work title"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="work-status">Registration Status</Label>
+              <Label htmlFor="work-reg-status">Registration Status</Label>
               <Input
-                id="work-status"
-                value={newStatus}
-                onChange={e => setNewStatus(e.target.value)}
-                placeholder="e.g. unregistered, pending, registered"
+                id="work-reg-status"
+                value={formRegistrationStatus}
+                onChange={(e) => setFormRegistrationStatus(e.target.value)}
+                placeholder="e.g. registered, pending, unregistered"
               />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="work-contributors">Contributors (one per line)</Label>
+              <Textarea
+                id="work-contributors"
+                value={formContributors}
+                onChange={(e) => setFormContributors(e.target.value)}
+                placeholder="Contributor names, one per line"
+                rows={3}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="work-iswc">ISWC</Label>
+                <Input
+                  id="work-iswc"
+                  value={formIswc}
+                  onChange={(e) => setFormIswc(e.target.value)}
+                  placeholder="Optional"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="work-isrc">ISRC</Label>
+                <Input
+                  id="work-isrc"
+                  value={formIsrc}
+                  onChange={(e) => setFormIsrc(e.target.value)}
+                  placeholder="Optional"
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={createMutation.isPending} className="gap-2">
-              {createMutation.isPending && <Loader2 size={14} className="animate-spin" />}
-              Create
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={createWork.isPending}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreate} disabled={createWork.isPending}>
+              {createWork.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Create Work
             </Button>
           </DialogFooter>
         </DialogContent>

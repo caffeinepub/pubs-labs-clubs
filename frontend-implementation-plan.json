@@ -1,102 +1,196 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Fix portal sections not rendering after Version 36 deployment",
+  "title": "Save and edit records for all portal app sections",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Diagnose and fix the portal layout so that all sections (Memberships, Publishing Works, Releases, Recording Projects, Artist Development) render correctly for authenticated users",
+      "summary": "Implement full save (create/persist) functionality for new Membership records",
       "acceptanceCriteria": [
-        "All five portal section pages (Memberships, Publishing Works, Releases, Recording Projects, Artist Development) are visible and navigable from the sidebar in PortalLayout.",
-        "No blank or empty portal shell is displayed after a successful login.",
-        "The PortalLayout sidebar navigation items render correctly for both admin and non-admin authenticated users.",
-        "Child routes within the portal render their list/content views without console errors.",
-        "The portal loads consistently on page refresh without losing section visibility."
+        "Submitting the create dialog persists a new membership record to the backend canister.",
+        "Form validation prevents submission with empty required fields (name, email).",
+        "A success toast is shown and the dialog closes on successful save.",
+        "The membership list refreshes automatically after creation.",
+        "Backend errors are surfaced to the user inline."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/layout/PortalLayout.tsx",
-          "operation": "modify",
-          "description": "Audit and verify the PortalLayout component renders the sidebar navigation and Outlet correctly. Check for missing Outlet component, conditional rendering bugs, or state issues that could cause the main content area to be blank. Ensure the sidebar navigation links are present and the mobile drawer toggle functions without breaking layout. Add defensive error boundaries if needed to prevent total layout failure."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Verify the TanStack Router route tree includes all portal child routes (memberships, publishing, releases, recordings, artist development, admin) correctly nested under the portal parent route. Check that AuthGate wrapper logic is not incorrectly redirecting authenticated users. Ensure ApprovalGate remains disabled (rendering children unconditionally). Confirm Outlet components are present at each nesting level. Add console logging or debugging aids to trace route resolution if needed."
-        },
-        {
           "path": "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
           "operation": "modify",
-          "description": "Verify the MembershipsPage component renders without runtime errors. Check for missing imports, hooks returning undefined, or conditional rendering that could cause a blank page. Ensure data fetching hooks (useGetAllMembershipProfiles, useGetCallerMemberships) handle loading/error states correctly. Confirm the component returns valid JSX in all code paths."
-        },
-        {
-          "path": "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-          "operation": "modify",
-          "description": "Verify the PublishingWorksPage component renders without runtime errors. Check for missing imports, hooks returning undefined, or conditional rendering that could cause a blank page. Ensure data fetching hooks (useGetAllPublishingWorks) handle loading/error states correctly. Confirm the component returns valid JSX in all code paths."
-        },
-        {
-          "path": "frontend/src/pages/portal/label/ReleasesPage.tsx",
-          "operation": "modify",
-          "description": "Verify the ReleasesPage component renders without runtime errors. Check for missing imports, hooks returning undefined, or conditional rendering that could cause a blank page. Ensure data fetching hooks (useGetAllReleases) handle loading/error states correctly. Confirm the component returns valid JSX in all code paths."
-        },
-        {
-          "path": "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "operation": "modify",
-          "description": "Verify the RecordingProjectsPage component renders without runtime errors. Check for missing imports, hooks returning undefined, or conditional rendering that could cause a blank page. Ensure data fetching hooks (useGetAllRecordingProjects) handle loading/error states correctly. Confirm the component returns valid JSX in all code paths."
-        },
-        {
-          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
-          "operation": "modify",
-          "description": "Verify the ArtistDevelopmentPage component renders without runtime errors. Check for missing imports, hooks returning undefined, or conditional rendering that could cause a blank page. Ensure data fetching hooks (useGetAllArtistDevelopment) handle loading/error states correctly. Confirm the component returns valid JSX in all code paths."
+          "description": "Wire the existing create dialog form to the createMembershipProfile mutation hook. Add form validation to prevent submission when name or email fields are empty. On successful mutation, show a success toast using the toast API, close the dialog, and trigger a query invalidation to refresh the membership list. Display backend errors inline within the dialog form."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Audit the TanStack Router route tree in App.tsx to ensure all portal child routes are correctly defined, nested under the portal parent route, and not inadvertently blocked by AuthGate or ApprovalGate wrappers",
+      "summary": "Implement an inline edit form on MembershipDetail for modifying profile fields",
       "acceptanceCriteria": [
-        "All portal sub-routes (memberships, publishing, releases, recordings, artist development, admin) are present and correctly nested in the route tree.",
-        "AuthGate does not incorrectly redirect authenticated users away from portal routes.",
-        "ApprovalGate (currently disabled) does not block rendering of portal sections.",
-        "Navigating directly to a portal sub-route URL renders the correct page content."
+        "Clicking an Edit button on MembershipDetail opens an editable form pre-populated with current values.",
+        "Saving persists changes to the backend and the page reflects the updated data immediately.",
+        "Only the record owner or an admin sees the Edit button.",
+        "A success toast is shown on successful save; backend errors are displayed inline."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
           "operation": "modify",
-          "description": "Conduct a comprehensive audit of the route tree structure. Verify every portal child route (memberships, publishing, releases, recordings, artist development, admin) is defined and properly nested. Check AuthGate configuration to ensure it allows authenticated users through. Verify ApprovalGate remains disabled. Test each route's path property for correctness. Ensure the portal parent route has an Outlet component. Add route debugging or logging if needed to trace resolution issues."
-        },
-        {
-          "path": "frontend/src/components/auth/AuthGate.tsx",
-          "operation": "modify",
-          "description": "Review the AuthGate logic to ensure it does not incorrectly redirect authenticated users. Verify the condition that checks authentication status is correct and does not have false positives. Check for race conditions or timing issues where identity might not be ready when the gate evaluates. Ensure the redirect target is correct and does not create redirect loops."
-        },
-        {
-          "path": "frontend/src/components/auth/ApprovalGate.tsx",
-          "operation": "modify",
-          "description": "Confirm the ApprovalGate component is disabled and always renders children unconditionally. Verify no conditional logic was accidentally re-enabled in Version 36. Ensure the disabled state is clearly commented and will not be inadvertently reverted."
+          "description": "Add an Edit Profile button (visible only when canEditMembership returns true) that opens an inline editable form or dialog pre-populated with current name, email, and status values. Wire the form to the updateMembership mutation hook from useQueries.ts. On successful save, show a success toast, close the edit UI, and the page will reflect updated data via automatic query invalidation. Display backend errors inline within the edit form."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Verify and fix the PortalLayout component to ensure the sidebar navigation links and the main content outlet are rendering. Confirm that the router outlet (Outlet) is present and active so that child route components are actually mounted and displayed",
+      "summary": "Implement full save (create/persist) functionality for new Publishing Work records",
       "acceptanceCriteria": [
-        "PortalLayout renders its sidebar with all navigation links.",
-        "The main content area displays the active child route component.",
-        "No runtime errors are thrown from PortalLayout that would cause the entire portal shell to go blank.",
-        "Mobile drawer toggle functions correctly without breaking the layout."
+        "Submitting the create dialog persists a new publishing work to the backend.",
+        "Title is required; submission is blocked if it is empty.",
+        "Success toast is shown and dialog closes after a successful save.",
+        "The publishing works list refreshes automatically.",
+        "Backend errors are surfaced inline."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/components/layout/PortalLayout.tsx",
+          "path": "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
           "operation": "modify",
-          "description": "Perform a detailed review of PortalLayout structure. Verify the Outlet component from TanStack Router is imported and rendered in the main content area. Check that sidebar navigation items are correctly mapped and rendered. Inspect conditional rendering logic for admin items to ensure non-admin users still see the base navigation. Test mobile drawer state management for bugs. Add defensive null checks and error boundaries to prevent total layout failure. Verify CSS classes are not hiding content unintentionally."
-        },
+          "description": "Wire the existing create dialog form to the createPublishingWork mutation hook. Add validation to block submission when the title field is empty. On successful mutation, show a success toast, close the dialog, and trigger query invalidation to refresh the works list. Display backend errors inline within the dialog."
+        }
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "summary": "Implement an inline edit form on PublishingWorkDetail for modifying work fields",
+      "acceptanceCriteria": [
+        "An Edit button (visible to owner or admin) opens a form pre-populated with current field values.",
+        "Ownership split validation (total ≤ 100%) is enforced before submission.",
+        "Changes persist to the backend and the detail page updates without a full reload.",
+        "Success toast on save; inline error display on failure."
+      ],
+      "file_operations": [
         {
-          "path": "frontend/src/hooks/useCurrentUser.ts",
+          "path": "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
           "operation": "modify",
-          "description": "Review the useCurrentUser hook to ensure it returns data in the expected format for PortalLayout's conditional admin navigation rendering. Check for undefined or null values that could break conditional logic. Verify loading states are handled correctly to prevent premature rendering decisions. Ensure the hook does not throw errors that would crash PortalLayout."
+          "description": "Add an Edit Work button (visible only when canEditPublishingWork returns true) that opens an inline editable form or dialog pre-populated with current title, registration status, contributors, ownership splits, and notes. Wire the form to the updatePublishingWork mutation hook. Validate ownership splits using the existing validation utility to ensure total ≤ 100%. On successful save, show a success toast, close the edit UI, and the page will reflect updated data via query invalidation. Display backend errors inline."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "Implement full save (create/persist) functionality for new Release records",
+      "acceptanceCriteria": [
+        "Submitting the create dialog persists a new release record to the backend.",
+        "Title and type are required; submission is blocked if either is empty.",
+        "Success toast shown and dialog closes after successful save.",
+        "Releases list refreshes automatically.",
+        "Backend errors are surfaced inline."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "operation": "modify",
+          "description": "Wire the existing create dialog form to the createRelease mutation hook. Add validation to block submission when title or releaseType fields are empty. On successful mutation, show a success toast, close the dialog, and trigger query invalidation to refresh the releases list. Display backend errors inline within the dialog."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Implement an inline edit form on ReleaseDetail for modifying release fields",
+      "acceptanceCriteria": [
+        "An Edit button (visible to owner or admin) opens a form pre-populated with existing values.",
+        "All editable fields update in the backend on save.",
+        "The detail page reflects changes immediately after saving.",
+        "Success toast on save; inline error display on failure."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/portal/label/ReleaseDetail.tsx",
+          "operation": "modify",
+          "description": "Add an Edit Release button (visible only when canEditRelease returns true) that opens an inline editable form or dialog pre-populated with current title, release type, tracklist, key dates, and workflow checklist. Wire the form to the updateRelease mutation hook. On successful save, show a success toast, close the edit UI, and the page will reflect updated data via query invalidation. Display backend errors inline."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Implement full save (create/persist) functionality for new Recording Project records",
+      "acceptanceCriteria": [
+        "Submitting the create dialog persists a new recording project to the backend.",
+        "Required fields are validated before submission.",
+        "Success toast shown and dialog closes after successful save.",
+        "Project list refreshes automatically.",
+        "Backend errors are surfaced inline."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "operation": "modify",
+          "description": "Wire the existing create dialog form to the createRecordingProject mutation hook. Add validation to ensure required fields (title, participants, sessionDate, status, notes) are present before submission. On successful mutation, show a success toast, close the dialog, and trigger query invalidation to refresh the project list. Display backend errors inline within the dialog."
+        }
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "summary": "Implement an inline edit form on RecordingProjectDetail for modifying project fields",
+      "acceptanceCriteria": [
+        "An Edit button (visible to owner or admin) opens a form pre-populated with current values.",
+        "Changes persist to the backend on save.",
+        "Detail page updates immediately after saving.",
+        "Success toast on save; inline error display on failure."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
+          "operation": "modify",
+          "description": "Add an Edit Project button (visible only when canEditRecordingProject returns true) that opens an inline editable form or dialog pre-populated with current title, participants, sessionDate, status, and notes. Wire the form to the updateRecordingProject mutation hook. On successful save, show a success toast, close the edit UI, and the page will reflect updated data via query invalidation. Display backend errors inline."
+        }
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "summary": "Implement full save (create/persist) functionality for new Artist Development records",
+      "acceptanceCriteria": [
+        "Submitting the create dialog persists a new artist development entry to the backend.",
+        "Required fields are validated before submission.",
+        "Success toast shown and dialog closes after successful save.",
+        "Artist development list refreshes automatically.",
+        "Backend errors are surfaced inline."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+          "operation": "modify",
+          "description": "Wire the existing create dialog form to the createArtistDevelopment mutation hook. Add validation to ensure required fields (artistId, goals, plans, milestones, internalNotes) are present before submission. On successful mutation, show a success toast, close the dialog, and trigger query invalidation to refresh the artist development list. Display backend errors inline within the dialog."
+        }
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "summary": "Implement an inline edit form on ArtistDevelopmentDetail for modifying entry fields",
+      "acceptanceCriteria": [
+        "An Edit button (visible to owner or admin) opens a form pre-populated with current values.",
+        "Changes persist to the backend on save.",
+        "Detail page updates immediately after saving.",
+        "Success toast on save; inline error display on failure."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
+          "operation": "modify",
+          "description": "Add an Edit Entry button (visible only when canEditArtistDevelopment returns true) that opens an inline editable form or dialog pre-populated with current goals, plans, milestones, and internalNotes arrays. Wire the form to the updateArtistDevelopment mutation hook. On successful save, show a success toast, close the edit UI, and the page will reflect updated data via query invalidation. Display backend errors inline."
+        }
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "summary": "Add React Query mutation hooks for all five entity update operations",
+      "acceptanceCriteria": [
+        "Each mutation hook is exported from useQueries.ts.",
+        "On success, the hook invalidates the corresponding list and detail queries so UI reflects the latest data.",
+        "Mutation errors are propagated to callers for inline display."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add five new mutation hooks: useUpdateMembership, useUpdatePublishingWork, useUpdateRelease, useUpdateRecordingProject, and useUpdateArtistDevelopment. Each hook should call the corresponding backend update method (updateMembership, updatePublishingWork, updateRelease, updateRecordingProject, updateArtistDevelopment) and invalidate both the list query (e.g., 'memberships', 'publishingWorks') and the detail query (e.g., ['membership', id], ['publishingWork', id]) on success. Ensure mutation errors are returned to callers for inline display in forms."
         }
       ]
     }

@@ -1,23 +1,26 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import {
-  useGetAllReleases,
-  useGetCallerUserRole,
-  useGetEntitiesForCaller,
-  useCreateRelease,
-} from '../../../hooks/useQueries';
-import { UserRole, Release } from '../../../backend';
+import { Plus, Disc, Loader2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -26,117 +29,137 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Disc, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  useGetAllReleases,
+  useGetEntitiesForCaller,
+  useCreateRelease,
+  useIsCallerAdmin,
+} from '@/hooks/useQueries';
+import type { Release } from '../../../backend';
 
-function formatDate(ts: bigint) {
-  try {
-    return new Date(Number(ts) / 1_000_000).toLocaleDateString();
-  } catch {
-    return '—';
-  }
-}
+const RELEASE_TYPES = ['Single', 'EP', 'Album', 'Compilation', 'Mixtape', 'Live', 'Other'];
 
 export default function ReleasesPage() {
   const navigate = useNavigate();
-  const { data: userRole } = useGetCallerUserRole();
-  const isAdmin = userRole === UserRole.admin;
-
+  const { data: isAdmin } = useIsCallerAdmin();
   const { data: allReleases, isLoading: loadingAll } = useGetAllReleases();
   const { data: callerEntities, isLoading: loadingCaller } = useGetEntitiesForCaller();
+  const createRelease = useCreateRelease();
 
-  const createMutation = useCreateRelease();
-
-  const [createOpen, setCreateOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newType, setNewType] = useState('Single');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formTitle, setFormTitle] = useState('');
+  const [formReleaseType, setFormReleaseType] = useState('');
+  const [formTracklist, setFormTracklist] = useState('');
+  const [formKeyDates, setFormKeyDates] = useState('');
+  const [formOwners, setFormOwners] = useState('');
+  const [formError, setFormError] = useState('');
 
   const isLoading = isAdmin ? loadingAll : loadingCaller;
-
   const releases: Release[] = isAdmin
     ? (allReleases ?? [])
     : (callerEntities?.releases ?? []);
 
+  const handleOpenDialog = () => {
+    setFormTitle('');
+    setFormReleaseType('');
+    setFormTracklist('');
+    setFormKeyDates('');
+    setFormOwners('');
+    setFormError('');
+    setDialogOpen(true);
+  };
+
   const handleCreate = async () => {
-    if (!newTitle.trim()) {
-      toast.error('Title is required');
+    setFormError('');
+    if (!formTitle.trim()) {
+      setFormError('Title is required.');
       return;
     }
+    if (!formReleaseType) {
+      setFormError('Release type is required.');
+      return;
+    }
+
+    const tracklist = formTracklist.split('\n').map((t) => t.trim()).filter(Boolean);
+    const keyDates = formKeyDates.split('\n').map((d) => d.trim()).filter(Boolean);
+    const owners = formOwners.split('\n').map((o) => o.trim()).filter(Boolean);
+
     try {
-      await createMutation.mutateAsync({
-        title: newTitle.trim(),
-        releaseType: newType,
-        tracklist: [],
-        keyDates: [],
-        owners: [],
+      await createRelease.mutateAsync({
+        title: formTitle.trim(),
+        releaseType: formReleaseType,
+        tracklist,
+        keyDates,
+        owners,
       });
-      toast.success('Release created');
-      setCreateOpen(false);
-      setNewTitle('');
-      setNewType('Single');
-    } catch (err: any) {
-      toast.error(err?.message ?? 'Failed to create release');
+      toast.success('Release created successfully!');
+      setDialogOpen(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to create release.';
+      setFormError(msg);
     }
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Disc size={24} className="text-primary" />
-            Releases
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {isAdmin ? 'All releases' : 'Your releases'}
-          </p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Disc className="h-6 w-6 text-primary" />
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Releases</h1>
+            <p className="text-sm text-muted-foreground">
+              {isAdmin ? 'All releases' : 'Your releases'}
+            </p>
+          </div>
         </div>
-        <Button onClick={() => setCreateOpen(true)} size="sm" className="gap-2">
-          <Plus size={16} />
+        <Button onClick={handleOpenDialog} className="gap-2">
+          <Plus className="h-4 w-4" />
           New Release
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="animate-spin text-primary" size={32} />
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : releases.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-border rounded-xl">
-          <Disc size={40} className="mx-auto text-muted-foreground mb-3" />
-          <p className="text-muted-foreground font-medium">No releases yet</p>
-          <p className="text-sm text-muted-foreground/70 mt-1 mb-4">Create your first release to get started.</p>
-          <Button onClick={() => setCreateOpen(true)} size="sm" variant="outline" className="gap-2">
-            <Plus size={14} />
-            Create Release
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Disc className="h-12 w-12 text-muted-foreground/40 mb-4" />
+          <p className="text-muted-foreground text-lg font-medium">No releases yet</p>
+          <p className="text-muted-foreground/60 text-sm mt-1">Create your first release to get started.</p>
+          <Button onClick={handleOpenDialog} className="mt-4 gap-2">
+            <Plus className="h-4 w-4" />
+            New Release
           </Button>
         </div>
       ) : (
-        <div className="rounded-xl border border-border overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Tracks</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>ID</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {releases.map((release) => (
                 <TableRow
                   key={release.id}
-                  className="cursor-pointer hover:bg-accent/50 transition-colors"
+                  className="cursor-pointer hover:bg-muted/50"
                   onClick={() => navigate({ to: `/portal/releases/${release.id}` })}
                 >
-                  <TableCell className="font-medium">{release.title || '—'}</TableCell>
+                  <TableCell className="font-medium">{release.title}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{release.releaseType || '—'}</Badge>
+                    <Badge variant="secondary">{release.releaseType}</Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {Array.isArray(release.tracklist) ? release.tracklist.length : 0}
+                    {release.tracklist?.length ?? 0} track(s)
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{formatDate(release.created_at)}</TableCell>
+                  <TableCell className="text-muted-foreground font-mono text-xs">{release.id}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -144,36 +167,81 @@ export default function ReleasesPage() {
         </div>
       )}
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create Release</DialogTitle>
+            <DialogTitle>Create New Release</DialogTitle>
+            <DialogDescription>
+              Add a new release to your label catalog.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {formError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{formError}</AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-1.5">
-              <Label htmlFor="release-title">Title</Label>
+              <Label htmlFor="release-title">Title <span className="text-destructive">*</span></Label>
               <Input
                 id="release-title"
-                value={newTitle}
-                onChange={e => setNewTitle(e.target.value)}
+                value={formTitle}
+                onChange={(e) => setFormTitle(e.target.value)}
                 placeholder="Release title"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="release-type">Release Type</Label>
-              <Input
-                id="release-type"
-                value={newType}
-                onChange={e => setNewType(e.target.value)}
-                placeholder="e.g. Single, EP, Album"
+              <Label htmlFor="release-type">Release Type <span className="text-destructive">*</span></Label>
+              <Select value={formReleaseType} onValueChange={setFormReleaseType}>
+                <SelectTrigger id="release-type">
+                  <SelectValue placeholder="Select type..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {RELEASE_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="release-tracklist">Tracklist (one per line)</Label>
+              <Textarea
+                id="release-tracklist"
+                value={formTracklist}
+                onChange={(e) => setFormTracklist(e.target.value)}
+                placeholder="Track names, one per line"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="release-keydates">Key Dates (one per line)</Label>
+              <Textarea
+                id="release-keydates"
+                value={formKeyDates}
+                onChange={(e) => setFormKeyDates(e.target.value)}
+                placeholder="e.g. Release: 2024-06-01"
+                rows={2}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="release-owners">Owners (one per line)</Label>
+              <Textarea
+                id="release-owners"
+                value={formOwners}
+                onChange={(e) => setFormOwners(e.target.value)}
+                placeholder="Owner names, one per line"
+                rows={2}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={createMutation.isPending} className="gap-2">
-              {createMutation.isPending && <Loader2 size={14} className="animate-spin" />}
-              Create
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={createRelease.isPending}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreate} disabled={createRelease.isPending}>
+              {createRelease.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Create Release
             </Button>
           </DialogFooter>
         </DialogContent>

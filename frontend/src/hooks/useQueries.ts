@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
-import {
+import type {
   UserProfile,
   MembershipProfile,
   Membership,
@@ -8,12 +8,17 @@ import {
   Release,
   RecordingProject,
   ArtistDevelopment,
-  UserRole,
-  ProjectStatus,
-  T as MemberStatusT,
-  SignedInUser,
   UserApprovalInfo,
   ApprovalStatus,
+  UserRole,
+  SignedInUser,
+  T as MemberStatusT,
+  ProjectStatus,
+  ArtistDevelopmentId,
+  MemberId,
+  PublishingId,
+  LabelEntityId,
+  RecodingId,
 } from '../backend';
 import { Principal } from '@dfinity/principal';
 
@@ -50,7 +55,6 @@ export function useSaveCallerUserProfile() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['currentUserProfile'] });
-      queryClient.invalidateQueries({ queryKey: ['knownUsers'] });
     },
   });
 }
@@ -65,7 +69,19 @@ export function useGetCallerUserRole() {
       return actor.getCallerUserRole();
     },
     enabled: !!actor && !isFetching,
-    retry: false,
+  });
+}
+
+export function useGetAllKnownUsers() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<SignedInUser[]>({
+    queryKey: ['allKnownUsers'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getAllKnownUsers();
+    },
+    enabled: !!actor && !isFetching,
   });
 }
 
@@ -79,27 +95,26 @@ export function useUpdateKnownUserRole() {
       return actor.updateKnownUserRole();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['knownUsers'] });
       queryClient.invalidateQueries({ queryKey: ['callerUserRole'] });
+      queryClient.invalidateQueries({ queryKey: ['allKnownUsers'] });
     },
-  });
-}
-
-export function useGetAllKnownUsers() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<SignedInUser[]>({
-    queryKey: ['knownUsers'],
-    queryFn: async () => {
-      if (!actor) throw new Error('Actor not available');
-      return actor.getAllKnownUsers();
-    },
-    enabled: !!actor && !isFetching,
-    retry: false,
   });
 }
 
 // ─── Memberships ─────────────────────────────────────────────────────────────
+
+export function useGetCallerMemberships() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Membership[]>({
+    queryKey: ['memberships'],
+    queryFn: async () => {
+      if (!actor) return [];
+      return actor.getCallerMemberships();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
 
 export function useGetAllMembershipProfiles() {
   const { actor, isFetching } = useActor();
@@ -108,45 +123,20 @@ export function useGetAllMembershipProfiles() {
     queryKey: ['allMembershipProfiles'],
     queryFn: async () => {
       if (!actor) return [];
-      try {
-        return await actor.getAllMembershipProfiles();
-      } catch {
-        return [];
-      }
+      return actor.getAllMembershipProfiles();
     },
     enabled: !!actor && !isFetching,
   });
 }
 
-export function useGetCallerMemberships() {
+export function useGetMembershipDetails(id: MemberId) {
   const { actor, isFetching } = useActor();
 
-  return useQuery<Membership[]>({
-    queryKey: ['callerMemberships'],
+  return useQuery<Membership>({
+    queryKey: ['membership', id],
     queryFn: async () => {
-      if (!actor) return [];
-      try {
-        return await actor.getCallerMemberships();
-      } catch {
-        return [];
-      }
-    },
-    enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetMembershipDetails(id: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Membership | null>({
-    queryKey: ['membershipDetails', id],
-    queryFn: async () => {
-      if (!actor) return null;
-      try {
-        return await actor.getMembershipDetails(id);
-      } catch {
-        return null;
-      }
+      if (!actor) throw new Error('Actor not available');
+      return actor.getMembershipDetails(id);
     },
     enabled: !!actor && !isFetching && !!id,
   });
@@ -162,8 +152,9 @@ export function useCreateMembershipProfile() {
       return actor.createMembershipProfile(id, name, email);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['memberships'] });
       queryClient.invalidateQueries({ queryKey: ['allMembershipProfiles'] });
-      queryClient.invalidateQueries({ queryKey: ['callerMemberships'] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
     },
   });
 }
@@ -178,9 +169,38 @@ export function useUpdateMembershipProfileFields() {
       return actor.updateMembershipProfileFields(id, name, email);
     },
     onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['memberships'] });
       queryClient.invalidateQueries({ queryKey: ['allMembershipProfiles'] });
-      queryClient.invalidateQueries({ queryKey: ['callerMemberships'] });
-      queryClient.invalidateQueries({ queryKey: ['membershipDetails', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['membership', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
+    },
+  });
+}
+
+export function useUpdateMembership() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      name,
+      email,
+      status,
+    }: {
+      id: string;
+      name: string;
+      email: string;
+      status: MemberStatusT;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.updateMembership(id, name, email, status);
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['memberships'] });
+      queryClient.invalidateQueries({ queryKey: ['allMembershipProfiles'] });
+      queryClient.invalidateQueries({ queryKey: ['membership', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
     },
   });
 }
@@ -195,9 +215,10 @@ export function useUpdateMembershipStatus() {
       return actor.updateMembershipStatus(id, status);
     },
     onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['memberships'] });
       queryClient.invalidateQueries({ queryKey: ['allMembershipProfiles'] });
-      queryClient.invalidateQueries({ queryKey: ['callerMemberships'] });
-      queryClient.invalidateQueries({ queryKey: ['membershipDetails', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['membership', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
     },
   });
 }
@@ -214,23 +235,37 @@ export function useUpdateMembershipLinks() {
       releaseIds,
       projectIds,
     }: {
-      id: string;
-      artistIds: string[];
-      workIds: string[];
-      releaseIds: string[];
-      projectIds: string[];
+      id: MemberId;
+      artistIds: ArtistDevelopmentId[];
+      workIds: PublishingId[];
+      releaseIds: LabelEntityId[];
+      projectIds: RecodingId[];
     }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateMembershipLinks(id, artistIds, workIds, releaseIds, projectIds);
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['membershipDetails', variables.id] });
-      queryClient.invalidateQueries({ queryKey: ['callerMemberships'] });
+      queryClient.invalidateQueries({ queryKey: ['membership', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['memberships'] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
     },
   });
 }
 
 // ─── Publishing Works ─────────────────────────────────────────────────────────
+
+export function useGetPublishingWork(id: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<PublishingWork>({
+    queryKey: ['publishingWork', id],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getPublishingWork(id);
+    },
+    enabled: !!actor && !isFetching && !!id,
+  });
+}
 
 export function useGetAllPublishingWorks() {
   const { actor, isFetching } = useActor();
@@ -239,30 +274,9 @@ export function useGetAllPublishingWorks() {
     queryKey: ['allPublishingWorks'],
     queryFn: async () => {
       if (!actor) return [];
-      try {
-        return await actor.getAllPublishingWorks();
-      } catch {
-        return [];
-      }
+      return actor.getAllPublishingWorks();
     },
     enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetPublishingWork(id: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<PublishingWork | null>({
-    queryKey: ['publishingWork', id],
-    queryFn: async () => {
-      if (!actor) return null;
-      try {
-        return await actor.getPublishingWork(id);
-      } catch {
-        return null;
-      }
-    },
-    enabled: !!actor && !isFetching && !!id,
   });
 }
 
@@ -290,6 +304,37 @@ export function useCreatePublishingWork() {
       return actor.createPublishingWork(title, contributors, ownershipSplits, iswc, isrc, registrationStatus);
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allPublishingWorks'] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
+    },
+  });
+}
+
+export function useUpdatePublishingWork() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      title,
+      registrationStatus,
+      contributors,
+      ownershipSplits,
+      notes,
+    }: {
+      id: string;
+      title: string;
+      registrationStatus: string;
+      contributors: string[];
+      ownershipSplits: [string, bigint][];
+      notes: string;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.updatePublishingWork(id, title, registrationStatus, contributors, ownershipSplits, notes);
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['publishingWork', variables.id] });
       queryClient.invalidateQueries({ queryKey: ['allPublishingWorks'] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
     },
@@ -325,11 +370,11 @@ export function useLinkPublishingWorkToEntities() {
       releaseIds,
       projectIds,
     }: {
-      workId: string;
-      memberIds: string[];
-      artistIds: string[];
-      releaseIds: string[];
-      projectIds: string[];
+      workId: PublishingId;
+      memberIds: MemberId[];
+      artistIds: ArtistDevelopmentId[];
+      releaseIds: LabelEntityId[];
+      projectIds: RecodingId[];
     }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.linkPublishingWorkToEntities(workId, memberIds, artistIds, releaseIds, projectIds);
@@ -344,6 +389,19 @@ export function useLinkPublishingWorkToEntities() {
 
 // ─── Releases ─────────────────────────────────────────────────────────────────
 
+export function useGetRelease(releaseId: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<Release>({
+    queryKey: ['release', releaseId],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getRelease(releaseId);
+    },
+    enabled: !!actor && !isFetching && !!releaseId,
+  });
+}
+
 export function useGetAllReleases() {
   const { actor, isFetching } = useActor();
 
@@ -351,30 +409,9 @@ export function useGetAllReleases() {
     queryKey: ['allReleases'],
     queryFn: async () => {
       if (!actor) return [];
-      try {
-        return await actor.getAllReleases();
-      } catch {
-        return [];
-      }
+      return actor.getAllReleases();
     },
     enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetRelease(id: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<Release | null>({
-    queryKey: ['release', id],
-    queryFn: async () => {
-      if (!actor) return null;
-      try {
-        return await actor.getRelease(id);
-      } catch {
-        return null;
-      }
-    },
-    enabled: !!actor && !isFetching && !!id,
   });
 }
 
@@ -406,6 +443,37 @@ export function useCreateRelease() {
   });
 }
 
+export function useUpdateRelease() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      releaseId,
+      title,
+      releaseType,
+      tracklist,
+      keyDates,
+      workflowChecklist,
+    }: {
+      releaseId: string;
+      title: string;
+      releaseType: string;
+      tracklist: string[];
+      keyDates: string[];
+      workflowChecklist: string[];
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.updateRelease(releaseId, title, releaseType, tracklist, keyDates, workflowChecklist);
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['release', variables.releaseId] });
+      queryClient.invalidateQueries({ queryKey: ['allReleases'] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
+    },
+  });
+}
+
 export function useLinkReleaseToEntities() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -418,11 +486,11 @@ export function useLinkReleaseToEntities() {
       workIds,
       projectIds,
     }: {
-      releaseId: string;
-      memberIds: string[];
-      artistIds: string[];
-      workIds: string[];
-      projectIds: string[];
+      releaseId: LabelEntityId;
+      memberIds: MemberId[];
+      artistIds: ArtistDevelopmentId[];
+      workIds: PublishingId[];
+      projectIds: RecodingId[];
     }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.linkReleaseToEntities(releaseId, memberIds, artistIds, workIds, projectIds);
@@ -437,6 +505,19 @@ export function useLinkReleaseToEntities() {
 
 // ─── Recording Projects ───────────────────────────────────────────────────────
 
+export function useGetRecordingProject(projectId: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<RecordingProject>({
+    queryKey: ['recordingProject', projectId],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getRecordingProject(projectId);
+    },
+    enabled: !!actor && !isFetching && !!projectId,
+  });
+}
+
 export function useGetAllRecordingProjects() {
   const { actor, isFetching } = useActor();
 
@@ -444,30 +525,9 @@ export function useGetAllRecordingProjects() {
     queryKey: ['allRecordingProjects'],
     queryFn: async () => {
       if (!actor) return [];
-      try {
-        return await actor.getAllRecordingProjects();
-      } catch {
-        return [];
-      }
+      return actor.getAllRecordingProjects();
     },
     enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetRecordingProject(id: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<RecordingProject | null>({
-    queryKey: ['recordingProject', id],
-    queryFn: async () => {
-      if (!actor) return null;
-      try {
-        return await actor.getRecordingProject(id);
-      } catch {
-        return null;
-      }
-    },
-    enabled: !!actor && !isFetching && !!id,
   });
 }
 
@@ -499,6 +559,37 @@ export function useCreateRecordingProject() {
   });
 }
 
+export function useUpdateRecordingProject() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      projectId,
+      title,
+      participants,
+      sessionDate,
+      status,
+      notes,
+    }: {
+      projectId: string;
+      title: string;
+      participants: string[];
+      sessionDate: bigint;
+      status: ProjectStatus;
+      notes: string;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.updateRecordingProject(projectId, title, participants, sessionDate, status, notes);
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['recordingProject', variables.projectId] });
+      queryClient.invalidateQueries({ queryKey: ['allRecordingProjects'] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
+    },
+  });
+}
+
 export function useLinkProjectToEntities() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -511,11 +602,11 @@ export function useLinkProjectToEntities() {
       workIds,
       releaseIds,
     }: {
-      projectId: string;
-      memberIds: string[];
-      artistIds: string[];
-      workIds: string[];
-      releaseIds: string[];
+      projectId: RecodingId;
+      memberIds: MemberId[];
+      artistIds: ArtistDevelopmentId[];
+      workIds: PublishingId[];
+      releaseIds: LabelEntityId[];
     }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.linkProjectToEntities(projectId, memberIds, artistIds, workIds, releaseIds);
@@ -530,6 +621,19 @@ export function useLinkProjectToEntities() {
 
 // ─── Artist Development ───────────────────────────────────────────────────────
 
+export function useGetArtistDevelopment(entryId: string) {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<ArtistDevelopment>({
+    queryKey: ['artistDevelopment', entryId],
+    queryFn: async () => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.getArtistDevelopment(entryId);
+    },
+    enabled: !!actor && !isFetching && !!entryId,
+  });
+}
+
 export function useGetAllArtistDevelopment() {
   const { actor, isFetching } = useActor();
 
@@ -537,30 +641,9 @@ export function useGetAllArtistDevelopment() {
     queryKey: ['allArtistDevelopment'],
     queryFn: async () => {
       if (!actor) return [];
-      try {
-        return await actor.getAllArtistDevelopment();
-      } catch {
-        return [];
-      }
+      return actor.getAllArtistDevelopment();
     },
     enabled: !!actor && !isFetching,
-  });
-}
-
-export function useGetArtistDevelopment(id: string) {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<ArtistDevelopment | null>({
-    queryKey: ['artistDevelopment', id],
-    queryFn: async () => {
-      if (!actor) return null;
-      try {
-        return await actor.getArtistDevelopment(id);
-      } catch {
-        return null;
-      }
-    },
-    enabled: !!actor && !isFetching && !!id,
   });
 }
 
@@ -592,6 +675,35 @@ export function useCreateArtistDevelopment() {
   });
 }
 
+export function useUpdateArtistDevelopment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      entryId,
+      goals,
+      plans,
+      milestones,
+      internalNotes,
+    }: {
+      entryId: string;
+      goals: string[];
+      plans: string[];
+      milestones: string[];
+      internalNotes: string;
+    }) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.updateArtistDevelopment(entryId, goals, plans, milestones, internalNotes);
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['artistDevelopment', variables.entryId] });
+      queryClient.invalidateQueries({ queryKey: ['allArtistDevelopment'] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
+    },
+  });
+}
+
 export function useUpdateArtistDevelopmentLinks() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
@@ -605,12 +717,12 @@ export function useUpdateArtistDevelopmentLinks() {
       relatedRecordingProjects,
       relatedArtistDevelopment,
     }: {
-      artistDevelopmentId: string;
-      relatedMemberships: string[];
-      relatedPublishing: string[];
-      relatedLabelEntities: string[];
-      relatedRecordingProjects: string[];
-      relatedArtistDevelopment: string[];
+      artistDevelopmentId: ArtistDevelopmentId;
+      relatedMemberships: MemberId[];
+      relatedPublishing: PublishingId[];
+      relatedLabelEntities: LabelEntityId[];
+      relatedRecordingProjects: RecodingId[];
+      relatedArtistDevelopment: ArtistDevelopmentId[];
     }) => {
       if (!actor) throw new Error('Actor not available');
       return actor.updateArtistDevelopmentLinks(
@@ -619,7 +731,7 @@ export function useUpdateArtistDevelopmentLinks() {
         relatedPublishing,
         relatedLabelEntities,
         relatedRecordingProjects,
-        relatedArtistDevelopment,
+        relatedArtistDevelopment
       );
     },
     onSuccess: (_data, variables) => {
@@ -635,39 +747,23 @@ export function useUpdateArtistDevelopmentLinks() {
 export function useGetEntitiesForCaller() {
   const { actor, isFetching } = useActor();
 
-  return useQuery<{
-    memberships: [string, Membership][];
-    publishingWorks: PublishingWork[];
-    releases: Release[];
-    recordingProjects: RecordingProject[];
-    artistDevelopment: ArtistDevelopment[];
-  }>({
+  return useQuery({
     queryKey: ['entitiesForCaller'],
     queryFn: async () => {
       if (!actor) return {
-        memberships: [],
-        publishingWorks: [],
-        releases: [],
-        recordingProjects: [],
-        artistDevelopment: [],
+        memberships: [] as [string, Membership][],
+        publishingWorks: [] as PublishingWork[],
+        releases: [] as Release[],
+        recordingProjects: [] as RecordingProject[],
+        artistDevelopment: [] as ArtistDevelopment[],
       };
-      try {
-        return await actor.getEntitiesForCaller();
-      } catch {
-        return {
-          memberships: [],
-          publishingWorks: [],
-          releases: [],
-          recordingProjects: [],
-          artistDevelopment: [],
-        };
-      }
+      return actor.getEntitiesForCaller();
     },
     enabled: !!actor && !isFetching,
   });
 }
 
-// ─── Admin / Approvals ────────────────────────────────────────────────────────
+// ─── Admin / Approval ─────────────────────────────────────────────────────────
 
 export function useIsCallerApproved() {
   const { actor, isFetching } = useActor();
@@ -676,11 +772,7 @@ export function useIsCallerApproved() {
     queryKey: ['isCallerApproved'],
     queryFn: async () => {
       if (!actor) return false;
-      try {
-        return await actor.isCallerApproved();
-      } catch {
-        return false;
-      }
+      return actor.isCallerApproved();
     },
     enabled: !!actor && !isFetching,
   });
@@ -697,6 +789,7 @@ export function useRequestApproval() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['isCallerApproved'] });
+      queryClient.invalidateQueries({ queryKey: ['listApprovals'] });
     },
   });
 }
@@ -708,11 +801,7 @@ export function useListApprovals() {
     queryKey: ['listApprovals'],
     queryFn: async () => {
       if (!actor) return [];
-      try {
-        return await actor.listApprovals();
-      } catch {
-        return [];
-      }
+      return actor.listApprovals();
     },
     enabled: !!actor && !isFetching,
   });
@@ -729,11 +818,12 @@ export function useSetApproval() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['listApprovals'] });
+      queryClient.invalidateQueries({ queryKey: ['isCallerApproved'] });
     },
   });
 }
 
-export function useAssignCallerUserRole() {
+export function useAssignRole() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
 
@@ -743,8 +833,21 @@ export function useAssignCallerUserRole() {
       return actor.assignCallerUserRole(user, role);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['knownUsers'] });
       queryClient.invalidateQueries({ queryKey: ['callerUserRole'] });
+      queryClient.invalidateQueries({ queryKey: ['allKnownUsers'] });
     },
+  });
+}
+
+export function useIsCallerAdmin() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['isCallerAdmin'],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isCallerAdmin();
+    },
+    enabled: !!actor && !isFetching,
   });
 }

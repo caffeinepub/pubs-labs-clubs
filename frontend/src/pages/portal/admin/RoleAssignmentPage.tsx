@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Principal } from '@dfinity/principal';
 import { useCurrentUser } from '../../../hooks/useCurrentUser';
-import { useGetAllKnownUsers, useAssignCallerUserRole } from '../../../hooks/useQueries';
+import { useGetAllKnownUsers, useAssignRole } from '../../../hooks/useQueries';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -16,7 +16,7 @@ import { UserRole } from '../../../backend';
 export default function RoleAssignmentPage() {
   const { isLoading: userLoading } = useCurrentUser();
   const { data: users, isLoading: usersLoading } = useGetAllKnownUsers();
-  const assignRole = useAssignCallerUserRole();
+  const assignRole = useAssignRole();
   const [changingRole, setChangingRole] = useState<string | null>(null);
 
   if (userLoading || usersLoading) {

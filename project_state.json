@@ -1,39 +1,119 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Project involves a portal with sections. Currently experiencing a critical issue where the portal is not showing any sections at all.",
-  "architectural_notes": [],
-  "known_issues": [
-    "Portal not showing any sections at all (reported after Version 36 deployment)"
+  "summary": "Portal application with sections that display and offer create options. Now working on saving and editing records for each section, plus any remaining section features.",
+  "architectural_notes": [
+    "Portal Apps sections display correctly with create options per section (as of v37)"
   ],
-  "isFixRequest": true,
+  "known_issues": [],
+  "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-diagnose-and-fix-the-portal-layout-so-that-all-sections-memberships-publishing-works-releases-recording-projects-artist-development-render-correctly-for-authenticated-users-the-portal-is-currently-showing-no-sections-at-all-following-the-version-36-deployment",
-      "title": "Diagnose and fix the portal layout so that all sections (Memberships, Publishing Works, Releases, Recording Projects, Artist Development) render correctly for authenticated users. The portal is currently showing no sections at all following the Version 36 deployment.",
+      "id": "feature-implement-full-save-create-persist-functionality-for-new-membership-records-the-create-dialog-on-membershipspage-must-call-the-backend-mutation-show-inline-validation-errors-display-a-success-toast-on-completion-close-the-dialog-and-refresh-the-membership-list",
+      "title": "Implement full save (create/persist) functionality for new Membership records: the create dialog on MembershipsPage must call the backend mutation, show inline validation errors, display a success toast on completion, close the dialog, and refresh the membership list.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-audit-the-tanstack-router-route-tree-in-app-tsx-to-ensure-all-portal-child-routes-are-correctly-defined-nested-under-the-portal-parent-route-and-not-inadvertently-blocked-by-authgate-or-approvalgate-wrappers-that-may-have-regressed-in-version-36",
-      "title": "Audit the TanStack Router route tree in App.tsx to ensure all portal child routes are correctly defined, nested under the portal parent route, and not inadvertently blocked by AuthGate or ApprovalGate wrappers that may have regressed in Version 36.",
+      "id": "feature-implement-an-inline-edit-form-on-membershipdetail-that-allows-the-owner-or-admin-to-modify-name-email-and-status-fields-save-changes-to-the-backend-and-reflect-updates-immediately-on-the-page-without-a-full-reload",
+      "title": "Implement an inline edit form on MembershipDetail that allows the owner or admin to modify name, email, and status fields, save changes to the backend, and reflect updates immediately on the page without a full reload.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-verify-and-fix-the-portallayout-component-to-ensure-the-sidebar-navigation-links-and-the-main-content-outlet-are-rendering-confirm-that-the-router-outlet-outlet-is-present-and-active-so-that-child-route-components-are-actually-mounted-and-displayed",
-      "title": "Verify and fix the PortalLayout component to ensure the sidebar navigation links and the main content outlet are rendering. Confirm that the router outlet (Outlet) is present and active so that child route components are actually mounted and displayed.",
+      "id": "feature-implement-full-save-create-persist-functionality-for-new-publishing-work-records-the-create-dialog-on-publishingworkspage-must-call-the-backend-mutation-validate-title-and-registration-status-show-a-success-toast-close-the-dialog-and-refresh-the-works-list",
+      "title": "Implement full save (create/persist) functionality for new Publishing Work records: the create dialog on PublishingWorksPage must call the backend mutation, validate title and registration status, show a success toast, close the dialog, and refresh the works list.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-implement-an-inline-edit-form-on-publishingworkdetail-that-allows-the-owner-or-admin-to-modify-title-registration-status-contributors-ownership-splits-and-notes-save-changes-to-the-backend-and-reflect-updates-immediately",
+      "title": "Implement an inline edit form on PublishingWorkDetail that allows the owner or admin to modify title, registration status, contributors, ownership splits, and notes, save changes to the backend, and reflect updates immediately.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-full-save-create-persist-functionality-for-new-release-records-the-create-dialog-on-releasespage-must-call-the-backend-mutation-validate-title-and-type-show-a-success-toast-close-the-dialog-and-refresh-the-releases-list",
+      "title": "Implement full save (create/persist) functionality for new Release records: the create dialog on ReleasesPage must call the backend mutation, validate title and type, show a success toast, close the dialog, and refresh the releases list.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-inline-edit-form-on-releasedetail-that-allows-the-owner-or-admin-to-modify-title-release-type-tracklist-key-dates-and-workflow-checklist-items-save-changes-to-the-backend-and-reflect-updates-immediately",
+      "title": "Implement an inline edit form on ReleaseDetail that allows the owner or admin to modify title, release type, tracklist, key dates, and workflow checklist items, save changes to the backend, and reflect updates immediately.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-full-save-create-persist-functionality-for-new-recording-project-records-the-create-dialog-on-recordingprojectspage-must-call-the-backend-mutation-validate-required-fields-show-a-success-toast-close-the-dialog-and-refresh-the-project-list",
+      "title": "Implement full save (create/persist) functionality for new Recording Project records: the create dialog on RecordingProjectsPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the project list.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-inline-edit-form-on-recordingprojectdetail-that-allows-the-owner-or-admin-to-modify-project-metadata-fields-save-changes-to-the-backend-and-reflect-updates-immediately",
+      "title": "Implement an inline edit form on RecordingProjectDetail that allows the owner or admin to modify project metadata fields, save changes to the backend, and reflect updates immediately.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-implement-an-inline-edit-form-on-artistdevelopmentdetail-that-allows-the-owner-or-admin-to-modify-goals-plans-and-milestones-fields-save-changes-to-the-backend-and-reflect-updates-immediately",
+      "title": "Implement an inline edit form on ArtistDevelopmentDetail that allows the owner or admin to modify goals, plans, and milestones fields, save changes to the backend, and reflect updates immediately.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-react-query-mutation-hooks-in-usequeries-ts-for-each-of-the-five-entity-update-operations-updatemembership-updatepublishingwork-updaterelease-updaterecordingproject-updateartistdevelopment-that-call-the-corresponding-backend-update-endpoints-and-invalidate-relevant-query-caches-on-success",
+      "title": "Add React Query mutation hooks in useQueries.ts for each of the five entity update operations (updateMembership, updatePublishingWork, updateRelease, updateRecordingProject, updateArtistDevelopment) that call the corresponding backend update endpoints and invalidate relevant query caches on success.",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
     }
   ],
-  "new_feature_requests": [],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Save and edit records for each portal app section",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Implement full save (create/persist) functionality for new Artist Development records: the create dialog on ArtistDevelopmentPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the entries list.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Ensure the backend Motoko actor exposes update endpoints for all five entity types (Membership, PublishingWork, Release, RecordingProject, ArtistDevelopment) that accept a record ID and a set of updated fields, enforce ownership/admin authorization, and return the updated record or an error variant.",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
   "projectName": "Higgins Music Hub",
   "clarification_mode": "instant",
   "clarification_rounds": 0

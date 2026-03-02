@@ -1,77 +1,252 @@
 {
   "kind": "build_request",
-  "title": "Fix portal sections not rendering after Version 36 deployment",
+  "title": "Save and edit records for all portal app sections",
   "projectName": "Higgins Music Hub",
-  "priority": "high",
+  "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Diagnose and fix the portal layout so that all sections (Memberships, Publishing Works, Releases, Recording Projects, Artist Development) render correctly for authenticated users. The portal is currently showing no sections at all following the Version 36 deployment.",
-      "target": "frontend",
+      "text": "Implement full save (create/persist) functionality for new Membership records: the create dialog on MembershipsPage must call the backend mutation, show inline validation errors, display a success toast on completion, close the dialog, and refresh the membership list.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-latest"
         ],
         "quotes": [
-          "Portal not showing any sections at all just now, Please address it"
+          "saving and editing of records to each"
         ]
       },
       "acceptanceCriteria": [
-        "All five portal section pages (Memberships, Publishing Works, Releases, Recording Projects, Artist Development) are visible and navigable from the sidebar in PortalLayout.",
-        "No blank or empty portal shell is displayed after a successful login.",
-        "The PortalLayout sidebar navigation items render correctly for both admin and non-admin authenticated users.",
-        "Child routes within the portal render their list/content views without console errors.",
-        "The portal loads consistently on page refresh without losing section visibility."
+        "Submitting the create dialog persists a new membership record to the backend canister.",
+        "Form validation prevents submission with empty required fields (name, email).",
+        "A success toast is shown and the dialog closes on successful save.",
+        "The membership list refreshes automatically after creation.",
+        "Backend errors are surfaced to the user inline."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Audit the TanStack Router route tree in App.tsx to ensure all portal child routes are correctly defined, nested under the portal parent route, and not inadvertently blocked by AuthGate or ApprovalGate wrappers that may have regressed in Version 36.",
-      "target": "frontend",
+      "text": "Implement an inline edit form on MembershipDetail that allows the owner or admin to modify name, email, and status fields, save changes to the backend, and reflect updates immediately on the page without a full reload.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-latest"
         ],
         "quotes": [
-          "Portal not showing any sections at all just now, Please address it"
+          "saving and editing of records to each"
         ]
       },
       "acceptanceCriteria": [
-        "All portal sub-routes (memberships, publishing, releases, recordings, artist development, admin) are present and correctly nested in the route tree.",
-        "AuthGate does not incorrectly redirect authenticated users away from portal routes.",
-        "ApprovalGate (currently disabled) does not block rendering of portal sections.",
-        "Navigating directly to a portal sub-route URL renders the correct page content."
+        "Clicking an Edit button on MembershipDetail opens an editable form pre-populated with current values.",
+        "Saving persists changes to the backend and the page reflects the updated data immediately.",
+        "Only the record owner or an admin sees the Edit button.",
+        "A success toast is shown on successful save; backend errors are displayed inline."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Verify and fix the PortalLayout component to ensure the sidebar navigation links and the main content outlet are rendering. Confirm that the router outlet (Outlet) is present and active so that child route components are actually mounted and displayed.",
-      "target": "frontend",
+      "text": "Implement full save (create/persist) functionality for new Publishing Work records: the create dialog on PublishingWorksPage must call the backend mutation, validate title and registration status, show a success toast, close the dialog, and refresh the works list.",
+      "target": "both",
       "source": {
         "messageIds": [
-          "msg-4"
+          "msg-latest"
         ],
         "quotes": [
-          "Portal not showing any sections at all just now, Please address it"
+          "saving and editing of records to each"
         ]
       },
       "acceptanceCriteria": [
-        "PortalLayout renders its sidebar with all navigation links.",
-        "The main content area displays the active child route component.",
-        "No runtime errors are thrown from PortalLayout that would cause the entire portal shell to go blank.",
-        "Mobile drawer toggle functions correctly without breaking the layout."
+        "Submitting the create dialog persists a new publishing work to the backend.",
+        "Title is required; submission is blocked if it is empty.",
+        "Success toast is shown and dialog closes after a successful save.",
+        "The publishing works list refreshes automatically.",
+        "Backend errors are surfaced inline."
+      ]
+    },
+    {
+      "id": "REQ-4",
+      "text": "Implement an inline edit form on PublishingWorkDetail that allows the owner or admin to modify title, registration status, contributors, ownership splits, and notes, save changes to the backend, and reflect updates immediately.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "saving and editing of records to each"
+        ]
+      },
+      "acceptanceCriteria": [
+        "An Edit button (visible to owner or admin) opens a form pre-populated with current field values.",
+        "Ownership split validation (total ≤ 100%) is enforced before submission.",
+        "Changes persist to the backend and the detail page updates without a full reload.",
+        "Success toast on save; inline error display on failure."
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "text": "Implement full save (create/persist) functionality for new Release records: the create dialog on ReleasesPage must call the backend mutation, validate title and type, show a success toast, close the dialog, and refresh the releases list.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "saving and editing of records to each"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Submitting the create dialog persists a new release record to the backend.",
+        "Title and type are required; submission is blocked if either is empty.",
+        "Success toast shown and dialog closes after successful save.",
+        "Releases list refreshes automatically.",
+        "Backend errors are surfaced inline."
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "text": "Implement an inline edit form on ReleaseDetail that allows the owner or admin to modify title, release type, tracklist, key dates, and workflow checklist items, save changes to the backend, and reflect updates immediately.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "saving and editing of records to each"
+        ]
+      },
+      "acceptanceCriteria": [
+        "An Edit button (visible to owner or admin) opens a form pre-populated with existing values.",
+        "All editable fields update in the backend on save.",
+        "The detail page reflects changes immediately after saving.",
+        "Success toast on save; inline error display on failure."
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "text": "Implement full save (create/persist) functionality for new Recording Project records: the create dialog on RecordingProjectsPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the project list.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "saving and editing of records to each"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Submitting the create dialog persists a new recording project to the backend.",
+        "Required fields are validated before submission.",
+        "Success toast shown and dialog closes after successful save.",
+        "Project list refreshes automatically.",
+        "Backend errors are surfaced inline."
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "text": "Implement an inline edit form on RecordingProjectDetail that allows the owner or admin to modify project metadata fields, save changes to the backend, and reflect updates immediately.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "saving and editing of records to each"
+        ]
+      },
+      "acceptanceCriteria": [
+        "An Edit button (visible to owner or admin) opens a form pre-populated with current values.",
+        "Changes persist to the backend on save.",
+        "Detail page updates immediately after saving.",
+        "Success toast on save; inline error display on failure."
+      ]
+    },
+    {
+      "id": "REQ-9",
+      "text": "Implement full save (create/persist) functionality for new Artist Development records: the create dialog on ArtistDevelopmentPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the entries list.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "saving and editing of records to each"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Submitting the create dialog persists a new artist development entry to the backend.",
+        "Required fields are validated before submission.",
+        "Success toast shown and dialog closes after successful save.",
+        "Artist development list refreshes automatically.",
+        "Backend errors are surfaced inline."
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "text": "Implement an inline edit form on ArtistDevelopmentDetail that allows the owner or admin to modify goals, plans, and milestones fields, save changes to the backend, and reflect updates immediately.",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "saving and editing of records to each"
+        ]
+      },
+      "acceptanceCriteria": [
+        "An Edit button (visible to owner or admin) opens a form pre-populated with current values.",
+        "Changes persist to the backend on save.",
+        "Detail page updates immediately after saving.",
+        "Success toast on save; inline error display on failure."
+      ]
+    },
+    {
+      "id": "REQ-11",
+      "text": "Ensure the backend Motoko actor exposes update endpoints for all five entity types (Membership, PublishingWork, Release, RecordingProject, ArtistDevelopment) that accept a record ID and a set of updated fields, enforce ownership/admin authorization, and return the updated record or an error variant.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "saving and editing of records to each"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Each entity type has an updateXxx(id, fields) update call in the main actor.",
+        "Callers who are neither the record owner nor an admin receive an #Unauthorized error.",
+        "Successful updates return the full updated record.",
+        "Invalid IDs return a #NotFound error variant."
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Add React Query mutation hooks in useQueries.ts for each of the five entity update operations (updateMembership, updatePublishingWork, updateRelease, updateRecordingProject, updateArtistDevelopment) that call the corresponding backend update endpoints and invalidate relevant query caches on success.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-latest"
+        ],
+        "quotes": [
+          "saving and editing of records to each"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Each mutation hook is exported from useQueries.ts.",
+        "On success, the hook invalidates the corresponding list and detail queries so UI reflects the latest data.",
+        "Mutation errors are propagated to callers for inline display."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
-    "Do not remove or alter the ApprovalGate disabled state — it must remain rendering children unconditionally.",
-    "Do not change backend data models or Motoko actor logic unless a backend cause is identified."
+    "All backend logic must remain in the single main actor (backend/main.mo).",
+    "Do not modify any files listed under frontend.immutablePaths.",
+    "Authorization checks (owner or admin) must be enforced on all update endpoints."
   ],
   "nonGoals": [
-    "Restoring permission gates (AuthGate/ApprovalGate enforcement) — this is a separate pending task.",
-    "Adding new portal sections or features.",
-    "Changes to the admin dashboard or role assignment pages beyond fixing section visibility."
+    "Real-time collaborative editing.",
+    "Bulk delete operations.",
+    "Restoring or changing the ApprovalGate / AuthGate bypass logic.",
+    "Changes to the visual theme or layout beyond the edit forms."
   ],
   "imageRequirements": {
     "required": [],

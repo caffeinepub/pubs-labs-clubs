@@ -187,9 +187,14 @@ export interface backendInterface {
     requestApproval(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setApproval(user: Principal, status: ApprovalStatus): Promise<void>;
+    updateArtistDevelopment(entryId: ArtistDevelopmentId, goals: Array<string>, plans: Array<string>, milestones: Array<string>, internalNotes: string): Promise<ArtistDevelopment>;
     updateArtistDevelopmentLinks(artistDevelopmentId: ArtistDevelopmentId, relatedMemberships: Array<MemberId>, relatedPublishing: Array<PublishingId>, relatedLabelEntities: Array<LabelEntityId>, relatedRecordingProjects: Array<RecodingId>, relatedArtistDevelopment: Array<ArtistDevelopmentId>): Promise<void>;
     updateKnownUserRole(): Promise<void>;
+    updateMembership(id: MemberId, name: string, email: string, status: T): Promise<MembershipProfile>;
     updateMembershipLinks(id: MemberId, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, releaseIds: Array<LabelEntityId>, projectIds: Array<RecodingId>): Promise<void>;
     updateMembershipProfileFields(id: MemberId, name: string, email: string): Promise<MembershipProfile>;
     updateMembershipStatus(id: MemberId, status: T): Promise<MembershipProfile>;
+    updatePublishingWork(id: string, title: string, registrationStatus: string, contributors: Array<string>, ownershipSplits: Array<[string, bigint]>, notes: string): Promise<PublishingWork>;
+    updateRecordingProject(projectId: RecodingId, title: string, participants: Array<string>, sessionDate: Time, status: ProjectStatus, notes: string): Promise<RecordingProject>;
+    updateRelease(releaseId: LabelEntityId, title: string, releaseType: string, tracklist: Array<string>, keyDates: Array<string>, workflowChecklist: Array<string>): Promise<Release>;
 }

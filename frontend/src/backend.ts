@@ -270,11 +270,16 @@ export interface backendInterface {
     requestApproval(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setApproval(user: Principal, status: ApprovalStatus): Promise<void>;
+    updateArtistDevelopment(entryId: ArtistDevelopmentId, goals: Array<string>, plans: Array<string>, milestones: Array<string>, internalNotes: string): Promise<ArtistDevelopment>;
     updateArtistDevelopmentLinks(artistDevelopmentId: ArtistDevelopmentId, relatedMemberships: Array<MemberId>, relatedPublishing: Array<PublishingId>, relatedLabelEntities: Array<LabelEntityId>, relatedRecordingProjects: Array<RecodingId>, relatedArtistDevelopment: Array<ArtistDevelopmentId>): Promise<void>;
     updateKnownUserRole(): Promise<void>;
+    updateMembership(id: MemberId, name: string, email: string, status: T): Promise<MembershipProfile>;
     updateMembershipLinks(id: MemberId, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, releaseIds: Array<LabelEntityId>, projectIds: Array<RecodingId>): Promise<void>;
     updateMembershipProfileFields(id: MemberId, name: string, email: string): Promise<MembershipProfile>;
     updateMembershipStatus(id: MemberId, status: T): Promise<MembershipProfile>;
+    updatePublishingWork(id: string, title: string, registrationStatus: string, contributors: Array<string>, ownershipSplits: Array<[string, bigint]>, notes: string): Promise<PublishingWork>;
+    updateRecordingProject(projectId: RecodingId, title: string, participants: Array<string>, sessionDate: Time, status: ProjectStatus, notes: string): Promise<RecordingProject>;
+    updateRelease(releaseId: LabelEntityId, title: string, releaseType: string, tracklist: Array<string>, keyDates: Array<string>, workflowChecklist: Array<string>): Promise<Release>;
 }
 import type { ApprovalStatus as _ApprovalStatus, ArtistDevelopment as _ArtistDevelopment, ArtistDevelopmentId as _ArtistDevelopmentId, LabelEntityId as _LabelEntityId, MemberId as _MemberId, Membership as _Membership, MembershipProfile as _MembershipProfile, MembershipTier as _MembershipTier, ProjectStatus as _ProjectStatus, PublishingId as _PublishingId, PublishingWork as _PublishingWork, RecodingId as _RecodingId, RecordingProject as _RecordingProject, Release as _Release, SignedInUser as _SignedInUser, T as _T, Time as _Time, UserApprovalInfo as _UserApprovalInfo, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
@@ -831,6 +836,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async updateArtistDevelopment(arg0: ArtistDevelopmentId, arg1: Array<string>, arg2: Array<string>, arg3: Array<string>, arg4: string): Promise<ArtistDevelopment> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateArtistDevelopment(arg0, arg1, arg2, arg3, arg4);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateArtistDevelopment(arg0, arg1, arg2, arg3, arg4);
+            return result;
+        }
+    }
     async updateArtistDevelopmentLinks(arg0: ArtistDevelopmentId, arg1: Array<MemberId>, arg2: Array<PublishingId>, arg3: Array<LabelEntityId>, arg4: Array<RecodingId>, arg5: Array<ArtistDevelopmentId>): Promise<void> {
         if (this.processError) {
             try {
@@ -857,6 +876,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.updateKnownUserRole();
             return result;
+        }
+    }
+    async updateMembership(arg0: MemberId, arg1: string, arg2: string, arg3: T): Promise<MembershipProfile> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateMembership(arg0, arg1, arg2, to_candid_T_n32(this._uploadFile, this._downloadFile, arg3));
+                return from_candid_MembershipProfile_n3(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateMembership(arg0, arg1, arg2, to_candid_T_n32(this._uploadFile, this._downloadFile, arg3));
+            return from_candid_MembershipProfile_n3(this._uploadFile, this._downloadFile, result);
         }
     }
     async updateMembershipLinks(arg0: MemberId, arg1: Array<ArtistDevelopmentId>, arg2: Array<PublishingId>, arg3: Array<LabelEntityId>, arg4: Array<RecodingId>): Promise<void> {
@@ -899,6 +932,48 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.updateMembershipStatus(arg0, to_candid_T_n32(this._uploadFile, this._downloadFile, arg1));
             return from_candid_MembershipProfile_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async updatePublishingWork(arg0: string, arg1: string, arg2: string, arg3: Array<string>, arg4: Array<[string, bigint]>, arg5: string): Promise<PublishingWork> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updatePublishingWork(arg0, arg1, arg2, arg3, arg4, arg5);
+                return from_candid_PublishingWork_n8(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updatePublishingWork(arg0, arg1, arg2, arg3, arg4, arg5);
+            return from_candid_PublishingWork_n8(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async updateRecordingProject(arg0: RecodingId, arg1: string, arg2: Array<string>, arg3: Time, arg4: ProjectStatus, arg5: string): Promise<RecordingProject> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateRecordingProject(arg0, arg1, arg2, arg3, to_candid_ProjectStatus_n11(this._uploadFile, this._downloadFile, arg4), arg5);
+                return from_candid_RecordingProject_n13(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateRecordingProject(arg0, arg1, arg2, arg3, to_candid_ProjectStatus_n11(this._uploadFile, this._downloadFile, arg4), arg5);
+            return from_candid_RecordingProject_n13(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async updateRelease(arg0: LabelEntityId, arg1: string, arg2: string, arg3: Array<string>, arg4: Array<string>, arg5: Array<string>): Promise<Release> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateRelease(arg0, arg1, arg2, arg3, arg4, arg5);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateRelease(arg0, arg1, arg2, arg3, arg4, arg5);
+            return result;
         }
     }
 }

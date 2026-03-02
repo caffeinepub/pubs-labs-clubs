@@ -1,31 +1,34 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-03-02T19:47:17.873Z",
-  "summary": "The diff implements fixes for all three requirements: App.tsx has been audited and the route tree rebuilt with all portal sub-routes correctly nested under portalRoute without AuthGate/ApprovalGate wrappers; PortalLayout.tsx has been verified/fixed to include Outlet and sidebar navigation; ApprovalGate is confirmed to render children unconditionally. All five portal section pages and admin routes are present. The implementation appears comprehensive for REQ-1, REQ-2, and REQ-3.",
-  "missing_requirements": [],
-  "hallucinated_features": [
+  "generatedAt": "2026-03-02T20:29:56.422Z",
+  "summary": "The diff implements the vast majority of requirements across both frontend and backend. All five entity types have create dialogs (REQ-1, REQ-3, REQ-5, REQ-7, REQ-9), inline edit forms on detail pages (REQ-2, REQ-4, REQ-6, REQ-8, REQ-10), React Query mutation hooks in useQueries.ts (REQ-12), and backend update endpoints (REQ-11). The backend main.mo is truncated so full verification of REQ-11 details is limited. The ArtistDevelopmentPage create dialog (REQ-9) is referenced via hooks but the page file itself is not shown in the diff. Overall coverage appears strong with minor uncertainties due to truncation.",
+  "missing_requirements": [
     {
-      "description": "Admin-only guard disabled on RoleAssignmentPage — the if (!isAdmin) access check has been commented out with a TEMP note",
-      "reason": "The build request does not ask for disabling admin guards on RoleAssignmentPage. The non-goals explicitly state changes to admin dashboard or role assignment pages should be limited to fixing section visibility, not removing access control.",
+      "id": "REQ-9",
+      "requirement": "Implement full save (create/persist) functionality for new Artist Development records: the create dialog on ArtistDevelopmentPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the entries list.",
+      "reason": "The diff shows ArtistDevelopmentDetail.tsx (the edit form for REQ-10) but does not include an ArtistDevelopmentPage.tsx file with the create dialog. The frontend-file-summaries.txt also does not mention ArtistDevelopmentPage. There is no evidence the create dialog for artist development was implemented.",
       "evidence": [
-        "frontend/src/pages/portal/admin/RoleAssignmentPage.tsx"
+        "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
+        "frontend-file-summaries.txt"
       ]
     }
   ],
-  "confidence": 0.82,
+  "hallucinated_features": [],
+  "confidence": 0.72,
   "changed_files": [
+    "backend/main.mo",
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
-    "frontend/src/components/auth/ApprovalGate.tsx",
-    "frontend/src/components/auth/AuthGate.tsx",
-    "frontend/src/components/layout/PortalLayout.tsx",
     "frontend/src/hooks/useQueries.ts",
     "frontend/src/pages/portal/admin/RoleAssignmentPage.tsx",
-    "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+    "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
+    "frontend/src/pages/portal/label/ReleaseDetail.tsx",
     "frontend/src/pages/portal/label/ReleasesPage.tsx",
+    "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
     "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+    "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
     "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+    "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
     "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
     "project_state.json"
   ]

@@ -1,23 +1,26 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import {
-  useGetAllRecordingProjects,
-  useGetCallerUserRole,
-  useGetEntitiesForCaller,
-  useCreateRecordingProject,
-} from '../../../hooks/useQueries';
-import { UserRole, RecordingProject, ProjectStatus } from '../../../backend';
+import { Plus, Mic, Loader2, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Table,
   TableBody,
@@ -26,131 +29,149 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Mic2, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  useGetAllRecordingProjects,
+  useGetEntitiesForCaller,
+  useCreateRecordingProject,
+  useIsCallerAdmin,
+} from '@/hooks/useQueries';
+import type { RecordingProject } from '../../../backend';
+import { ProjectStatus } from '../../../backend';
 
-function formatDate(ts: bigint) {
-  try {
-    return new Date(Number(ts) / 1_000_000).toLocaleDateString();
-  } catch {
-    return '—';
-  }
-}
-
-function statusColor(status: string) {
+function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
     case 'in_progress': return 'default';
     case 'completed': return 'secondary';
     case 'planned': return 'outline';
     case 'archived': return 'destructive';
-    default: return 'secondary';
+    default: return 'outline';
   }
+}
+
+function formatStatus(status: string): string {
+  return status.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export default function RecordingProjectsPage() {
   const navigate = useNavigate();
-  const { data: userRole } = useGetCallerUserRole();
-  const isAdmin = userRole === UserRole.admin;
-
+  const { data: isAdmin } = useIsCallerAdmin();
   const { data: allProjects, isLoading: loadingAll } = useGetAllRecordingProjects();
   const { data: callerEntities, isLoading: loadingCaller } = useGetEntitiesForCaller();
+  const createProject = useCreateRecordingProject();
 
-  const createMutation = useCreateRecordingProject();
-
-  const [createOpen, setCreateOpen] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
-  const [newNotes, setNewNotes] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [formTitle, setFormTitle] = useState('');
+  const [formParticipants, setFormParticipants] = useState('');
+  const [formSessionDate, setFormSessionDate] = useState('');
+  const [formStatus, setFormStatus] = useState<ProjectStatus>(ProjectStatus.planned);
+  const [formNotes, setFormNotes] = useState('');
+  const [formError, setFormError] = useState('');
 
   const isLoading = isAdmin ? loadingAll : loadingCaller;
-
   const projects: RecordingProject[] = isAdmin
     ? (allProjects ?? [])
     : (callerEntities?.recordingProjects ?? []);
 
+  const handleOpenDialog = () => {
+    setFormTitle('');
+    setFormParticipants('');
+    setFormSessionDate(new Date().toISOString().split('T')[0]);
+    setFormStatus(ProjectStatus.planned);
+    setFormNotes('');
+    setFormError('');
+    setDialogOpen(true);
+  };
+
   const handleCreate = async () => {
-    if (!newTitle.trim()) {
-      toast.error('Title is required');
+    setFormError('');
+    if (!formTitle.trim()) {
+      setFormError('Title is required.');
       return;
     }
+
+    const participants = formParticipants.split('\n').map((p) => p.trim()).filter(Boolean);
+    const sessionDateMs = formSessionDate
+      ? BigInt(new Date(formSessionDate).getTime()) * BigInt(1_000_000)
+      : BigInt(Date.now()) * BigInt(1_000_000);
+
     try {
-      await createMutation.mutateAsync({
-        title: newTitle.trim(),
-        participants: [],
-        sessionDate: BigInt(Date.now()) * BigInt(1_000_000),
-        status: ProjectStatus.planned,
-        notes: newNotes.trim(),
+      await createProject.mutateAsync({
+        title: formTitle.trim(),
+        participants,
+        sessionDate: sessionDateMs,
+        status: formStatus,
+        notes: formNotes.trim(),
       });
-      toast.success('Recording project created');
-      setCreateOpen(false);
-      setNewTitle('');
-      setNewNotes('');
-    } catch (err: any) {
-      toast.error(err?.message ?? 'Failed to create recording project');
+      toast.success('Recording project created successfully!');
+      setDialogOpen(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to create recording project.';
+      setFormError(msg);
     }
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Mic2 size={24} className="text-primary" />
-            Recording Projects
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            {isAdmin ? 'All recording projects' : 'Your recording projects'}
-          </p>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Mic className="h-6 w-6 text-primary" />
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Recording Projects</h1>
+            <p className="text-sm text-muted-foreground">
+              {isAdmin ? 'All recording projects' : 'Your recording projects'}
+            </p>
+          </div>
         </div>
-        <Button onClick={() => setCreateOpen(true)} size="sm" className="gap-2">
-          <Plus size={16} />
+        <Button onClick={handleOpenDialog} className="gap-2">
+          <Plus className="h-4 w-4" />
           New Project
         </Button>
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="animate-spin text-primary" size={32} />
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : projects.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-border rounded-xl">
-          <Mic2 size={40} className="mx-auto text-muted-foreground mb-3" />
-          <p className="text-muted-foreground font-medium">No recording projects yet</p>
-          <p className="text-sm text-muted-foreground/70 mt-1 mb-4">Start your first recording project to get started.</p>
-          <Button onClick={() => setCreateOpen(true)} size="sm" variant="outline" className="gap-2">
-            <Plus size={14} />
-            Create Project
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Mic className="h-12 w-12 text-muted-foreground/40 mb-4" />
+          <p className="text-muted-foreground text-lg font-medium">No recording projects yet</p>
+          <p className="text-muted-foreground/60 text-sm mt-1">Create your first project to get started.</p>
+          <Button onClick={handleOpenDialog} className="mt-4 gap-2">
+            <Plus className="h-4 w-4" />
+            New Project
           </Button>
         </div>
       ) : (
-        <div className="rounded-xl border border-border overflow-hidden">
+        <div className="rounded-lg border border-border overflow-hidden">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Title</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Participants</TableHead>
-                <TableHead>Session Date</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead>ID</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {projects.map((project) => (
                 <TableRow
                   key={project.id}
-                  className="cursor-pointer hover:bg-accent/50 transition-colors"
+                  className="cursor-pointer hover:bg-muted/50"
                   onClick={() => navigate({ to: `/portal/recordings/${project.id}` })}
                 >
-                  <TableCell className="font-medium">{project.title || '—'}</TableCell>
+                  <TableCell className="font-medium">{project.title}</TableCell>
                   <TableCell>
-                    <Badge variant={statusColor(project.status as string) as any}>
-                      {String(project.status).replace('_', ' ')}
+                    <Badge variant={statusVariant(project.status as string)}>
+                      {formatStatus(project.status as string)}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-muted-foreground">
-                    {Array.isArray(project.participants) ? project.participants.length : 0}
+                    {project.participants?.length ?? 0} participant(s)
                   </TableCell>
-                  <TableCell className="text-muted-foreground">{formatDate(project.sessionDate)}</TableCell>
-                  <TableCell className="text-muted-foreground">{formatDate(project.created_at)}</TableCell>
+                  <TableCell className="text-muted-foreground font-mono text-xs">{project.id}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -158,36 +179,81 @@ export default function RecordingProjectsPage() {
         </div>
       )}
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Create Recording Project</DialogTitle>
+            <DialogTitle>Create New Recording Project</DialogTitle>
+            <DialogDescription>
+              Start a new recording project session.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {formError && (
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>{formError}</AlertDescription>
+              </Alert>
+            )}
             <div className="space-y-1.5">
-              <Label htmlFor="project-title">Title</Label>
+              <Label htmlFor="project-title">Title <span className="text-destructive">*</span></Label>
               <Input
                 id="project-title"
-                value={newTitle}
-                onChange={e => setNewTitle(e.target.value)}
+                value={formTitle}
+                onChange={(e) => setFormTitle(e.target.value)}
                 placeholder="Project title"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="project-notes">Notes</Label>
+              <Label htmlFor="project-status">Status</Label>
+              <Select value={formStatus as string} onValueChange={(v) => setFormStatus(v as ProjectStatus)}>
+                <SelectTrigger id="project-status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="planned">Planned</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="project-date">Session Date</Label>
               <Input
+                id="project-date"
+                type="date"
+                value={formSessionDate}
+                onChange={(e) => setFormSessionDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="project-participants">Participants (one per line)</Label>
+              <Textarea
+                id="project-participants"
+                value={formParticipants}
+                onChange={(e) => setFormParticipants(e.target.value)}
+                placeholder="Participant names, one per line"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="project-notes">Notes</Label>
+              <Textarea
                 id="project-notes"
-                value={newNotes}
-                onChange={e => setNewNotes(e.target.value)}
-                placeholder="Optional notes"
+                value={formNotes}
+                onChange={(e) => setFormNotes(e.target.value)}
+                placeholder="Session notes..."
+                rows={2}
               />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={createMutation.isPending} className="gap-2">
-              {createMutation.isPending && <Loader2 size={14} className="animate-spin" />}
-              Create
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={createProject.isPending}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreate} disabled={createProject.isPending}>
+              {createProject.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Create Project
             </Button>
           </DialogFooter>
         </DialogContent>

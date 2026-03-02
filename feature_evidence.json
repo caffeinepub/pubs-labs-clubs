@@ -2,16 +2,10 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-diagnose-and-fix-the-portal-layout-so-that-all-sections-memberships-publishing-works-releases-recording-projects-artist-development-render-correctly-for-authenticated-users-the-portal-is-currently-showing-no-sections-at-all-following-the-version-36-deployment",
-      "featureTitle": "Diagnose and fix the portal layout so that all sections (Memberships, Publishing Works, Releases, Recording Projects, Artist Development) render correctly for authenticated users. The portal is currently showing no sections at all following the Version 36 deployment.",
+      "featureId": "feature-implement-full-save-create-persist-functionality-for-new-membership-records-the-create-dialog-on-membershipspage-must-call-the-backend-mutation-show-inline-validation-errors-display-a-success-toast-on-completion-close-the-dialog-and-refresh-the-membership-list",
+      "featureTitle": "Implement full save (create/persist) functionality for new Membership records: the create dialog on MembershipsPage must call the backend mutation, show inline validation errors, display a success toast on completion, close the dialog, and refresh the membership list.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/layout/PortalLayout.tsx",
-        "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
-        "frontend/src/pages/portal/label/ReleasesPage.tsx",
-        "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-        "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-        "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx"
+        "frontend/src/pages/portal/memberships/MembershipsPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -28,12 +22,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-audit-the-tanstack-router-route-tree-in-app-tsx-to-ensure-all-portal-child-routes-are-correctly-defined-nested-under-the-portal-parent-route-and-not-inadvertently-blocked-by-authgate-or-approvalgate-wrappers-that-may-have-regressed-in-version-36",
-      "featureTitle": "Audit the TanStack Router route tree in App.tsx to ensure all portal child routes are correctly defined, nested under the portal parent route, and not inadvertently blocked by AuthGate or ApprovalGate wrappers that may have regressed in Version 36.",
+      "featureId": "feature-implement-an-inline-edit-form-on-membershipdetail-that-allows-the-owner-or-admin-to-modify-name-email-and-status-fields-save-changes-to-the-backend-and-reflect-updates-immediately-on-the-page-without-a-full-reload",
+      "featureTitle": "Implement an inline edit form on MembershipDetail that allows the owner or admin to modify name, email, and status fields, save changes to the backend, and reflect updates immediately on the page without a full reload.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/auth/ApprovalGate.tsx",
-        "frontend/src/components/auth/AuthGate.tsx"
+        "frontend/src/pages/portal/memberships/MembershipDetail.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -50,10 +42,10 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-verify-and-fix-the-portallayout-component-to-ensure-the-sidebar-navigation-links-and-the-main-content-outlet-are-rendering-confirm-that-the-router-outlet-outlet-is-present-and-active-so-that-child-route-components-are-actually-mounted-and-displayed",
-      "featureTitle": "Verify and fix the PortalLayout component to ensure the sidebar navigation links and the main content outlet are rendering. Confirm that the router outlet (Outlet) is present and active so that child route components are actually mounted and displayed.",
+      "featureId": "feature-implement-full-save-create-persist-functionality-for-new-publishing-work-records-the-create-dialog-on-publishingworkspage-must-call-the-backend-mutation-validate-title-and-registration-status-show-a-success-toast-close-the-dialog-and-refresh-the-works-list",
+      "featureTitle": "Implement full save (create/persist) functionality for new Publishing Work records: the create dialog on PublishingWorksPage must call the backend mutation, validate title and registration status, show a success toast, close the dialog, and refresh the works list.",
       "files": [
-        "frontend/src/components/layout/PortalLayout.tsx"
+        "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -66,6 +58,146 @@
       ],
       "testIds": [
         "REQ-3"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-an-inline-edit-form-on-publishingworkdetail-that-allows-the-owner-or-admin-to-modify-title-registration-status-contributors-ownership-splits-and-notes-save-changes-to-the-backend-and-reflect-updates-immediately",
+      "featureTitle": "Implement an inline edit form on PublishingWorkDetail that allows the owner or admin to modify title, registration status, contributors, ownership splits, and notes, save changes to the backend, and reflect updates immediately.",
+      "files": [
+        "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-full-save-create-persist-functionality-for-new-release-records-the-create-dialog-on-releasespage-must-call-the-backend-mutation-validate-title-and-type-show-a-success-toast-close-the-dialog-and-refresh-the-releases-list",
+      "featureTitle": "Implement full save (create/persist) functionality for new Release records: the create dialog on ReleasesPage must call the backend mutation, validate title and type, show a success toast, close the dialog, and refresh the releases list.",
+      "files": [
+        "frontend/src/pages/portal/label/ReleasesPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-an-inline-edit-form-on-releasedetail-that-allows-the-owner-or-admin-to-modify-title-release-type-tracklist-key-dates-and-workflow-checklist-items-save-changes-to-the-backend-and-reflect-updates-immediately",
+      "featureTitle": "Implement an inline edit form on ReleaseDetail that allows the owner or admin to modify title, release type, tracklist, key dates, and workflow checklist items, save changes to the backend, and reflect updates immediately.",
+      "files": [
+        "frontend/src/pages/portal/label/ReleaseDetail.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-full-save-create-persist-functionality-for-new-recording-project-records-the-create-dialog-on-recordingprojectspage-must-call-the-backend-mutation-validate-required-fields-show-a-success-toast-close-the-dialog-and-refresh-the-project-list",
+      "featureTitle": "Implement full save (create/persist) functionality for new Recording Project records: the create dialog on RecordingProjectsPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the project list.",
+      "files": [
+        "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-an-inline-edit-form-on-recordingprojectdetail-that-allows-the-owner-or-admin-to-modify-project-metadata-fields-save-changes-to-the-backend-and-reflect-updates-immediately",
+      "featureTitle": "Implement an inline edit form on RecordingProjectDetail that allows the owner or admin to modify project metadata fields, save changes to the backend, and reflect updates immediately.",
+      "files": [
+        "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-8"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-an-inline-edit-form-on-artistdevelopmentdetail-that-allows-the-owner-or-admin-to-modify-goals-plans-and-milestones-fields-save-changes-to-the-backend-and-reflect-updates-immediately",
+      "featureTitle": "Implement an inline edit form on ArtistDevelopmentDetail that allows the owner or admin to modify goals, plans, and milestones fields, save changes to the backend, and reflect updates immediately.",
+      "files": [
+        "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-10"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-react-query-mutation-hooks-in-usequeries-ts-for-each-of-the-five-entity-update-operations-updatemembership-updatepublishingwork-updaterelease-updaterecordingproject-updateartistdevelopment-that-call-the-corresponding-backend-update-endpoints-and-invalidate-relevant-query-caches-on-success",
+      "featureTitle": "Add React Query mutation hooks in useQueries.ts for each of the five entity update operations (updateMembership, updatePublishingWork, updateRelease, updateRecordingProject, updateArtistDevelopment) that call the corresponding backend update endpoints and invalidate relevant query caches on success.",
+      "files": [
+        "frontend/src/hooks/useQueries.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-12"
       ],
       "confidence": "high"
     }
