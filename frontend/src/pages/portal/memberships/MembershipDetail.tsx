@@ -31,6 +31,7 @@ import EditRelatedDialog from '@/components/related/EditRelatedDialog';
 import { useLinkableEntityOptions } from '@/hooks/useLinkableEntityOptions';
 import { normalizeToArray } from '@/utils/arrays';
 import { T as MemberStatusT } from '../../../backend';
+import ChangeHistoryPanel from '@/components/history/ChangeHistoryPanel';
 
 function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
@@ -328,6 +329,8 @@ export default function MembershipDetail() {
         linkedReleases={safeLinkedReleases}
         linkedProjects={safeLinkedProjects}
       />
+
+      <ChangeHistoryPanel recordId={id} />
 
       <EditRelatedDialog
         open={linksDialogOpen}

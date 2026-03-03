@@ -23,6 +23,7 @@ import EditLinksButton from '@/components/related/EditLinksButton';
 import EditRelatedDialog from '@/components/related/EditRelatedDialog';
 import { useLinkableEntityOptions } from '@/hooks/useLinkableEntityOptions';
 import { normalizeToArray } from '@/utils/arrays';
+import ChangeHistoryPanel from '@/components/history/ChangeHistoryPanel';
 
 export default function PublishingWorkDetail() {
   const { id } = useParams({ from: '/portal/publishing/$id' });
@@ -365,6 +366,8 @@ export default function PublishingWorkDetail() {
         linkedReleases={safeLinkedReleases}
         linkedProjects={safeLinkedProjects}
       />
+
+      <ChangeHistoryPanel recordId={id} />
 
       <EditRelatedDialog
         open={linksDialogOpen}

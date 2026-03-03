@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, BookOpen, Loader2, AlertCircle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Copy, Loader2, Plus, Trash2, BookOpen, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Table,
   TableBody,
@@ -24,13 +25,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   useGetAllPublishingWorks,
   useGetEntitiesForCaller,
   useCreatePublishingWork,
   useIsCallerAdmin,
   useBulkDeletePublishingWorks,
+  useDuplicatePublishingWork,
 } from '@/hooks/useQueries';
 import type { PublishingWork } from '../../../backend';
 import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
@@ -42,6 +43,7 @@ export default function PublishingWorksPage() {
   const { data: callerEntities, isLoading: loadingCaller } = useGetEntitiesForCaller();
   const createWork = useCreatePublishingWork();
   const bulkDelete = useBulkDeletePublishingWorks();
+  const duplicate = useDuplicatePublishingWork();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formTitle, setFormTitle] = useState('');
@@ -53,6 +55,7 @@ export default function PublishingWorksPage() {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   const isLoading = isAdmin ? loadingAll : loadingCaller;
   const works: PublishingWork[] = isAdmin
@@ -95,6 +98,20 @@ export default function PublishingWorksPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Bulk delete failed.';
       toast.error(msg);
+    }
+  };
+
+  const handleDuplicate = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDuplicatingId(id);
+    try {
+      await duplicate.mutateAsync(id);
+      toast.success('Publishing work duplicated successfully.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to duplicate publishing work.';
+      toast.error(msg);
+    } finally {
+      setDuplicatingId(null);
     }
   };
 
@@ -189,17 +206,16 @@ export default function PublishingWorksPage() {
               <TableRow>
                 <TableHead className="w-10">
                   <Checkbox
-                    checked={allSelected}
-                    data-state={someSelected ? 'indeterminate' : allSelected ? 'checked' : 'unchecked'}
+                    checked={allSelected ? true : someSelected ? 'indeterminate' : false}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all publishing works"
-                    className={someSelected ? 'opacity-70' : ''}
                   />
                 </TableHead>
                 <TableHead>Title</TableHead>
-                <TableHead>Registration Status</TableHead>
+                <TableHead>Registration</TableHead>
                 <TableHead>Contributors</TableHead>
                 <TableHead>ID</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -227,9 +243,28 @@ export default function PublishingWorksPage() {
                       <Badge variant="outline">{work.registrationStatus || 'unregistered'}</Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {work.contributors?.length ?? 0} contributor(s)
+                      {work.contributors.length > 0
+                        ? work.contributors.slice(0, 2).join(', ') +
+                          (work.contributors.length > 2 ? ` +${work.contributors.length - 2}` : '')
+                        : '—'}
                     </TableCell>
                     <TableCell className="text-muted-foreground font-mono text-xs">{work.id}</TableCell>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleDuplicate(work.id, e)}
+                        disabled={duplicatingId === work.id}
+                        title="Duplicate publishing work"
+                      >
+                        {duplicatingId === work.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                        <span className="ml-1 hidden sm:inline">Duplicate</span>
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -269,16 +304,16 @@ export default function PublishingWorksPage() {
                 id="work-title"
                 value={formTitle}
                 onChange={(e) => setFormTitle(e.target.value)}
-                placeholder="Song or work title"
+                placeholder="Work title"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="work-reg-status">Registration Status</Label>
+              <Label htmlFor="work-status">Registration Status</Label>
               <Input
-                id="work-reg-status"
+                id="work-status"
                 value={formRegistrationStatus}
                 onChange={(e) => setFormRegistrationStatus(e.target.value)}
-                placeholder="e.g. registered, pending, unregistered"
+                placeholder="e.g. registered, unregistered"
               />
             </div>
             <div className="space-y-1.5">
@@ -298,7 +333,7 @@ export default function PublishingWorksPage() {
                   id="work-iswc"
                   value={formIswc}
                   onChange={(e) => setFormIswc(e.target.value)}
-                  placeholder="Optional"
+                  placeholder="T-000.000.000-0"
                 />
               </div>
               <div className="space-y-1.5">
@@ -307,7 +342,7 @@ export default function PublishingWorksPage() {
                   id="work-isrc"
                   value={formIsrc}
                   onChange={(e) => setFormIsrc(e.target.value)}
-                  placeholder="Optional"
+                  placeholder="CC-XXX-YY-NNNNN"
                 />
               </div>
             </div>

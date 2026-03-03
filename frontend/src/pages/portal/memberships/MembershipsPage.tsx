@@ -1,7 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, Users, Loader2, AlertCircle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Copy, Loader2, Plus, Trash2, Users, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Table,
   TableBody,
@@ -23,26 +24,23 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
-  useGetCallerMemberships,
   useGetAllMembershipProfiles,
+  useGetCallerMemberships,
   useCreateMembershipProfile,
   useIsCallerAdmin,
   useBulkDeleteMemberships,
+  useDuplicateMembership,
 } from '@/hooks/useQueries';
 import type { Membership, MembershipProfile } from '../../../backend';
 import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
 
-function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
-  switch (status) {
-    case 'active': return 'default';
-    case 'applicant': return 'secondary';
-    case 'paused': return 'outline';
-    case 'inactive': return 'destructive';
-    default: return 'secondary';
-  }
-}
+const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  active: 'default',
+  applicant: 'secondary',
+  paused: 'outline',
+  inactive: 'destructive',
+};
 
 export default function MembershipsPage() {
   const navigate = useNavigate();
@@ -51,6 +49,7 @@ export default function MembershipsPage() {
   const { data: allProfiles, isLoading: loadingAll } = useGetAllMembershipProfiles();
   const createMembership = useCreateMembershipProfile();
   const bulkDelete = useBulkDeleteMemberships();
+  const duplicate = useDuplicateMembership();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formName, setFormName] = useState('');
@@ -60,11 +59,9 @@ export default function MembershipsPage() {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
-
-  const selectAllRef = useRef<HTMLButtonElement>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   const isLoading = isAdmin ? loadingAll : loadingCaller;
-
   const profiles: MembershipProfile[] = isAdmin
     ? (allProfiles ?? [])
     : (callerMemberships ?? []).map((m: Membership) => m.profile);
@@ -105,6 +102,20 @@ export default function MembershipsPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Bulk delete failed.';
       toast.error(msg);
+    }
+  };
+
+  const handleDuplicate = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDuplicatingId(id);
+    try {
+      await duplicate.mutateAsync(id);
+      toast.success('Membership duplicated successfully.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to duplicate membership.';
+      toast.error(msg);
+    } finally {
+      setDuplicatingId(null);
     }
   };
 
@@ -184,12 +195,9 @@ export default function MembershipsPage() {
               <TableRow>
                 <TableHead className="w-10">
                   <Checkbox
-                    ref={selectAllRef}
-                    checked={allSelected}
-                    data-state={someSelected ? 'indeterminate' : allSelected ? 'checked' : 'unchecked'}
+                    checked={allSelected ? true : someSelected ? 'indeterminate' : false}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all memberships"
-                    className={someSelected ? 'opacity-70' : ''}
                   />
                 </TableHead>
                 <TableHead>Name</TableHead>
@@ -197,6 +205,7 @@ export default function MembershipsPage() {
                 <TableHead>Status</TableHead>
                 <TableHead>Tier</TableHead>
                 <TableHead>ID</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -222,12 +231,28 @@ export default function MembershipsPage() {
                     <TableCell className="font-medium">{profile.name}</TableCell>
                     <TableCell className="text-muted-foreground">{profile.email}</TableCell>
                     <TableCell>
-                      <Badge variant={statusVariant(profile.status as string)}>
+                      <Badge variant={statusVariant[profile.status as string] ?? 'secondary'}>
                         {profile.status as string}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">{profile.tier}</TableCell>
                     <TableCell className="text-muted-foreground font-mono text-xs">{profile.id}</TableCell>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleDuplicate(profile.id, e)}
+                        disabled={duplicatingId === profile.id}
+                        title="Duplicate membership"
+                      >
+                        {duplicatingId === profile.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                        <span className="ml-1 hidden sm:inline">Duplicate</span>
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -240,6 +265,7 @@ export default function MembershipsPage() {
         open={confirmOpen}
         count={selectedIds.size}
         entityType="membership"
+        entityTypePlural="memberships"
         isPending={bulkDelete.isPending}
         onCancel={() => setConfirmOpen(false)}
         onConfirm={handleBulkDelete}

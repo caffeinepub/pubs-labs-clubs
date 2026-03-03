@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, Disc, Loader2, AlertCircle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Copy, Loader2, Plus, Trash2, Disc, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,
@@ -31,13 +32,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   useGetAllReleases,
   useGetEntitiesForCaller,
   useCreateRelease,
   useIsCallerAdmin,
   useBulkDeleteReleases,
+  useDuplicateRelease,
 } from '@/hooks/useQueries';
 import type { Release } from '../../../backend';
 import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
@@ -51,6 +52,7 @@ export default function ReleasesPage() {
   const { data: callerEntities, isLoading: loadingCaller } = useGetEntitiesForCaller();
   const createRelease = useCreateRelease();
   const bulkDelete = useBulkDeleteReleases();
+  const duplicate = useDuplicateRelease();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formTitle, setFormTitle] = useState('');
@@ -62,6 +64,7 @@ export default function ReleasesPage() {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   const isLoading = isAdmin ? loadingAll : loadingCaller;
   const releases: Release[] = isAdmin
@@ -104,6 +107,20 @@ export default function ReleasesPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Bulk delete failed.';
       toast.error(msg);
+    }
+  };
+
+  const handleDuplicate = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDuplicatingId(id);
+    try {
+      await duplicate.mutateAsync(id);
+      toast.success('Release duplicated successfully.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to duplicate release.';
+      toast.error(msg);
+    } finally {
+      setDuplicatingId(null);
     }
   };
 
@@ -200,17 +217,16 @@ export default function ReleasesPage() {
               <TableRow>
                 <TableHead className="w-10">
                   <Checkbox
-                    checked={allSelected}
-                    data-state={someSelected ? 'indeterminate' : allSelected ? 'checked' : 'unchecked'}
+                    checked={allSelected ? true : someSelected ? 'indeterminate' : false}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all releases"
-                    className={someSelected ? 'opacity-70' : ''}
                   />
                 </TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Tracks</TableHead>
                 <TableHead>ID</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -241,6 +257,22 @@ export default function ReleasesPage() {
                       {release.tracklist?.length ?? 0} track(s)
                     </TableCell>
                     <TableCell className="text-muted-foreground font-mono text-xs">{release.id}</TableCell>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleDuplicate(release.id, e)}
+                        disabled={duplicatingId === release.id}
+                        title="Duplicate release"
+                      >
+                        {duplicatingId === release.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                        <span className="ml-1 hidden sm:inline">Duplicate</span>
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -253,6 +285,7 @@ export default function ReleasesPage() {
         open={confirmOpen}
         count={selectedIds.size}
         entityType="release"
+        entityTypePlural="releases"
         isPending={bulkDelete.isPending}
         onCancel={() => setConfirmOpen(false)}
         onConfirm={handleBulkDelete}

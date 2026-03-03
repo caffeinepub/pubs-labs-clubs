@@ -1,21 +1,41 @@
 import Array "mo:core/Array";
 import Iter "mo:core/Iter";
 import Map "mo:core/Map";
+import Nat "mo:core/Nat";
+import Order "mo:core/Order";
 import Principal "mo:core/Principal";
+import Runtime "mo:core/Runtime";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
-import Order "mo:core/Order";
-import Runtime "mo:core/Runtime";
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 import UserApproval "user-approval/approval";
+import MixinStorage "blob-storage/Mixin";
 
 actor {
+  include MixinStorage();
+
   type MemberId = Text;
   type PublishingId = Text;
   type LabelEntityId = Text;
   type RecodingId = Text;
   type ArtistDevelopmentId = Text;
+
+  // CHANGE HISTORY
+  public type ChangeEvent = {
+    id : Nat;
+    recordId : Text;
+    timestamp : Int;
+    changedFields : [Text];
+    operationType : { #create; #update; #link };
+    author : Principal;
+  };
+
+  // RECORD IDENTIFIERS
+  public type RecordIdentifier = {
+    entityType : { #membership; #publishing; #release; #recordingProject; #artistDevelopment };
+    recordId : Text;
+  };
 
   // USER PROFILE
   public type UserProfile = {
@@ -166,7 +186,6 @@ actor {
     };
   };
 
-  // Persistent storage
   var nextEntityId = 0;
 
   // COMPONENT INTEGRATION
@@ -181,8 +200,80 @@ actor {
   let recordingProjects = Map.empty<RecodingId, RecordingProject>();
   let artistDevelopment = Map.empty<ArtistDevelopmentId, ArtistDevelopment>();
   let knownUsers = Map.empty<Principal, SignedInUser>();
+  let changeHistory = Map.empty<Text, [ChangeEvent]>();
 
-  // USER PROFILE FUNCTIONS (Required by frontend)
+  // HISTORY TRACKING FUNCTIONS
+  func addChangeEvent(recordId : Text, changedFields : [Text], operationType : { #create; #update; #link }, author : Principal) {
+    let timestamp = Time.now();
+    let previousEvents = switch (changeHistory.get(recordId)) {
+      case (null) { [] };
+      case (?events) { events };
+    };
+    let newChangeEvent = {
+      id = previousEvents.size();
+      recordId;
+      timestamp;
+      changedFields;
+      operationType;
+      author;
+    };
+    let updatedEvents = previousEvents.concat([newChangeEvent]);
+    changeHistory.add(recordId, updatedEvents);
+  };
+
+  // Returns change history for a record. Requires the caller to be a user,
+  // and to be either the owner of the record or an admin.
+  public query ({ caller }) func getChangeHistory(recordId : Text) : async [ChangeEvent] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view change history");
+    };
+
+    // Verify the caller owns the record (or is admin) by checking all entity stores.
+    let isAdmin = AccessControl.isAdmin(accessControlState, caller);
+
+    if (not isAdmin) {
+      // Check membership ownership
+      let membershipOwned = switch (memberships.get(recordId)) {
+        case (?m) { m.profile.principal == caller };
+        case (null) { false };
+      };
+      // Check publishing work ownership
+      let publishingOwned = switch (publishingCatalog.get(recordId)) {
+        case (?w) { w.owner == caller };
+        case (null) { false };
+      };
+      // Check release ownership
+      let releaseOwned = switch (releases.get(recordId)) {
+        case (?r) { r.owner == caller };
+        case (null) { false };
+      };
+      // Check recording project ownership
+      let projectOwned = switch (recordingProjects.get(recordId)) {
+        case (?p) { p.owner == caller };
+        case (null) { false };
+      };
+      // Check artist development ownership
+      let artistOwned = switch (artistDevelopment.get(recordId)) {
+        case (?a) { a.owner == caller };
+        case (null) { false };
+      };
+
+      if (not (membershipOwned or publishingOwned or releaseOwned or projectOwned or artistOwned)) {
+        Runtime.trap("Unauthorized: You can only view change history for your own records");
+      };
+    };
+
+    switch (changeHistory.get(recordId)) {
+      case (null) { [] };
+      case (?events) { events };
+    };
+  };
+
+  func processEntitiesForChangeEvent(recordId : Text, changedFields : [Text], operationType : { #create; #update; #link }, author : Principal) {
+    addChangeEvent(recordId, changedFields, operationType, author);
+  };
+
+  // MAIN FUNCTIONALITY
 
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
@@ -204,7 +295,6 @@ actor {
     };
     userProfiles.add(caller, profile);
 
-    // Update knownUsers map when saving profile
     let role = AccessControl.getUserRole(accessControlState, caller);
     let signedInUser : SignedInUser = {
       principal = caller;
@@ -235,8 +325,6 @@ actor {
     };
     knownUsers.values().toArray();
   };
-
-  // MEMBERSHIP FUNCTIONS
 
   public shared ({ caller }) func createMembershipProfile(
     id : MemberId,
@@ -276,6 +364,7 @@ actor {
           linkedReleases = [];
           linkedProjects = [];
         });
+        processEntitiesForChangeEvent(id, ["profile"], #create, caller);
         profile;
       };
     };
@@ -288,7 +377,6 @@ actor {
     switch (memberships.get(id)) {
       case (null) { Runtime.trap("Membership profile not found") };
       case (?membership) {
-        // Members can only view their own profile, admins can view all
         if (caller != membership.profile.principal and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: you can only view your own membership profile");
         };
@@ -297,8 +385,6 @@ actor {
     };
   };
 
-  // Members can update their own name and email (profile fields).
-  // Status changes are admin-only: members must not be able to promote themselves to #active.
   public shared ({ caller }) func updateMembershipProfileFields(
     id : MemberId,
     name : Text,
@@ -310,7 +396,6 @@ actor {
     switch (memberships.get(id)) {
       case (null) { Runtime.trap("Membership profile not found") };
       case (?existingMembership) {
-        // Only the member themselves or an admin may edit profile fields
         if (caller != existingMembership.profile.principal and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You do not have permission to update this profile");
         };
@@ -319,7 +404,6 @@ actor {
           principal = existingMembership.profile.principal;
           name;
           email;
-          // Status is preserved; it can only be changed via the admin-only updateMembershipStatus
           status = existingMembership.profile.status;
           tier = existingMembership.profile.tier;
           notes = existingMembership.profile.notes;
@@ -336,13 +420,12 @@ actor {
           linkedProjects = existingMembership.linkedProjects;
         };
         memberships.add(id, updatedMembership);
+        processEntitiesForChangeEvent(id, ["profile"], #update, caller);
         updatedProfile;
       };
     };
   };
 
-  // Owner or admin: update name, email, and status together.
-  // Status can only be changed by an admin; if the caller is not an admin the existing status is preserved.
   public shared ({ caller }) func updateMembership(
     id : MemberId,
     name : Text,
@@ -355,11 +438,9 @@ actor {
     switch (memberships.get(id)) {
       case (null) { Runtime.trap("Membership profile not found") };
       case (?existingMembership) {
-        // Only the owner or an admin may update this record
         if (caller != existingMembership.profile.principal and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You do not have permission to update this membership");
         };
-        // Non-admins cannot change the status field
         let resolvedStatus = if (AccessControl.isAdmin(accessControlState, caller)) {
           status;
         } else {
@@ -386,12 +467,12 @@ actor {
           linkedProjects = existingMembership.linkedProjects;
         };
         memberships.add(id, updatedMembership);
+        processEntitiesForChangeEvent(id, ["profile"], #update, caller);
         updatedProfile;
       };
     };
   };
 
-  // Admin-only: change the status of a membership (applicant -> active, active -> paused, etc.)
   public shared ({ caller }) func updateMembershipStatus(
     id : MemberId,
     status : MemberStatus.T,
@@ -423,12 +504,12 @@ actor {
           linkedProjects = existingMembership.linkedProjects;
         };
         memberships.add(id, updatedMembership);
+        processEntitiesForChangeEvent(id, ["profile"], #update, caller);
         updatedProfile;
       };
     };
   };
 
-  // Update all linked entity IDs for membership, preserves existing links if not provided
   public shared ({ caller }) func updateMembershipLinks(
     id : MemberId,
     artistIds : [ArtistDevelopmentId],
@@ -442,7 +523,6 @@ actor {
     switch (memberships.get(id)) {
       case (null) { Runtime.trap("Membership not found") };
       case (?membership) {
-        // Members can only update their own relationships, admins can update all
         if (caller != membership.profile.principal and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You can only update your own relationships");
         };
@@ -458,7 +538,6 @@ actor {
     };
   };
 
-  // Returns all membership data including linked entity IDs
   public query ({ caller }) func getMembershipDetails(id : MemberId) : async Membership {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view membership details");
@@ -466,7 +545,6 @@ actor {
     switch (memberships.get(id)) {
       case (null) { Runtime.trap("Membership not found") };
       case (?membership) {
-        // Members can only view their own record, admins can view all
         if (caller != membership.profile.principal and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: you can only view your own membership record");
         };
@@ -475,7 +553,6 @@ actor {
     };
   };
 
-  // Returns all memberships for the caller (non-admin users see only their own)
   public query ({ caller }) func getCallerMemberships() : async [Membership] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can view memberships");
@@ -483,7 +560,157 @@ actor {
     memberships.values().toArray().filter(func(m) { m.profile.principal == caller });
   };
 
-  // PUBLISHING FUNCTIONS
+  public shared ({ caller }) func duplicateMembership(id : MemberId) : async Membership {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can duplicate memberships");
+    };
+
+    let original = switch (memberships.get(id)) {
+      case (null) { Runtime.trap("Membership not found") };
+      case (?membership) {
+        if (caller != membership.profile.principal and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: You can only duplicate your own memberships");
+        };
+        membership;
+      };
+    };
+
+    nextEntityId += 1;
+    let newId = nextEntityId.toText();
+
+    let newProfile : MembershipProfile = {
+      original.profile with
+      id = newId;
+      name = "Copy of " # original.profile.name;
+      created_at = Time.now();
+      updated_at = Time.now();
+    };
+
+    let newMembership : Membership = {
+      original with
+      profile = newProfile;
+    };
+
+    memberships.add(newId, newMembership);
+    newMembership;
+  };
+
+  public shared ({ caller }) func duplicatePublishingWork(id : PublishingId) : async PublishingWork {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can duplicate publishing works");
+    };
+
+    let original = switch (publishingCatalog.get(id)) {
+      case (null) { Runtime.trap("Publishing work not found") };
+      case (?work) {
+        if (caller != work.owner and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: You can only duplicate your own works");
+        };
+        work;
+      };
+    };
+
+    nextEntityId += 1;
+    let newId = nextEntityId.toText();
+
+    let newWork : PublishingWork = {
+      original with
+      id = newId;
+      title = "Copy of " # original.title;
+      created_at = Time.now();
+    };
+
+    publishingCatalog.add(newId, newWork);
+    newWork;
+  };
+
+  public shared ({ caller }) func duplicateRelease(id : LabelEntityId) : async Release {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can duplicate releases");
+    };
+
+    let original = switch (releases.get(id)) {
+      case (null) { Runtime.trap("Release not found") };
+      case (?release) {
+        if (caller != release.owner and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: You can only duplicate your own releases");
+        };
+        release;
+      };
+    };
+
+    nextEntityId += 1;
+    let newId = nextEntityId.toText();
+
+    let newRelease : Release = {
+      original with
+      id = newId;
+      title = "Copy of " # original.title;
+      created_at = Time.now();
+    };
+
+    releases.add(newId, newRelease);
+    newRelease;
+  };
+
+  public shared ({ caller }) func duplicateRecordingProject(id : RecodingId) : async RecordingProject {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can duplicate recording projects");
+    };
+
+    let original = switch (recordingProjects.get(id)) {
+      case (null) { Runtime.trap("Recording project not found") };
+      case (?project) {
+        if (caller != project.owner and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: You can only duplicate your own projects");
+        };
+        project;
+      };
+    };
+
+    nextEntityId += 1;
+    let newId = nextEntityId.toText();
+
+    let newProject : RecordingProject = {
+      original with
+      id = newId;
+      title = "Copy of " # original.title;
+      created_at = Time.now();
+    };
+
+    recordingProjects.add(newId, newProject);
+    newProject;
+  };
+
+  public shared ({ caller }) func duplicateArtistDevelopment(id : ArtistDevelopmentId) : async ArtistDevelopment {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can duplicate artist development entries");
+    };
+
+    let original = switch (artistDevelopment.get(id)) {
+      case (null) { Runtime.trap("Artist development entry not found") };
+      case (?entry) {
+        if (caller != entry.owner and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: You can only duplicate your own entries");
+        };
+        entry;
+      };
+    };
+
+    nextEntityId += 1;
+    let newId = nextEntityId.toText();
+
+    let newEntry : ArtistDevelopment = {
+      original with
+      id = newId;
+      artistId = "Copy of " # original.artistId;
+      created_at = Time.now();
+    };
+
+    artistDevelopment.add(newId, newEntry);
+    newEntry;
+  };
+
   public shared ({ caller }) func createPublishingWork(
     title : Text,
     contributors : [Text],
@@ -516,6 +743,7 @@ actor {
       created_at = now;
     };
     publishingCatalog.add(workId, work);
+    processEntitiesForChangeEvent(workId, ["title", "contributors", "ownershipSplits", "iswc", "isrc", "registrationStatus", "notes"], #create, caller);
     work;
   };
 
@@ -530,7 +758,6 @@ actor {
         Runtime.trap("Publishing work not found");
       };
       case (?work) {
-        // Members can only view their own work, admins can view all
         if (caller != work.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: you can only view your own publishing work");
         };
@@ -539,7 +766,6 @@ actor {
     };
   };
 
-  // Owner or admin: update title, registration status, contributors, ownership splits, and notes.
   public shared ({ caller }) func updatePublishingWork(
     id : Text,
     title : Text,
@@ -554,7 +780,6 @@ actor {
     switch (publishingCatalog.get(id)) {
       case (null) { Runtime.trap("Publishing work not found") };
       case (?work) {
-        // Only the owner or an admin may update this record
         if (caller != work.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You can only update your own publishing work");
         };
@@ -575,6 +800,7 @@ actor {
           created_at = work.created_at;
         };
         publishingCatalog.add(id, updatedWork);
+        processEntitiesForChangeEvent(id, ["title", "registrationStatus", "contributors", "ownershipSplits", "notes"], #update, caller);
         updatedWork;
       };
     };
@@ -587,7 +813,6 @@ actor {
     switch (publishingCatalog.get(id)) {
       case (null) { Runtime.trap("Publishing work not found") };
       case (?work) {
-        // Members can only update their own work, admins can update all
         if (caller != work.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You can only update your own publishing work");
         };
@@ -598,7 +823,6 @@ actor {
     };
   };
 
-  // LABEL MANAGEMENT FUNCTIONS
   public shared ({ caller }) func createRelease(title : Text, releaseType : Text, tracklist : [Text], keyDates : [Text], owners : [Text]) : async Release {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can create releases");
@@ -622,6 +846,7 @@ actor {
       created_at = Time.now();
     };
     releases.add(releaseId, release);
+    processEntitiesForChangeEvent(releaseId, ["title", "releaseType", "tracklist", "keyDates", "owners", "workflowChecklist"], #create, caller);
     release;
   };
 
@@ -632,7 +857,6 @@ actor {
     switch (releases.get(releaseId)) {
       case (null) { Runtime.trap("Release not found") };
       case (?release) {
-        // Members can only view their own releases, admins can view all
         if (caller != release.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: you can only view your own releases");
         };
@@ -641,7 +865,6 @@ actor {
     };
   };
 
-  // Owner or admin: update title, release type, tracklist, key dates, and workflow checklist.
   public shared ({ caller }) func updateRelease(
     releaseId : LabelEntityId,
     title : Text,
@@ -656,7 +879,6 @@ actor {
     switch (releases.get(releaseId)) {
       case (null) { Runtime.trap("Release not found") };
       case (?release) {
-        // Only the owner or an admin may update this record
         if (caller != release.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You can only update your own releases");
         };
@@ -676,6 +898,7 @@ actor {
           created_at = release.created_at;
         };
         releases.add(releaseId, updatedRelease);
+        processEntitiesForChangeEvent(releaseId, ["title", "releaseType", "tracklist", "keyDates", "workflowChecklist"], #update, caller);
         updatedRelease;
       };
     };
@@ -689,7 +912,6 @@ actor {
     switch (releases.get(releaseId)) {
       case (null) { Runtime.trap("Release not found") };
       case (?release) {
-        // Members can only update their own releases, admins can update all
         if (caller != release.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You can only update your own releases");
         };
@@ -698,7 +920,6 @@ actor {
     };
   };
 
-  // RECORDING PROJECTS FUNCTIONS
   public shared ({ caller }) func createRecordingProject(
     title : Text,
     participants : [Text],
@@ -728,6 +949,7 @@ actor {
       created_at = Time.now();
     };
     recordingProjects.add(projectId, project);
+    processEntitiesForChangeEvent(projectId, ["title", "participants", "sessionDate", "status", "notes", "assetReferences"], #create, caller);
     project;
   };
 
@@ -738,7 +960,6 @@ actor {
     switch (recordingProjects.get(projectId)) {
       case (null) { Runtime.trap("Recording project not found") };
       case (?project) {
-        // Members can only view their own projects, admins can view all
         if (caller != project.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: you can only view your own recording projects");
         };
@@ -747,7 +968,6 @@ actor {
     };
   };
 
-  // Owner or admin: update project metadata fields.
   public shared ({ caller }) func updateRecordingProject(
     projectId : RecodingId,
     title : Text,
@@ -762,7 +982,6 @@ actor {
     switch (recordingProjects.get(projectId)) {
       case (null) { Runtime.trap("Recording project not found") };
       case (?project) {
-        // Only the owner or an admin may update this record
         if (caller != project.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You can only update your own recording projects");
         };
@@ -782,12 +1001,12 @@ actor {
           created_at = project.created_at;
         };
         recordingProjects.add(projectId, updatedProject);
+        processEntitiesForChangeEvent(projectId, ["participants", "sessionDate", "status", "notes"], #update, caller);
         updatedProject;
       };
     };
   };
 
-  // ARTIST DEVELOPMENT FUNCTIONS
   public shared ({ caller }) func createArtistDevelopment(
     artistId : Text,
     goals : [Text],
@@ -817,6 +1036,7 @@ actor {
     };
 
     artistDevelopment.add(entryId, entry);
+    processEntitiesForChangeEvent(entryId, ["artistId", "goals", "plans", "milestones", "internalNotes", "relatedMemberships", "relatedPublishing", "relatedLabelEntities", "relatedRecordingProjects", "relatedArtistDevelopment"], #create, caller);
     entry;
   };
 
@@ -827,7 +1047,6 @@ actor {
     switch (artistDevelopment.get(entryId)) {
       case (null) { Runtime.trap("Artist development entry not found") };
       case (?entry) {
-        // Members can only view their own entries, admins can view all
         if (caller != entry.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: you can only view your own artist development entries");
         };
@@ -836,7 +1055,6 @@ actor {
     };
   };
 
-  // Owner or admin: update goals, plans, milestones, and internal notes.
   public shared ({ caller }) func updateArtistDevelopment(
     entryId : ArtistDevelopmentId,
     goals : [Text],
@@ -850,7 +1068,6 @@ actor {
     switch (artistDevelopment.get(entryId)) {
       case (null) { Runtime.trap("Artist development entry not found") };
       case (?entry) {
-        // Only the owner or an admin may update this record
         if (caller != entry.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You can only update your own artist development entries");
         };
@@ -870,6 +1087,7 @@ actor {
           created_at = entry.created_at;
         };
         artistDevelopment.add(entryId, updatedEntry);
+        processEntitiesForChangeEvent(entryId, ["goals", "plans", "milestones", "internalNotes"], #update, caller);
         updatedEntry;
       };
     };
@@ -905,11 +1123,6 @@ actor {
       };
     };
   };
-
-  // BULK DELETE FUNCTIONS
-  // Each bulk delete requires at least #user permission.
-  // Within the batch, each record is only deleted if the caller is the owner or an admin.
-  // Records that cannot be deleted (not found or unauthorized) are returned in the `failed` list.
 
   public shared ({ caller }) func bulkDeleteMembershipProfiles(ids : [MemberId]) : async {
     deleted : [MemberId];
@@ -1081,8 +1294,6 @@ actor {
     };
   };
 
-  // LINKS AND RELATIONSHIPS
-  // Membership linking
   public shared ({ caller }) func linkMembershipToEntities(
     memberId : MemberId,
     artistIds : [ArtistDevelopmentId],
@@ -1096,7 +1307,6 @@ actor {
     switch (memberships.get(memberId)) {
       case (null) { Runtime.trap("Membership not found") };
       case (?membership) {
-        // Members can only update their own membership, admins can update all
         if (caller != membership.profile.principal and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You can only link your own membership");
         };
@@ -1111,7 +1321,6 @@ actor {
     };
   };
 
-  // Publishing work linking
   public shared ({ caller }) func linkPublishingWorkToEntities(
     workId : PublishingId,
     memberIds : [MemberId],
@@ -1125,7 +1334,6 @@ actor {
     switch (publishingCatalog.get(workId)) {
       case (null) { Runtime.trap("Publishing work not found") };
       case (?work) {
-        // Members can only update their own work, admins can update all
         if (caller != work.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You can only link your own publishing work");
         };
@@ -1140,7 +1348,6 @@ actor {
     };
   };
 
-  // Release linking
   public shared ({ caller }) func linkReleaseToEntities(
     releaseId : LabelEntityId,
     memberIds : [MemberId],
@@ -1154,7 +1361,6 @@ actor {
     switch (releases.get(releaseId)) {
       case (null) { Runtime.trap("Release not found") };
       case (?release) {
-        // Members can only update their own releases, admins can update all
         if (caller != release.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You can only update your own releases");
         };
@@ -1169,7 +1375,6 @@ actor {
     };
   };
 
-  // Recording project linking
   public shared ({ caller }) func linkProjectToEntities(
     projectId : RecodingId,
     memberIds : [MemberId],
@@ -1183,7 +1388,6 @@ actor {
     switch (recordingProjects.get(projectId)) {
       case (null) { Runtime.trap("Recording project not found") };
       case (?project) {
-        // Members can only update their own projects, admins can update all
         if (caller != project.owner and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You can only link your own recording projects");
         };
@@ -1198,7 +1402,6 @@ actor {
     };
   };
 
-  // Entities Query - Returns entities owned by caller (or all if admin)
   public query ({ caller }) func getEntitiesForCaller() : async {
     memberships : [(MemberId, Membership)];
     publishingWorks : [PublishingWork];
@@ -1212,35 +1415,30 @@ actor {
 
     let isAdmin = AccessControl.isAdmin(accessControlState, caller);
 
-    // Filter memberships: return only caller's membership or all if admin
     let filteredMemberships = if (isAdmin) {
       memberships.toArray();
     } else {
       memberships.toArray().filter(func((_, m)) { m.profile.principal == caller });
     };
 
-    // Filter publishing works: return only caller's works or all if admin
     let filteredPublishingWorks = if (isAdmin) {
       publishingCatalog.values().toArray();
     } else {
       publishingCatalog.values().toArray().filter(func(w) { w.owner == caller });
     };
 
-    // Filter releases: return only caller's releases or all if admin
     let filteredReleases = if (isAdmin) {
       releases.values().toArray();
     } else {
       releases.values().toArray().filter(func(r) { r.owner == caller });
     };
 
-    // Filter recording projects: return only caller's projects or all if admin
     let filteredRecordingProjects = if (isAdmin) {
       recordingProjects.values().toArray();
     } else {
       recordingProjects.values().toArray().filter(func(p) { p.owner == caller });
     };
 
-    // Filter artist development: return only caller's entries or all if admin
     let filteredArtistDevelopment = if (isAdmin) {
       artistDevelopment.values().toArray();
     } else {
@@ -1256,7 +1454,6 @@ actor {
     };
   };
 
-  // ADDITIONAL QUERY FUNCTIONS (Admin-only for viewing all data)
   public query ({ caller }) func getAllMembershipProfiles() : async [MembershipProfile] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can view all membership profiles");
@@ -1318,8 +1515,6 @@ actor {
     byGoalsArray.sort(ArtistDevelopment.compareByGoals : (ArtistDevelopment.ByGoals, ArtistDevelopment.ByGoals) -> Order.Order);
   };
 
-  // COMPONENT-ENDPOINTS
-
   public query ({ caller }) func isCallerApproved() : async Bool {
     AccessControl.hasPermission(accessControlState, caller, #admin) or UserApproval.isApproved(approvalState, caller);
   };
@@ -1342,7 +1537,6 @@ actor {
     UserApproval.listApprovals(approvalState);
   };
 
-  // ROLLOUT STEP TRACKER (single source of truth)
   public shared ({ caller }) func getRemainingRolloutSteps() : async [(Text, Text)] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: only admins can view rollout steps");

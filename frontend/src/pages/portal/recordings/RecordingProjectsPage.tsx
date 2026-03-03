@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, Mic, Loader2, AlertCircle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Copy, Loader2, Plus, Trash2, Mic, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -15,6 +15,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Select,
   SelectContent,
@@ -31,13 +32,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   useGetAllRecordingProjects,
   useGetEntitiesForCaller,
   useCreateRecordingProject,
   useIsCallerAdmin,
   useBulkDeleteRecordingProjects,
+  useDuplicateRecordingProject,
 } from '@/hooks/useQueries';
 import type { RecordingProject } from '../../../backend';
 import { ProjectStatus } from '../../../backend';
@@ -64,6 +65,7 @@ export default function RecordingProjectsPage() {
   const { data: callerEntities, isLoading: loadingCaller } = useGetEntitiesForCaller();
   const createProject = useCreateRecordingProject();
   const bulkDelete = useBulkDeleteRecordingProjects();
+  const duplicate = useDuplicateRecordingProject();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formTitle, setFormTitle] = useState('');
@@ -75,6 +77,7 @@ export default function RecordingProjectsPage() {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
 
   const isLoading = isAdmin ? loadingAll : loadingCaller;
   const projects: RecordingProject[] = isAdmin
@@ -117,6 +120,20 @@ export default function RecordingProjectsPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Bulk delete failed.';
       toast.error(msg);
+    }
+  };
+
+  const handleDuplicate = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDuplicatingId(id);
+    try {
+      await duplicate.mutateAsync(id);
+      toast.success('Recording project duplicated successfully.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to duplicate recording project.';
+      toast.error(msg);
+    } finally {
+      setDuplicatingId(null);
     }
   };
 
@@ -210,17 +227,16 @@ export default function RecordingProjectsPage() {
               <TableRow>
                 <TableHead className="w-10">
                   <Checkbox
-                    checked={allSelected}
-                    data-state={someSelected ? 'indeterminate' : allSelected ? 'checked' : 'unchecked'}
+                    checked={allSelected ? true : someSelected ? 'indeterminate' : false}
                     onCheckedChange={handleSelectAll}
                     aria-label="Select all recording projects"
-                    className={someSelected ? 'opacity-70' : ''}
                   />
                 </TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Participants</TableHead>
                 <TableHead>ID</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -253,6 +269,22 @@ export default function RecordingProjectsPage() {
                       {project.participants?.length ?? 0} participant(s)
                     </TableCell>
                     <TableCell className="text-muted-foreground font-mono text-xs">{project.id}</TableCell>
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => handleDuplicate(project.id, e)}
+                        disabled={duplicatingId === project.id}
+                        title="Duplicate recording project"
+                      >
+                        {duplicatingId === project.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                        <span className="ml-1 hidden sm:inline">Duplicate</span>
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -265,6 +297,7 @@ export default function RecordingProjectsPage() {
         open={confirmOpen}
         count={selectedIds.size}
         entityType="recording project"
+        entityTypePlural="recording projects"
         isPending={bulkDelete.isPending}
         onCancel={() => setConfirmOpen(false)}
         onConfirm={handleBulkDelete}
@@ -275,7 +308,7 @@ export default function RecordingProjectsPage() {
           <DialogHeader>
             <DialogTitle>Create New Recording Project</DialogTitle>
             <DialogDescription>
-              Start a new recording project session.
+              Add a new recording session or project.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
@@ -296,15 +329,15 @@ export default function RecordingProjectsPage() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="project-status">Status</Label>
-              <Select value={formStatus as string} onValueChange={(v) => setFormStatus(v as ProjectStatus)}>
+              <Select value={formStatus} onValueChange={(v) => setFormStatus(v as ProjectStatus)}>
                 <SelectTrigger id="project-status">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="planned">Planned</SelectItem>
-                  <SelectItem value="in_progress">In Progress</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
+                  <SelectItem value={ProjectStatus.planned}>Planned</SelectItem>
+                  <SelectItem value={ProjectStatus.in_progress}>In Progress</SelectItem>
+                  <SelectItem value={ProjectStatus.completed}>Completed</SelectItem>
+                  <SelectItem value={ProjectStatus.archived}>Archived</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -333,7 +366,7 @@ export default function RecordingProjectsPage() {
                 id="project-notes"
                 value={formNotes}
                 onChange={(e) => setFormNotes(e.target.value)}
-                placeholder="Session notes"
+                placeholder="Session notes..."
                 rows={2}
               />
             </div>

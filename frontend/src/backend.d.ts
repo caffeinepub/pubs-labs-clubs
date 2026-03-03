@@ -89,6 +89,14 @@ export interface SignedInUser {
     role: UserRole;
     profile?: UserProfile;
 }
+export interface ChangeEvent {
+    id: bigint;
+    operationType: Variant_link_create_update;
+    author: Principal;
+    changedFields: Array<string>;
+    timestamp: bigint;
+    recordId: string;
+}
 export interface MembershipTier {
     fee: bigint;
     name: string;
@@ -142,6 +150,11 @@ export enum UserRole {
     user = "user",
     guest = "guest"
 }
+export enum Variant_link_create_update {
+    link = "link",
+    create = "create",
+    update = "update"
+}
 export interface backendInterface {
     addPublishingWorkNotes(id: string, notes: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
@@ -171,6 +184,11 @@ export interface backendInterface {
     createPublishingWork(title: string, contributors: Array<string>, ownershipSplits: Array<[string, bigint]>, iswc: string | null, isrc: string | null, registrationStatus: string): Promise<PublishingWork>;
     createRecordingProject(title: string, participants: Array<string>, sessionDate: Time, status: ProjectStatus, notes: string): Promise<RecordingProject>;
     createRelease(title: string, releaseType: string, tracklist: Array<string>, keyDates: Array<string>, owners: Array<string>): Promise<Release>;
+    duplicateArtistDevelopment(id: ArtistDevelopmentId): Promise<ArtistDevelopment>;
+    duplicateMembership(id: MemberId): Promise<Membership>;
+    duplicatePublishingWork(id: PublishingId): Promise<PublishingWork>;
+    duplicateRecordingProject(id: RecodingId): Promise<RecordingProject>;
+    duplicateRelease(id: LabelEntityId): Promise<Release>;
     getAllArtistDevelopment(): Promise<Array<ArtistDevelopment>>;
     getAllKnownUsers(): Promise<Array<SignedInUser>>;
     getAllMembershipProfiles(): Promise<Array<MembershipProfile>>;
@@ -182,6 +200,7 @@ export interface backendInterface {
     getCallerMemberships(): Promise<Array<Membership>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
+    getChangeHistory(recordId: string): Promise<Array<ChangeEvent>>;
     getEntitiesForCaller(): Promise<{
         recordingProjects: Array<RecordingProject>;
         artistDevelopment: Array<ArtistDevelopment>;

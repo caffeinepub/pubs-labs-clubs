@@ -8,6 +8,17 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const _CaffeineStorageCreateCertificateResult = IDL.Record({
+  'method' : IDL.Text,
+  'blob_hash' : IDL.Text,
+});
+export const _CaffeineStorageRefillInformation = IDL.Record({
+  'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+});
+export const _CaffeineStorageRefillResult = IDL.Record({
+  'success' : IDL.Opt(IDL.Bool),
+  'topped_up_amount' : IDL.Opt(IDL.Nat),
+});
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
@@ -104,6 +115,20 @@ export const Release = IDL.Record({
   'linkedArtists' : IDL.Vec(ArtistDevelopmentId),
   'releaseType' : IDL.Text,
 });
+export const MembershipTier = IDL.Record({
+  'fee' : IDL.Nat,
+  'name' : IDL.Text,
+  'description' : IDL.Text,
+  'benefits' : IDL.Vec(IDL.Text),
+});
+export const Membership = IDL.Record({
+  'linkedProjects' : IDL.Vec(RecodingId),
+  'tier' : MembershipTier,
+  'linkedReleases' : IDL.Vec(LabelEntityId),
+  'linkedWorks' : IDL.Vec(PublishingId),
+  'linkedArtists' : IDL.Vec(ArtistDevelopmentId),
+  'profile' : MembershipProfile,
+});
 export const UserProfile = IDL.Record({
   'bio' : IDL.Text,
   'name' : IDL.Text,
@@ -120,19 +145,17 @@ export const ByGoals = IDL.Record({
   'created_at' : Time,
   'goals' : IDL.Text,
 });
-export const MembershipTier = IDL.Record({
-  'fee' : IDL.Nat,
-  'name' : IDL.Text,
-  'description' : IDL.Text,
-  'benefits' : IDL.Vec(IDL.Text),
-});
-export const Membership = IDL.Record({
-  'linkedProjects' : IDL.Vec(RecodingId),
-  'tier' : MembershipTier,
-  'linkedReleases' : IDL.Vec(LabelEntityId),
-  'linkedWorks' : IDL.Vec(PublishingId),
-  'linkedArtists' : IDL.Vec(ArtistDevelopmentId),
-  'profile' : MembershipProfile,
+export const ChangeEvent = IDL.Record({
+  'id' : IDL.Nat,
+  'operationType' : IDL.Variant({
+    'link' : IDL.Null,
+    'create' : IDL.Null,
+    'update' : IDL.Null,
+  }),
+  'author' : IDL.Principal,
+  'changedFields' : IDL.Vec(IDL.Text),
+  'timestamp' : IDL.Int,
+  'recordId' : IDL.Text,
 });
 export const ApprovalStatus = IDL.Variant({
   'pending' : IDL.Null,
@@ -145,6 +168,32 @@ export const UserApprovalInfo = IDL.Record({
 });
 
 export const idlService = IDL.Service({
+  '_caffeineStorageBlobIsLive' : IDL.Func(
+      [IDL.Vec(IDL.Nat8)],
+      [IDL.Bool],
+      ['query'],
+    ),
+  '_caffeineStorageBlobsToDelete' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      ['query'],
+    ),
+  '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+      [IDL.Vec(IDL.Vec(IDL.Nat8))],
+      [],
+      [],
+    ),
+  '_caffeineStorageCreateCertificate' : IDL.Func(
+      [IDL.Text],
+      [_CaffeineStorageCreateCertificateResult],
+      [],
+    ),
+  '_caffeineStorageRefillCashier' : IDL.Func(
+      [IDL.Opt(_CaffeineStorageRefillInformation)],
+      [_CaffeineStorageRefillResult],
+      [],
+    ),
+  '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
   'addPublishingWorkNotes' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
@@ -243,6 +292,15 @@ export const idlService = IDL.Service({
       [Release],
       [],
     ),
+  'duplicateArtistDevelopment' : IDL.Func(
+      [ArtistDevelopmentId],
+      [ArtistDevelopment],
+      [],
+    ),
+  'duplicateMembership' : IDL.Func([MemberId], [Membership], []),
+  'duplicatePublishingWork' : IDL.Func([PublishingId], [PublishingWork], []),
+  'duplicateRecordingProject' : IDL.Func([RecodingId], [RecordingProject], []),
+  'duplicateRelease' : IDL.Func([LabelEntityId], [Release], []),
   'getAllArtistDevelopment' : IDL.Func(
       [],
       [IDL.Vec(ArtistDevelopment)],
@@ -270,6 +328,7 @@ export const idlService = IDL.Service({
   'getCallerMemberships' : IDL.Func([], [IDL.Vec(Membership)], ['query']),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+  'getChangeHistory' : IDL.Func([IDL.Text], [IDL.Vec(ChangeEvent)], ['query']),
   'getEntitiesForCaller' : IDL.Func(
       [],
       [
@@ -433,6 +492,17 @@ export const idlService = IDL.Service({
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const _CaffeineStorageCreateCertificateResult = IDL.Record({
+    'method' : IDL.Text,
+    'blob_hash' : IDL.Text,
+  });
+  const _CaffeineStorageRefillInformation = IDL.Record({
+    'proposed_top_up_amount' : IDL.Opt(IDL.Nat),
+  });
+  const _CaffeineStorageRefillResult = IDL.Record({
+    'success' : IDL.Opt(IDL.Bool),
+    'topped_up_amount' : IDL.Opt(IDL.Nat),
+  });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
@@ -529,6 +599,20 @@ export const idlFactory = ({ IDL }) => {
     'linkedArtists' : IDL.Vec(ArtistDevelopmentId),
     'releaseType' : IDL.Text,
   });
+  const MembershipTier = IDL.Record({
+    'fee' : IDL.Nat,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'benefits' : IDL.Vec(IDL.Text),
+  });
+  const Membership = IDL.Record({
+    'linkedProjects' : IDL.Vec(RecodingId),
+    'tier' : MembershipTier,
+    'linkedReleases' : IDL.Vec(LabelEntityId),
+    'linkedWorks' : IDL.Vec(PublishingId),
+    'linkedArtists' : IDL.Vec(ArtistDevelopmentId),
+    'profile' : MembershipProfile,
+  });
   const UserProfile = IDL.Record({
     'bio' : IDL.Text,
     'name' : IDL.Text,
@@ -545,19 +629,17 @@ export const idlFactory = ({ IDL }) => {
     'created_at' : Time,
     'goals' : IDL.Text,
   });
-  const MembershipTier = IDL.Record({
-    'fee' : IDL.Nat,
-    'name' : IDL.Text,
-    'description' : IDL.Text,
-    'benefits' : IDL.Vec(IDL.Text),
-  });
-  const Membership = IDL.Record({
-    'linkedProjects' : IDL.Vec(RecodingId),
-    'tier' : MembershipTier,
-    'linkedReleases' : IDL.Vec(LabelEntityId),
-    'linkedWorks' : IDL.Vec(PublishingId),
-    'linkedArtists' : IDL.Vec(ArtistDevelopmentId),
-    'profile' : MembershipProfile,
+  const ChangeEvent = IDL.Record({
+    'id' : IDL.Nat,
+    'operationType' : IDL.Variant({
+      'link' : IDL.Null,
+      'create' : IDL.Null,
+      'update' : IDL.Null,
+    }),
+    'author' : IDL.Principal,
+    'changedFields' : IDL.Vec(IDL.Text),
+    'timestamp' : IDL.Int,
+    'recordId' : IDL.Text,
   });
   const ApprovalStatus = IDL.Variant({
     'pending' : IDL.Null,
@@ -570,6 +652,32 @@ export const idlFactory = ({ IDL }) => {
   });
   
   return IDL.Service({
+    '_caffeineStorageBlobIsLive' : IDL.Func(
+        [IDL.Vec(IDL.Nat8)],
+        [IDL.Bool],
+        ['query'],
+      ),
+    '_caffeineStorageBlobsToDelete' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        ['query'],
+      ),
+    '_caffeineStorageConfirmBlobDeletion' : IDL.Func(
+        [IDL.Vec(IDL.Vec(IDL.Nat8))],
+        [],
+        [],
+      ),
+    '_caffeineStorageCreateCertificate' : IDL.Func(
+        [IDL.Text],
+        [_CaffeineStorageCreateCertificateResult],
+        [],
+      ),
+    '_caffeineStorageRefillCashier' : IDL.Func(
+        [IDL.Opt(_CaffeineStorageRefillInformation)],
+        [_CaffeineStorageRefillResult],
+        [],
+      ),
+    '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
     'addPublishingWorkNotes' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
@@ -672,6 +780,19 @@ export const idlFactory = ({ IDL }) => {
         [Release],
         [],
       ),
+    'duplicateArtistDevelopment' : IDL.Func(
+        [ArtistDevelopmentId],
+        [ArtistDevelopment],
+        [],
+      ),
+    'duplicateMembership' : IDL.Func([MemberId], [Membership], []),
+    'duplicatePublishingWork' : IDL.Func([PublishingId], [PublishingWork], []),
+    'duplicateRecordingProject' : IDL.Func(
+        [RecodingId],
+        [RecordingProject],
+        [],
+      ),
+    'duplicateRelease' : IDL.Func([LabelEntityId], [Release], []),
     'getAllArtistDevelopment' : IDL.Func(
         [],
         [IDL.Vec(ArtistDevelopment)],
@@ -703,6 +824,11 @@ export const idlFactory = ({ IDL }) => {
     'getCallerMemberships' : IDL.Func([], [IDL.Vec(Membership)], ['query']),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
+    'getChangeHistory' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(ChangeEvent)],
+        ['query'],
+      ),
     'getEntitiesForCaller' : IDL.Func(
         [],
         [

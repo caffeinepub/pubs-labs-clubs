@@ -35,6 +35,16 @@ export interface ByGoals {
   'created_at' : Time,
   'goals' : string,
 }
+export interface ChangeEvent {
+  'id' : bigint,
+  'operationType' : { 'link' : null } |
+    { 'create' : null } |
+    { 'update' : null },
+  'author' : Principal,
+  'changedFields' : Array<string>,
+  'timestamp' : bigint,
+  'recordId' : string,
+}
 export type LabelEntityId = string;
 export type MemberId = string;
 export interface Membership {
@@ -137,7 +147,33 @@ export interface UserProfile {
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface _CaffeineStorageCreateCertificateResult {
+  'method' : string,
+  'blob_hash' : string,
+}
+export interface _CaffeineStorageRefillInformation {
+  'proposed_top_up_amount' : [] | [bigint],
+}
+export interface _CaffeineStorageRefillResult {
+  'success' : [] | [boolean],
+  'topped_up_amount' : [] | [bigint],
+}
 export interface _SERVICE {
+  '_caffeineStorageBlobIsLive' : ActorMethod<[Uint8Array], boolean>,
+  '_caffeineStorageBlobsToDelete' : ActorMethod<[], Array<Uint8Array>>,
+  '_caffeineStorageConfirmBlobDeletion' : ActorMethod<
+    [Array<Uint8Array>],
+    undefined
+  >,
+  '_caffeineStorageCreateCertificate' : ActorMethod<
+    [string],
+    _CaffeineStorageCreateCertificateResult
+  >,
+  '_caffeineStorageRefillCashier' : ActorMethod<
+    [[] | [_CaffeineStorageRefillInformation]],
+    _CaffeineStorageRefillResult
+  >,
+  '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
   'addPublishingWorkNotes' : ActorMethod<[string, string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
@@ -195,6 +231,14 @@ export interface _SERVICE {
     [string, string, Array<string>, Array<string>, Array<string>],
     Release
   >,
+  'duplicateArtistDevelopment' : ActorMethod<
+    [ArtistDevelopmentId],
+    ArtistDevelopment
+  >,
+  'duplicateMembership' : ActorMethod<[MemberId], Membership>,
+  'duplicatePublishingWork' : ActorMethod<[PublishingId], PublishingWork>,
+  'duplicateRecordingProject' : ActorMethod<[RecodingId], RecordingProject>,
+  'duplicateRelease' : ActorMethod<[LabelEntityId], Release>,
   'getAllArtistDevelopment' : ActorMethod<[], Array<ArtistDevelopment>>,
   'getAllKnownUsers' : ActorMethod<[], Array<SignedInUser>>,
   'getAllMembershipProfiles' : ActorMethod<[], Array<MembershipProfile>>,
@@ -209,6 +253,7 @@ export interface _SERVICE {
   'getCallerMemberships' : ActorMethod<[], Array<Membership>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
+  'getChangeHistory' : ActorMethod<[string], Array<ChangeEvent>>,
   'getEntitiesForCaller' : ActorMethod<
     [],
     {

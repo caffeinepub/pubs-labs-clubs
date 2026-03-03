@@ -1,128 +1,22 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Portal app with record management enhancements being built. User is confirming and building features in parts, currently on Part 1a (Bulk Select & Delete).",
-  "architectural_notes": [
-    "Portal is being enhanced incrementally with user confirmation before each part is built"
-  ],
-  "known_issues": [
-    "Previous build attempts (Version 38 enhancements) failed with AI processing errors; breaking into smaller sub-parts to mitigate"
-  ],
+  "summary": "New project",
+  "architectural_notes": [],
+  "known_issues": [],
   "isFixRequest": false,
-  "existing_features": [
-    {
-      "id": "feature-add-a-checkbox-to-each-record-row-in-the-memberships-publishing-works-releases-recording-projects-and-artist-development-list-pages-to-allow-individual-record-selection",
-      "title": "Add a checkbox to each record row in the Memberships, Publishing Works, Releases, Recording Projects, and Artist Development list pages to allow individual record selection.",
-      "reqIds": [
-        "REQ-1"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-select-all-checkbox-in-the-table-header-of-each-portal-list-page-that-toggles-selection-of-all-currently-visible-records-if-all-records-are-selected-it-deselects-all-if-any-are-unselected-it-selects-all",
-      "title": "Add a 'Select All' checkbox in the table header of each portal list page that toggles selection of all currently visible records. If all records are selected, it deselects all; if any are unselected, it selects all.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-display-a-delete-selected-bulk-action-button-above-each-portal-section-table-whenever-one-or-more-records-are-selected-the-button-must-be-hidden-when-no-records-are-selected",
-      "title": "Display a 'Delete Selected' bulk action button above each portal section table whenever one or more records are selected. The button must be hidden when no records are selected.",
-      "reqIds": [
-        "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-show-a-confirmation-dialog-when-the-delete-selected-button-is-clicked-the-dialog-must-display-the-number-of-records-to-be-deleted-and-require-explicit-user-confirmation-before-proceeding-cancelling-the-dialog-must-leave-all-records-intact",
-      "title": "Show a confirmation dialog when the 'Delete Selected' button is clicked. The dialog must display the number of records to be deleted and require explicit user confirmation before proceeding. Cancelling the dialog must leave all records intact.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-wire-the-frontend-confirmation-dialog-s-confirm-delete-action-to-call-the-appropriate-backend-bulk-delete-function-for-the-current-portal-section-then-refresh-the-list-and-clear-all-selections-on-success-show-a-success-toast-with-the-count-of-deleted-records-show-an-error-banner-if-the-operation-fails",
-      "title": "Wire the frontend confirmation dialog's 'Confirm Delete' action to call the appropriate backend bulk delete function for the current portal section, then refresh the list and clear all selections on success. Show a success toast with the count of deleted records. Show an error banner if the operation fails.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "version": 1
-    }
-  ],
+  "existing_features": [],
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Part 1a: Bulk select and delete records across all portal sections with confirmation dialog",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-2",
-      "summary": "Part 1b: Duplicate/clone records and archive (soft delete) with restore capability",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Part 1c: Record history/audit log showing creator, editor, timestamps in a timeline panel",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Part 2: Global search, per-section column filters, sort by column, save filter presets, export to CSV",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Part 3: Summary dashboard with stats, visual charts, recent activity feed, quick-access widgets",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Part 4: Admin vs standard user roles, role management screen, locked sections for authorized users",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Part 5: File and image attachments per record with inline preview, download, and multi-attachment support",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-8",
-      "summary": "Part 6: In-app notification bell with activity feed, mark as read, and per-user notification preferences",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-9",
-      "summary": "Part 7: Comments/notes thread on each record with add/edit/delete, timestamps, and author display",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-10",
-      "summary": "Part 8: Admin settings for renaming sections, toggle sections on/off, branding customization, custom fields",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-15",
-      "summary": "Implement bulk delete backend logic: add a batch delete function for each entity type (Membership, PublishingWork, Release, RecordingProject, ArtistDevelopment) that accepts an array of record IDs and deletes all matching records in a single call, respecting existing authorization rules (admin can delete any, owner can delete their own).",
+      "summary": "Implement Part 2, Section 2 of the Higgins Music Hub portal build, continuing from where Part 2 Section 1 left off. Review the current state of the codebase, audit findings in portalAudit.ts, and the rollout documentation to determine which features, pages, or components are next in the build sequence for Section 2, then implement them.",
       "reqIds": [
-        "REQ-5"
+        "REQ-1"
       ],
       "status": "pending"
     }
   ],
-  "gameProjectType": "none",
-  "projectName": "Portal App",
+  "projectName": "Higgins Music Hub",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

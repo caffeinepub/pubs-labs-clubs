@@ -1,140 +1,56 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-03-02T23:51:58.344Z",
+  "generatedAt": "2026-03-03T05:06:32.157Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 6,
-    "implemented": 5,
+    "total": 1,
+    "implemented": 0,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Add a checkbox to each record row in the Memberships, Publishing Works, Releases, Recording Projects, and Artist Development list pages to allow individual record selection.",
-        "status": "implemented",
+        "summary": "Implement Part 2, Section 2 of the Higgins Music Hub portal build, continuing from where Part 2 Section 1 left off. Review the current state of the codebase, audit findings in portalAudit.ts, and the rollout documentation to determine which features, pages, or components are next in the build sequence for Section 2, then implement them.",
+        "status": "missing",
         "plannedFiles": [
+          "frontend/src/utils/portalAudit.ts",
+          "frontend/ROLLOUT_STEPS.md",
+          "frontend/src/pages/portal/admin/AdminDashboardPage.tsx",
           "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
           "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
           "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "frontend/src/pages/portal/label/ReleaseDetail.tsx",
           "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
+          "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
+          "frontend/src/components/feedback/SectionPlaceholder.tsx",
+          "frontend/src/components/admin/PortalAuditSummary.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/related/EditRelatedDialog.tsx",
+          "frontend/src/components/related/RelatedRecordsSection.tsx",
+          "frontend/SMOKE_TEST_21_7.md",
+          "frontend/SMOKE_TEST_21_7_SESSION_LOG.md"
         ],
-        "matchedFiles": [
-          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-          "frontend/src/pages/portal/label/ReleasesPage.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Add a 'Select All' checkbox in the table header of each portal list page that toggles selection of all currently visible records. If all records are selected, it deselects all; if any are unselected, it selects all.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-          "frontend/src/pages/portal/label/ReleasesPage.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-          "frontend/src/pages/portal/label/ReleasesPage.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Display a 'Delete Selected' bulk action button above each portal section table whenever one or more records are selected. The button must be hidden when no records are selected.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-          "frontend/src/pages/portal/label/ReleasesPage.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-          "frontend/src/pages/portal/label/ReleasesPage.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Show a confirmation dialog when the 'Delete Selected' button is clicked. The dialog must display the number of records to be deleted and require explicit user confirmation before proceeding. Cancelling the dialog must leave all records intact.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/components/bulk/BulkDeleteConfirmDialog.tsx",
-          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-          "frontend/src/pages/portal/label/ReleasesPage.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/components/bulk/BulkDeleteConfirmDialog.tsx",
-          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-          "frontend/src/pages/portal/label/ReleasesPage.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Implement bulk delete backend logic: add a batch delete function for each entity type (Membership, PublishingWork, Release, RecordingProject, ArtistDevelopment) that accepts an array of record IDs and deletes all matching records in a single call, respecting existing authorization rules (admin can delete any, owner can delete their own).",
-        "status": "unknown",
-        "plannedFiles": [],
         "matchedFiles": []
-      },
-      {
-        "id": "REQ-6",
-        "summary": "Wire the frontend confirmation dialog's 'Confirm Delete' action to call the appropriate backend bulk delete function for the current portal section, then refresh the list and clear all selections on success. Show a success toast with the count of deleted records. Show an error banner if the operation fails.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-          "frontend/src/pages/portal/label/ReleasesPage.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-          "frontend/src/pages/portal/label/ReleasesPage.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
-        ]
       }
     ]
   },
   "changedFiles": [
+    "backend/blob-storage/Mixin.mo",
+    "backend/blob-storage/Storage.mo",
     "backend/main.mo",
     "build-request.json",
+    "caffeine.lock.json",
     "feature_evidence.json",
-    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
-    "frontend/src/components/bulk/BulkDeleteConfirmDialog.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
-    "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
-    "frontend/src/pages/portal/label/ReleasesPage.tsx",
-    "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-    "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-    "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

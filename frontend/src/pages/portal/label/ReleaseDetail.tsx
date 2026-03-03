@@ -29,6 +29,7 @@ import EditLinksButton from '@/components/related/EditLinksButton';
 import EditRelatedDialog from '@/components/related/EditRelatedDialog';
 import { useLinkableEntityOptions } from '@/hooks/useLinkableEntityOptions';
 import { normalizeToArray } from '@/utils/arrays';
+import ChangeHistoryPanel from '@/components/history/ChangeHistoryPanel';
 
 const RELEASE_TYPES = ['Single', 'EP', 'Album', 'Compilation', 'Mixtape', 'Live', 'Other'];
 
@@ -370,6 +371,8 @@ export default function ReleaseDetail() {
         linkedWorks={safeLinkedWorks}
         linkedProjects={safeLinkedProjects}
       />
+
+      <ChangeHistoryPanel recordId={id} />
 
       <EditRelatedDialog
         open={linksDialogOpen}

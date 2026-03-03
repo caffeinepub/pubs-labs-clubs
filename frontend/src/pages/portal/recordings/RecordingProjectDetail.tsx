@@ -31,6 +31,7 @@ import EditRelatedDialog from '@/components/related/EditRelatedDialog';
 import { useLinkableEntityOptions } from '@/hooks/useLinkableEntityOptions';
 import { normalizeToArray } from '@/utils/arrays';
 import { ProjectStatus } from '../../../backend';
+import ChangeHistoryPanel from '@/components/history/ChangeHistoryPanel';
 
 function formatStatus(status: string): string {
   return status.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
@@ -83,6 +84,7 @@ export default function RecordingProjectDetail() {
     if (!project) return;
     setEditTitle(project.title);
     setEditParticipants(normalizeToArray<string>(project.participants).slice());
+    // Convert nanoseconds timestamp to date string
     const dateMs = Number(project.sessionDate) / 1_000_000;
     setEditSessionDate(new Date(dateMs).toISOString().split('T')[0]);
     setEditStatus(project.status as ProjectStatus);
@@ -102,16 +104,13 @@ export default function RecordingProjectDetail() {
       setEditError('Title is required.');
       return;
     }
-    const sessionDateMs = editSessionDate
-      ? BigInt(new Date(editSessionDate).getTime()) * BigInt(1_000_000)
-      : project!.sessionDate;
-
     try {
+      const sessionDateNs = BigInt(new Date(editSessionDate).getTime()) * BigInt(1_000_000);
       await updateProject.mutateAsync({
         projectId: id,
         title: editTitle.trim(),
         participants: editParticipants.filter(Boolean),
-        sessionDate: sessionDateMs,
+        sessionDate: sessionDateNs,
         status: editStatus,
         notes: editNotes,
       });
@@ -151,15 +150,18 @@ export default function RecordingProjectDetail() {
     );
   };
 
-  const participantHelpers = {
-    add: () => setEditParticipants([...editParticipants, '']),
-    remove: (i: number) => setEditParticipants(editParticipants.filter((_, idx) => idx !== i)),
+  // Array field helpers
+  const makeArrayHelpers = (arr: string[], setArr: React.Dispatch<React.SetStateAction<string[]>>) => ({
+    add: () => setArr([...arr, '']),
+    remove: (i: number) => setArr(arr.filter((_, idx) => idx !== i)),
     update: (i: number, val: string) => {
-      const updated = [...editParticipants];
+      const updated = [...arr];
       updated[i] = val;
-      setEditParticipants(updated);
+      setArr(updated);
     },
-  };
+  });
+
+  const participantHelpers = makeArrayHelpers(editParticipants, setEditParticipants);
 
   if (isLoading) {
     return (
@@ -242,6 +244,14 @@ export default function RecordingProjectDetail() {
                   <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
                 </div>
                 <div className="space-y-1.5">
+                  <Label>Session Date</Label>
+                  <Input
+                    type="date"
+                    value={editSessionDate}
+                    onChange={(e) => setEditSessionDate(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1.5">
                   <Label>Status</Label>
                   <Select value={editStatus as string} onValueChange={(v) => setEditStatus(v as ProjectStatus)}>
                     <SelectTrigger>
@@ -254,14 +264,6 @@ export default function RecordingProjectDetail() {
                       <SelectItem value="archived">Archived</SelectItem>
                     </SelectContent>
                   </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Session Date</Label>
-                  <Input
-                    type="date"
-                    value={editSessionDate}
-                    onChange={(e) => setEditSessionDate(e.target.value)}
-                  />
                 </div>
               </div>
 
@@ -310,8 +312,8 @@ export default function RecordingProjectDetail() {
                   <p className="text-sm mt-0.5">{sessionDateDisplay}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Notes</p>
-                  <p className="text-sm mt-0.5 whitespace-pre-wrap">{project.notes || '—'}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium">Status</p>
+                  <p className="text-sm mt-0.5">{formatStatus(project.status as string)}</p>
                 </div>
               </div>
               {safeParticipants.length > 0 && (
@@ -322,6 +324,12 @@ export default function RecordingProjectDetail() {
                       <Badge key={i} variant="secondary">{String(p)}</Badge>
                     ))}
                   </div>
+                </div>
+              )}
+              {project.notes && (
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Notes</p>
+                  <p className="text-sm whitespace-pre-wrap">{project.notes}</p>
                 </div>
               )}
             </div>
@@ -335,6 +343,8 @@ export default function RecordingProjectDetail() {
         linkedWorks={safeLinkedWorks}
         linkedReleases={safeLinkedReleases}
       />
+
+      <ChangeHistoryPanel recordId={id} />
 
       <EditRelatedDialog
         open={linksDialogOpen}
