@@ -252,6 +252,23 @@ export function useUpdateMembershipLinks() {
   });
 }
 
+export function useBulkDeleteMemberships() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: MemberId[]) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.bulkDeleteMembershipProfiles(ids);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['memberships'] });
+      queryClient.invalidateQueries({ queryKey: ['allMembershipProfiles'] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
+    },
+  });
+}
+
 // ─── Publishing Works ─────────────────────────────────────────────────────────
 
 export function useGetPublishingWork(id: string) {
@@ -387,6 +404,22 @@ export function useLinkPublishingWorkToEntities() {
   });
 }
 
+export function useBulkDeletePublishingWorks() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: PublishingId[]) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.bulkDeletePublishingWorks(ids);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allPublishingWorks'] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
+    },
+  });
+}
+
 // ─── Releases ─────────────────────────────────────────────────────────────────
 
 export function useGetRelease(releaseId: string) {
@@ -497,6 +530,22 @@ export function useLinkReleaseToEntities() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['release', variables.releaseId] });
+      queryClient.invalidateQueries({ queryKey: ['allReleases'] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
+    },
+  });
+}
+
+export function useBulkDeleteReleases() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: LabelEntityId[]) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.bulkDeleteReleases(ids);
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allReleases'] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
     },
@@ -619,6 +668,22 @@ export function useLinkProjectToEntities() {
   });
 }
 
+export function useBulkDeleteRecordingProjects() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: RecodingId[]) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.bulkDeleteRecordingProjects(ids);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['allRecordingProjects'] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
+    },
+  });
+}
+
 // ─── Artist Development ───────────────────────────────────────────────────────
 
 export function useGetArtistDevelopment(entryId: string) {
@@ -731,11 +796,27 @@ export function useUpdateArtistDevelopmentLinks() {
         relatedPublishing,
         relatedLabelEntities,
         relatedRecordingProjects,
-        relatedArtistDevelopment
+        relatedArtistDevelopment,
       );
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['artistDevelopment', variables.artistDevelopmentId] });
+      queryClient.invalidateQueries({ queryKey: ['allArtistDevelopment'] });
+      queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
+    },
+  });
+}
+
+export function useBulkDeleteArtistDevelopment() {
+  const { actor } = useActor();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: ArtistDevelopmentId[]) => {
+      if (!actor) throw new Error('Actor not available');
+      return actor.bulkDeleteArtistDevelopment(ids);
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allArtistDevelopment'] });
       queryClient.invalidateQueries({ queryKey: ['entitiesForCaller'] });
     },
@@ -750,13 +831,7 @@ export function useGetEntitiesForCaller() {
   return useQuery({
     queryKey: ['entitiesForCaller'],
     queryFn: async () => {
-      if (!actor) return {
-        memberships: [] as [string, Membership][],
-        publishingWorks: [] as PublishingWork[],
-        releases: [] as Release[],
-        recordingProjects: [] as RecordingProject[],
-        artistDevelopment: [] as ArtistDevelopment[],
-      };
+      if (!actor) return null;
       return actor.getEntitiesForCaller();
     },
     enabled: !!actor && !isFetching,
@@ -764,6 +839,19 @@ export function useGetEntitiesForCaller() {
 }
 
 // ─── Admin / Approval ─────────────────────────────────────────────────────────
+
+export function useIsCallerAdmin() {
+  const { actor, isFetching } = useActor();
+
+  return useQuery<boolean>({
+    queryKey: ['isCallerAdmin'],
+    queryFn: async () => {
+      if (!actor) return false;
+      return actor.isCallerAdmin();
+    },
+    enabled: !!actor && !isFetching,
+  });
+}
 
 export function useIsCallerApproved() {
   const { actor, isFetching } = useActor();
@@ -789,7 +877,6 @@ export function useRequestApproval() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['isCallerApproved'] });
-      queryClient.invalidateQueries({ queryKey: ['listApprovals'] });
     },
   });
 }
@@ -818,7 +905,6 @@ export function useSetApproval() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['listApprovals'] });
-      queryClient.invalidateQueries({ queryKey: ['isCallerApproved'] });
     },
   });
 }
@@ -836,18 +922,5 @@ export function useAssignRole() {
       queryClient.invalidateQueries({ queryKey: ['callerUserRole'] });
       queryClient.invalidateQueries({ queryKey: ['allKnownUsers'] });
     },
-  });
-}
-
-export function useIsCallerAdmin() {
-  const { actor, isFetching } = useActor();
-
-  return useQuery<boolean>({
-    queryKey: ['isCallerAdmin'],
-    queryFn: async () => {
-      if (!actor) return false;
-      return actor.isCallerAdmin();
-    },
-    enabled: !!actor && !isFetching,
   });
 }

@@ -229,6 +229,26 @@ export interface backendInterface {
     addPublishingWorkNotes(id: string, notes: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     assignReleaseOwners(releaseId: LabelEntityId, owners: Array<string>): Promise<void>;
+    bulkDeleteArtistDevelopment(ids: Array<ArtistDevelopmentId>): Promise<{
+        deleted: Array<ArtistDevelopmentId>;
+        failed: Array<ArtistDevelopmentId>;
+    }>;
+    bulkDeleteMembershipProfiles(ids: Array<MemberId>): Promise<{
+        deleted: Array<MemberId>;
+        failed: Array<MemberId>;
+    }>;
+    bulkDeletePublishingWorks(ids: Array<PublishingId>): Promise<{
+        deleted: Array<PublishingId>;
+        failed: Array<PublishingId>;
+    }>;
+    bulkDeleteRecordingProjects(ids: Array<RecodingId>): Promise<{
+        deleted: Array<RecodingId>;
+        failed: Array<RecodingId>;
+    }>;
+    bulkDeleteReleases(ids: Array<LabelEntityId>): Promise<{
+        deleted: Array<LabelEntityId>;
+        failed: Array<LabelEntityId>;
+    }>;
     createArtistDevelopment(artistId: string, goals: Array<string>, plans: Array<string>, milestones: Array<string>, internalNotes: string): Promise<ArtistDevelopment>;
     createMembershipProfile(id: MemberId, name: string, email: string): Promise<MembershipProfile>;
     createPublishingWork(title: string, contributors: Array<string>, ownershipSplits: Array<[string, bigint]>, iswc: string | null, isrc: string | null, registrationStatus: string): Promise<PublishingWork>;
@@ -337,6 +357,91 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.assignReleaseOwners(arg0, arg1);
+            return result;
+        }
+    }
+    async bulkDeleteArtistDevelopment(arg0: Array<ArtistDevelopmentId>): Promise<{
+        deleted: Array<ArtistDevelopmentId>;
+        failed: Array<ArtistDevelopmentId>;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.bulkDeleteArtistDevelopment(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.bulkDeleteArtistDevelopment(arg0);
+            return result;
+        }
+    }
+    async bulkDeleteMembershipProfiles(arg0: Array<MemberId>): Promise<{
+        deleted: Array<MemberId>;
+        failed: Array<MemberId>;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.bulkDeleteMembershipProfiles(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.bulkDeleteMembershipProfiles(arg0);
+            return result;
+        }
+    }
+    async bulkDeletePublishingWorks(arg0: Array<PublishingId>): Promise<{
+        deleted: Array<PublishingId>;
+        failed: Array<PublishingId>;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.bulkDeletePublishingWorks(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.bulkDeletePublishingWorks(arg0);
+            return result;
+        }
+    }
+    async bulkDeleteRecordingProjects(arg0: Array<RecodingId>): Promise<{
+        deleted: Array<RecodingId>;
+        failed: Array<RecodingId>;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.bulkDeleteRecordingProjects(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.bulkDeleteRecordingProjects(arg0);
+            return result;
+        }
+    }
+    async bulkDeleteReleases(arg0: Array<LabelEntityId>): Promise<{
+        deleted: Array<LabelEntityId>;
+        failed: Array<LabelEntityId>;
+    }> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.bulkDeleteReleases(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.bulkDeleteReleases(arg0);
             return result;
         }
     }

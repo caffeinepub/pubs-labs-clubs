@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, BookOpen, Loader2, AlertCircle, X } from 'lucide-react';
+import { Plus, BookOpen, Loader2, AlertCircle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -29,8 +30,10 @@ import {
   useGetEntitiesForCaller,
   useCreatePublishingWork,
   useIsCallerAdmin,
+  useBulkDeletePublishingWorks,
 } from '@/hooks/useQueries';
 import type { PublishingWork } from '../../../backend';
+import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
 
 export default function PublishingWorksPage() {
   const navigate = useNavigate();
@@ -38,6 +41,7 @@ export default function PublishingWorksPage() {
   const { data: allWorks, isLoading: loadingAll } = useGetAllPublishingWorks();
   const { data: callerEntities, isLoading: loadingCaller } = useGetEntitiesForCaller();
   const createWork = useCreatePublishingWork();
+  const bulkDelete = useBulkDeletePublishingWorks();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formTitle, setFormTitle] = useState('');
@@ -47,10 +51,52 @@ export default function PublishingWorksPage() {
   const [formIsrc, setFormIsrc] = useState('');
   const [formError, setFormError] = useState('');
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   const isLoading = isAdmin ? loadingAll : loadingCaller;
   const works: PublishingWork[] = isAdmin
     ? (allWorks ?? [])
     : (callerEntities?.publishingWorks ?? []);
+
+  const allSelected = works.length > 0 && selectedIds.size === works.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < works.length;
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(works.map((w) => w.id)));
+    }
+  };
+
+  const handleSelectRow = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      const result = await bulkDelete.mutateAsync(Array.from(selectedIds));
+      const deletedCount = result.deleted.length;
+      const failedCount = result.failed.length;
+      if (deletedCount > 0) {
+        toast.success(`Successfully deleted ${deletedCount} publishing work${deletedCount !== 1 ? 's' : ''}.`);
+      }
+      if (failedCount > 0) {
+        toast.error(`${failedCount} publishing work${failedCount !== 1 ? 's' : ''} could not be deleted.`);
+      }
+      setSelectedIds(new Set());
+      setConfirmOpen(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Bulk delete failed.';
+      toast.error(msg);
+    }
+  };
 
   const handleOpenDialog = () => {
     setFormTitle('');
@@ -103,10 +149,23 @@ export default function PublishingWorksPage() {
             </p>
           </div>
         </div>
-        <Button onClick={handleOpenDialog} className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Work
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="gap-2"
+              onClick={() => setConfirmOpen(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete {selectedIds.size} Selected
+            </Button>
+          )}
+          <Button onClick={handleOpenDialog} className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Work
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -128,6 +187,15 @@ export default function PublishingWorksPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={allSelected}
+                    data-state={someSelected ? 'indeterminate' : allSelected ? 'checked' : 'unchecked'}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all publishing works"
+                    className={someSelected ? 'opacity-70' : ''}
+                  />
+                </TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Registration Status</TableHead>
                 <TableHead>Contributors</TableHead>
@@ -135,26 +203,50 @@ export default function PublishingWorksPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {works.map((work) => (
-                <TableRow
-                  key={work.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => navigate({ to: `/portal/publishing/${work.id}` })}
-                >
-                  <TableCell className="font-medium">{work.title}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{work.registrationStatus || 'unregistered'}</Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {work.contributors?.length ?? 0} contributor(s)
-                  </TableCell>
-                  <TableCell className="text-muted-foreground font-mono text-xs">{work.id}</TableCell>
-                </TableRow>
-              ))}
+              {works.map((work) => {
+                const isSelected = selectedIds.has(work.id);
+                return (
+                  <TableRow
+                    key={work.id}
+                    className={`cursor-pointer hover:bg-muted/50 ${isSelected ? 'bg-muted/30' : ''}`}
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (target.closest('[role="checkbox"]') || target.closest('button')) return;
+                      navigate({ to: `/portal/publishing/${work.id}` });
+                    }}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => handleSelectRow(work.id, !!checked)}
+                        aria-label={`Select ${work.title}`}
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{work.title}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{work.registrationStatus || 'unregistered'}</Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {work.contributors?.length ?? 0} contributor(s)
+                    </TableCell>
+                    <TableCell className="text-muted-foreground font-mono text-xs">{work.id}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
       )}
+
+      <BulkDeleteConfirmDialog
+        open={confirmOpen}
+        count={selectedIds.size}
+        entityType="publishing work"
+        entityTypePlural="publishing works"
+        isPending={bulkDelete.isPending}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={handleBulkDelete}
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">

@@ -15,10 +15,10 @@ export const UserRole = IDL.Variant({
 });
 export const LabelEntityId = IDL.Text;
 export const ArtistDevelopmentId = IDL.Text;
-export const RecodingId = IDL.Text;
-export const Time = IDL.Int;
 export const MemberId = IDL.Text;
 export const PublishingId = IDL.Text;
+export const RecodingId = IDL.Text;
+export const Time = IDL.Int;
 export const ArtistDevelopment = IDL.Record({
   'id' : ArtistDevelopmentId,
   'relatedRecordingProjects' : IDL.Vec(RecodingId),
@@ -149,6 +149,56 @@ export const idlService = IDL.Service({
   'addPublishingWorkNotes' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'assignReleaseOwners' : IDL.Func([LabelEntityId, IDL.Vec(IDL.Text)], [], []),
+  'bulkDeleteArtistDevelopment' : IDL.Func(
+      [IDL.Vec(ArtistDevelopmentId)],
+      [
+        IDL.Record({
+          'deleted' : IDL.Vec(ArtistDevelopmentId),
+          'failed' : IDL.Vec(ArtistDevelopmentId),
+        }),
+      ],
+      [],
+    ),
+  'bulkDeleteMembershipProfiles' : IDL.Func(
+      [IDL.Vec(MemberId)],
+      [
+        IDL.Record({
+          'deleted' : IDL.Vec(MemberId),
+          'failed' : IDL.Vec(MemberId),
+        }),
+      ],
+      [],
+    ),
+  'bulkDeletePublishingWorks' : IDL.Func(
+      [IDL.Vec(PublishingId)],
+      [
+        IDL.Record({
+          'deleted' : IDL.Vec(PublishingId),
+          'failed' : IDL.Vec(PublishingId),
+        }),
+      ],
+      [],
+    ),
+  'bulkDeleteRecordingProjects' : IDL.Func(
+      [IDL.Vec(RecodingId)],
+      [
+        IDL.Record({
+          'deleted' : IDL.Vec(RecodingId),
+          'failed' : IDL.Vec(RecodingId),
+        }),
+      ],
+      [],
+    ),
+  'bulkDeleteReleases' : IDL.Func(
+      [IDL.Vec(LabelEntityId)],
+      [
+        IDL.Record({
+          'deleted' : IDL.Vec(LabelEntityId),
+          'failed' : IDL.Vec(LabelEntityId),
+        }),
+      ],
+      [],
+    ),
   'createArtistDevelopment' : IDL.Func(
       [
         IDL.Text,
@@ -390,10 +440,10 @@ export const idlFactory = ({ IDL }) => {
   });
   const LabelEntityId = IDL.Text;
   const ArtistDevelopmentId = IDL.Text;
-  const RecodingId = IDL.Text;
-  const Time = IDL.Int;
   const MemberId = IDL.Text;
   const PublishingId = IDL.Text;
+  const RecodingId = IDL.Text;
+  const Time = IDL.Int;
   const ArtistDevelopment = IDL.Record({
     'id' : ArtistDevelopmentId,
     'relatedRecordingProjects' : IDL.Vec(RecodingId),
@@ -526,6 +576,56 @@ export const idlFactory = ({ IDL }) => {
     'assignReleaseOwners' : IDL.Func(
         [LabelEntityId, IDL.Vec(IDL.Text)],
         [],
+        [],
+      ),
+    'bulkDeleteArtistDevelopment' : IDL.Func(
+        [IDL.Vec(ArtistDevelopmentId)],
+        [
+          IDL.Record({
+            'deleted' : IDL.Vec(ArtistDevelopmentId),
+            'failed' : IDL.Vec(ArtistDevelopmentId),
+          }),
+        ],
+        [],
+      ),
+    'bulkDeleteMembershipProfiles' : IDL.Func(
+        [IDL.Vec(MemberId)],
+        [
+          IDL.Record({
+            'deleted' : IDL.Vec(MemberId),
+            'failed' : IDL.Vec(MemberId),
+          }),
+        ],
+        [],
+      ),
+    'bulkDeletePublishingWorks' : IDL.Func(
+        [IDL.Vec(PublishingId)],
+        [
+          IDL.Record({
+            'deleted' : IDL.Vec(PublishingId),
+            'failed' : IDL.Vec(PublishingId),
+          }),
+        ],
+        [],
+      ),
+    'bulkDeleteRecordingProjects' : IDL.Func(
+        [IDL.Vec(RecodingId)],
+        [
+          IDL.Record({
+            'deleted' : IDL.Vec(RecodingId),
+            'failed' : IDL.Vec(RecodingId),
+          }),
+        ],
+        [],
+      ),
+    'bulkDeleteReleases' : IDL.Func(
+        [IDL.Vec(LabelEntityId)],
+        [
+          IDL.Record({
+            'deleted' : IDL.Vec(LabelEntityId),
+            'failed' : IDL.Vec(LabelEntityId),
+          }),
+        ],
         [],
       ),
     'createArtistDevelopment' : IDL.Func(

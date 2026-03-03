@@ -1,196 +1,200 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Save and edit records for all portal app sections",
+  "title": "Part 1a: Bulk Select & Delete across all portal sections",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Implement full save (create/persist) functionality for new Membership records",
+      "summary": "Add individual record selection checkboxes to each row in all five portal list pages",
       "acceptanceCriteria": [
-        "Submitting the create dialog persists a new membership record to the backend canister.",
-        "Form validation prevents submission with empty required fields (name, email).",
-        "A success toast is shown and the dialog closes on successful save.",
-        "The membership list refreshes automatically after creation.",
-        "Backend errors are surfaced to the user inline."
+        "Each row in MembershipsPage, PublishingWorksPage, ReleasesPage, RecordingProjectsPage, and ArtistDevelopmentPage has a checkbox on the left side.",
+        "Checking a row's checkbox marks it as selected with a visible highlight.",
+        "Unchecking removes the selection highlight."
       ],
       "file_operations": [
         {
           "path": "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
           "operation": "modify",
-          "description": "Wire the existing create dialog form to the createMembershipProfile mutation hook. Add form validation to prevent submission when name or email fields are empty. On successful mutation, show a success toast using the toast API, close the dialog, and trigger a query invalidation to refresh the membership list. Display backend errors inline within the dialog form."
+          "description": "Add checkbox column to the left of each membership row. Implement local selection state using useState to track selected membership IDs. Apply visual highlight styling (e.g., bg-muted) to selected rows."
+        },
+        {
+          "path": "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "operation": "modify",
+          "description": "Add checkbox column to the left of each publishing work row. Implement local selection state using useState to track selected work IDs. Apply visual highlight styling to selected rows."
+        },
+        {
+          "path": "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "operation": "modify",
+          "description": "Add checkbox column to the left of each release row. Implement local selection state using useState to track selected release IDs. Apply visual highlight styling to selected rows."
+        },
+        {
+          "path": "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "operation": "modify",
+          "description": "Add checkbox column to the left of each recording project row. Implement local selection state using useState to track selected project IDs. Apply visual highlight styling to selected rows."
+        },
+        {
+          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+          "operation": "modify",
+          "description": "Add checkbox column to the left of each artist development row. Implement local selection state using useState to track selected artist development IDs. Apply visual highlight styling to selected rows."
         }
       ]
     },
     {
       "id": "REQ-2",
-      "summary": "Implement an inline edit form on MembershipDetail for modifying profile fields",
+      "summary": "Add 'Select All' checkbox in table headers with toggle and indeterminate state support",
       "acceptanceCriteria": [
-        "Clicking an Edit button on MembershipDetail opens an editable form pre-populated with current values.",
-        "Saving persists changes to the backend and the page reflects the updated data immediately.",
-        "Only the record owner or an admin sees the Edit button.",
-        "A success toast is shown on successful save; backend errors are displayed inline."
+        "A 'Select All' checkbox appears in the header row of each portal list table.",
+        "Clicking it selects all visible rows.",
+        "Clicking it again (when all are selected) deselects all rows.",
+        "The checkbox shows an indeterminate state when some but not all rows are selected."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+          "path": "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
           "operation": "modify",
-          "description": "Add an Edit Profile button (visible only when canEditMembership returns true) that opens an inline editable form or dialog pre-populated with current name, email, and status values. Wire the form to the updateMembership mutation hook from useQueries.ts. On successful save, show a success toast, close the edit UI, and the page will reflect updated data via automatic query invalidation. Display backend errors inline within the edit form."
+          "description": "Add 'Select All' checkbox to the table header row. Implement toggle logic: if all visible memberships are selected, clicking deselects all; otherwise, clicking selects all. Use the indeterminate property when some (but not all) rows are selected."
+        },
+        {
+          "path": "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "operation": "modify",
+          "description": "Add 'Select All' checkbox to the table header row. Implement toggle logic: if all visible works are selected, clicking deselects all; otherwise, clicking selects all. Use the indeterminate property when some (but not all) rows are selected."
+        },
+        {
+          "path": "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "operation": "modify",
+          "description": "Add 'Select All' checkbox to the table header row. Implement toggle logic: if all visible releases are selected, clicking deselects all; otherwise, clicking selects all. Use the indeterminate property when some (but not all) rows are selected."
+        },
+        {
+          "path": "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "operation": "modify",
+          "description": "Add 'Select All' checkbox to the table header row. Implement toggle logic: if all visible projects are selected, clicking deselects all; otherwise, clicking selects all. Use the indeterminate property when some (but not all) rows are selected."
+        },
+        {
+          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+          "operation": "modify",
+          "description": "Add 'Select All' checkbox to the table header row. Implement toggle logic: if all visible entries are selected, clicking deselects all; otherwise, clicking selects all. Use the indeterminate property when some (but not all) rows are selected."
         }
       ]
     },
     {
       "id": "REQ-3",
-      "summary": "Implement full save (create/persist) functionality for new Publishing Work records",
+      "summary": "Display conditional 'Delete Selected' bulk action button showing count of selected records",
       "acceptanceCriteria": [
-        "Submitting the create dialog persists a new publishing work to the backend.",
-        "Title is required; submission is blocked if it is empty.",
-        "Success toast is shown and dialog closes after a successful save.",
-        "The publishing works list refreshes automatically.",
-        "Backend errors are surfaced inline."
+        "The 'Delete Selected' button is not visible when no checkboxes are checked.",
+        "The button appears and shows the count of selected records (e.g., 'Delete 3 Selected') when at least one record is checked.",
+        "The button is styled as a destructive action (red/danger color)."
       ],
       "file_operations": [
         {
+          "path": "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "operation": "modify",
+          "description": "Add a 'Delete Selected' button above the memberships table. Conditionally render it only when selectedIds.length > 0. Display dynamic text showing the count: 'Delete {count} Selected'. Style with destructive/danger variant (red background)."
+        },
+        {
           "path": "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
           "operation": "modify",
-          "description": "Wire the existing create dialog form to the createPublishingWork mutation hook. Add validation to block submission when the title field is empty. On successful mutation, show a success toast, close the dialog, and trigger query invalidation to refresh the works list. Display backend errors inline within the dialog."
+          "description": "Add a 'Delete Selected' button above the publishing works table. Conditionally render it only when selectedIds.length > 0. Display dynamic text showing the count: 'Delete {count} Selected'. Style with destructive/danger variant (red background)."
+        },
+        {
+          "path": "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "operation": "modify",
+          "description": "Add a 'Delete Selected' button above the releases table. Conditionally render it only when selectedIds.length > 0. Display dynamic text showing the count: 'Delete {count} Selected'. Style with destructive/danger variant (red background)."
+        },
+        {
+          "path": "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "operation": "modify",
+          "description": "Add a 'Delete Selected' button above the recording projects table. Conditionally render it only when selectedIds.length > 0. Display dynamic text showing the count: 'Delete {count} Selected'. Style with destructive/danger variant (red background)."
+        },
+        {
+          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+          "operation": "modify",
+          "description": "Add a 'Delete Selected' button above the artist development table. Conditionally render it only when selectedIds.length > 0. Display dynamic text showing the count: 'Delete {count} Selected'. Style with destructive/danger variant (red background)."
         }
       ]
     },
     {
       "id": "REQ-4",
-      "summary": "Implement an inline edit form on PublishingWorkDetail for modifying work fields",
+      "summary": "Implement confirmation dialog for bulk delete with cancel and confirm options",
       "acceptanceCriteria": [
-        "An Edit button (visible to owner or admin) opens a form pre-populated with current field values.",
-        "Ownership split validation (total ≤ 100%) is enforced before submission.",
-        "Changes persist to the backend and the detail page updates without a full reload.",
-        "Success toast on save; inline error display on failure."
+        "A modal confirmation dialog appears after clicking 'Delete Selected'.",
+        "The dialog states clearly how many records will be permanently deleted.",
+        "The dialog has a 'Confirm Delete' button and a 'Cancel' button.",
+        "Clicking 'Cancel' or dismissing the dialog performs no deletion.",
+        "Clicking 'Confirm Delete' triggers the deletion flow."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
+          "path": "frontend/src/components/bulk/BulkDeleteConfirmDialog.tsx",
+          "operation": "create",
+          "description": "Create a reusable confirmation dialog component for bulk delete. Accept props for open state, count of records to delete, entity type name (singular/plural), onCancel callback, and onConfirm callback. Render using shadcn/ui Dialog with clear warning text, destructive 'Confirm Delete' button, and secondary 'Cancel' button."
+        },
+        {
+          "path": "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
           "operation": "modify",
-          "description": "Add an Edit Work button (visible only when canEditPublishingWork returns true) that opens an inline editable form or dialog pre-populated with current title, registration status, contributors, ownership splits, and notes. Wire the form to the updatePublishingWork mutation hook. Validate ownership splits using the existing validation utility to ensure total ≤ 100%. On successful save, show a success toast, close the edit UI, and the page will reflect updated data via query invalidation. Display backend errors inline."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "Implement full save (create/persist) functionality for new Release records",
-      "acceptanceCriteria": [
-        "Submitting the create dialog persists a new release record to the backend.",
-        "Title and type are required; submission is blocked if either is empty.",
-        "Success toast shown and dialog closes after successful save.",
-        "Releases list refreshes automatically.",
-        "Backend errors are surfaced inline."
-      ],
-      "file_operations": [
+          "description": "Import and wire BulkDeleteConfirmDialog. Add state to control dialog visibility. When 'Delete Selected' button is clicked, open the confirmation dialog. Pass selectedIds.length as count and 'membership' as entity type."
+        },
+        {
+          "path": "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "operation": "modify",
+          "description": "Import and wire BulkDeleteConfirmDialog. Add state to control dialog visibility. When 'Delete Selected' button is clicked, open the confirmation dialog. Pass selectedIds.length as count and 'publishing work' as entity type."
+        },
         {
           "path": "frontend/src/pages/portal/label/ReleasesPage.tsx",
           "operation": "modify",
-          "description": "Wire the existing create dialog form to the createRelease mutation hook. Add validation to block submission when title or releaseType fields are empty. On successful mutation, show a success toast, close the dialog, and trigger query invalidation to refresh the releases list. Display backend errors inline within the dialog."
+          "description": "Import and wire BulkDeleteConfirmDialog. Add state to control dialog visibility. When 'Delete Selected' button is clicked, open the confirmation dialog. Pass selectedIds.length as count and 'release' as entity type."
+        },
+        {
+          "path": "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "operation": "modify",
+          "description": "Import and wire BulkDeleteConfirmDialog. Add state to control dialog visibility. When 'Delete Selected' button is clicked, open the confirmation dialog. Pass selectedIds.length as count and 'recording project' as entity type."
+        },
+        {
+          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+          "operation": "modify",
+          "description": "Import and wire BulkDeleteConfirmDialog. Add state to control dialog visibility. When 'Delete Selected' button is clicked, open the confirmation dialog. Pass selectedIds.length as count and 'artist development entry' as entity type."
         }
       ]
     },
     {
       "id": "REQ-6",
-      "summary": "Implement an inline edit form on ReleaseDetail for modifying release fields",
+      "summary": "Wire confirmation dialog to call backend bulk delete, refresh list, clear selections, and show toast notifications",
       "acceptanceCriteria": [
-        "An Edit button (visible to owner or admin) opens a form pre-populated with existing values.",
-        "All editable fields update in the backend on save.",
-        "The detail page reflects changes immediately after saving.",
-        "Success toast on save; inline error display on failure."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/portal/label/ReleaseDetail.tsx",
-          "operation": "modify",
-          "description": "Add an Edit Release button (visible only when canEditRelease returns true) that opens an inline editable form or dialog pre-populated with current title, release type, tracklist, key dates, and workflow checklist. Wire the form to the updateRelease mutation hook. On successful save, show a success toast, close the edit UI, and the page will reflect updated data via query invalidation. Display backend errors inline."
-        }
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "summary": "Implement full save (create/persist) functionality for new Recording Project records",
-      "acceptanceCriteria": [
-        "Submitting the create dialog persists a new recording project to the backend.",
-        "Required fields are validated before submission.",
-        "Success toast shown and dialog closes after successful save.",
-        "Project list refreshes automatically.",
-        "Backend errors are surfaced inline."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "operation": "modify",
-          "description": "Wire the existing create dialog form to the createRecordingProject mutation hook. Add validation to ensure required fields (title, participants, sessionDate, status, notes) are present before submission. On successful mutation, show a success toast, close the dialog, and trigger query invalidation to refresh the project list. Display backend errors inline within the dialog."
-        }
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "summary": "Implement an inline edit form on RecordingProjectDetail for modifying project fields",
-      "acceptanceCriteria": [
-        "An Edit button (visible to owner or admin) opens a form pre-populated with current values.",
-        "Changes persist to the backend on save.",
-        "Detail page updates immediately after saving.",
-        "Success toast on save; inline error display on failure."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
-          "operation": "modify",
-          "description": "Add an Edit Project button (visible only when canEditRecordingProject returns true) that opens an inline editable form or dialog pre-populated with current title, participants, sessionDate, status, and notes. Wire the form to the updateRecordingProject mutation hook. On successful save, show a success toast, close the edit UI, and the page will reflect updated data via query invalidation. Display backend errors inline."
-        }
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "summary": "Implement full save (create/persist) functionality for new Artist Development records",
-      "acceptanceCriteria": [
-        "Submitting the create dialog persists a new artist development entry to the backend.",
-        "Required fields are validated before submission.",
-        "Success toast shown and dialog closes after successful save.",
-        "Artist development list refreshes automatically.",
-        "Backend errors are surfaced inline."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
-          "operation": "modify",
-          "description": "Wire the existing create dialog form to the createArtistDevelopment mutation hook. Add validation to ensure required fields (artistId, goals, plans, milestones, internalNotes) are present before submission. On successful mutation, show a success toast, close the dialog, and trigger query invalidation to refresh the artist development list. Display backend errors inline within the dialog."
-        }
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "summary": "Implement an inline edit form on ArtistDevelopmentDetail for modifying entry fields",
-      "acceptanceCriteria": [
-        "An Edit button (visible to owner or admin) opens a form pre-populated with current values.",
-        "Changes persist to the backend on save.",
-        "Detail page updates immediately after saving.",
-        "Success toast on save; inline error display on failure."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
-          "operation": "modify",
-          "description": "Add an Edit Entry button (visible only when canEditArtistDevelopment returns true) that opens an inline editable form or dialog pre-populated with current goals, plans, milestones, and internalNotes arrays. Wire the form to the updateArtistDevelopment mutation hook. On successful save, show a success toast, close the edit UI, and the page will reflect updated data via query invalidation. Display backend errors inline."
-        }
-      ]
-    },
-    {
-      "id": "REQ-12",
-      "summary": "Add React Query mutation hooks for all five entity update operations",
-      "acceptanceCriteria": [
-        "Each mutation hook is exported from useQueries.ts.",
-        "On success, the hook invalidates the corresponding list and detail queries so UI reflects the latest data.",
-        "Mutation errors are propagated to callers for inline display."
+        "After confirming deletion, the selected records are removed from the list without a full page reload.",
+        "A success toast notification appears confirming the number of records deleted.",
+        "All checkboxes are cleared and the 'Delete Selected' button hides after successful deletion.",
+        "If the backend call fails, an error banner is displayed and no records are removed from the UI.",
+        "The React Query cache for the affected section is invalidated so the list reflects the latest backend state."
       ],
       "file_operations": [
         {
           "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Add five new mutation hooks: useUpdateMembership, useUpdatePublishingWork, useUpdateRelease, useUpdateRecordingProject, and useUpdateArtistDevelopment. Each hook should call the corresponding backend update method (updateMembership, updatePublishingWork, updateRelease, updateRecordingProject, updateArtistDevelopment) and invalidate both the list query (e.g., 'memberships', 'publishingWorks') and the detail query (e.g., ['membership', id], ['publishingWork', id]) on success. Ensure mutation errors are returned to callers for inline display in forms."
+          "description": "Add five new mutation hooks using useMutation from React Query: useBulkDeleteMemberships, useBulkDeletePublishingWorks, useBulkDeleteReleases, useBulkDeleteRecordingProjects, and useBulkDeleteArtistDevelopment. Each hook calls the corresponding backend bulk delete function (bulkDeleteMembershipProfiles, bulkDeletePublishingWorks, bulkDeleteReleases, bulkDeleteRecordingProjects, bulkDeleteArtistDevelopment) passing the array of IDs. On success, invalidate the appropriate query key to trigger list refresh."
+        },
+        {
+          "path": "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "operation": "modify",
+          "description": "Import useBulkDeleteMemberships and useToast. Wire the confirmation dialog's onConfirm callback to call the mutation with selectedIds. On success, show a success toast displaying the count of deleted records, clear selectedIds state, and close the dialog. On error, display an ErrorBanner component with the error message."
+        },
+        {
+          "path": "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "operation": "modify",
+          "description": "Import useBulkDeletePublishingWorks and useToast. Wire the confirmation dialog's onConfirm callback to call the mutation with selectedIds. On success, show a success toast displaying the count of deleted records, clear selectedIds state, and close the dialog. On error, display an ErrorBanner component with the error message."
+        },
+        {
+          "path": "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "operation": "modify",
+          "description": "Import useBulkDeleteReleases and useToast. Wire the confirmation dialog's onConfirm callback to call the mutation with selectedIds. On success, show a success toast displaying the count of deleted records, clear selectedIds state, and close the dialog. On error, display an ErrorBanner component with the error message."
+        },
+        {
+          "path": "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "operation": "modify",
+          "description": "Import useBulkDeleteRecordingProjects and useToast. Wire the confirmation dialog's onConfirm callback to call the mutation with selectedIds. On success, show a success toast displaying the count of deleted records, clear selectedIds state, and close the dialog. On error, display an ErrorBanner component with the error message."
+        },
+        {
+          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+          "operation": "modify",
+          "description": "Import useBulkDeleteArtistDevelopment and useToast. Wire the confirmation dialog's onConfirm callback to call the mutation with selectedIds. On success, show a success toast displaying the count of deleted records, clear selectedIds state, and close the dialog. On error, display an ErrorBanner component with the error message."
         }
       ]
     }

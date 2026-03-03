@@ -2,10 +2,14 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-implement-full-save-create-persist-functionality-for-new-membership-records-the-create-dialog-on-membershipspage-must-call-the-backend-mutation-show-inline-validation-errors-display-a-success-toast-on-completion-close-the-dialog-and-refresh-the-membership-list",
-      "featureTitle": "Implement full save (create/persist) functionality for new Membership records: the create dialog on MembershipsPage must call the backend mutation, show inline validation errors, display a success toast on completion, close the dialog, and refresh the membership list.",
+      "featureId": "feature-add-a-checkbox-to-each-record-row-in-the-memberships-publishing-works-releases-recording-projects-and-artist-development-list-pages-to-allow-individual-record-selection",
+      "featureTitle": "Add a checkbox to each record row in the Memberships, Publishing Works, Releases, Recording Projects, and Artist Development list pages to allow individual record selection.",
       "files": [
-        "frontend/src/pages/portal/memberships/MembershipsPage.tsx"
+        "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+        "frontend/src/pages/portal/label/ReleasesPage.tsx",
+        "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+        "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+        "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -22,10 +26,14 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-an-inline-edit-form-on-membershipdetail-that-allows-the-owner-or-admin-to-modify-name-email-and-status-fields-save-changes-to-the-backend-and-reflect-updates-immediately-on-the-page-without-a-full-reload",
-      "featureTitle": "Implement an inline edit form on MembershipDetail that allows the owner or admin to modify name, email, and status fields, save changes to the backend, and reflect updates immediately on the page without a full reload.",
+      "featureId": "feature-add-a-select-all-checkbox-in-the-table-header-of-each-portal-list-page-that-toggles-selection-of-all-currently-visible-records-if-all-records-are-selected-it-deselects-all-if-any-are-unselected-it-selects-all",
+      "featureTitle": "Add a 'Select All' checkbox in the table header of each portal list page that toggles selection of all currently visible records. If all records are selected, it deselects all; if any are unselected, it selects all.",
       "files": [
-        "frontend/src/pages/portal/memberships/MembershipDetail.tsx"
+        "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+        "frontend/src/pages/portal/label/ReleasesPage.tsx",
+        "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+        "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+        "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -42,10 +50,14 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-full-save-create-persist-functionality-for-new-publishing-work-records-the-create-dialog-on-publishingworkspage-must-call-the-backend-mutation-validate-title-and-registration-status-show-a-success-toast-close-the-dialog-and-refresh-the-works-list",
-      "featureTitle": "Implement full save (create/persist) functionality for new Publishing Work records: the create dialog on PublishingWorksPage must call the backend mutation, validate title and registration status, show a success toast, close the dialog, and refresh the works list.",
+      "featureId": "feature-display-a-delete-selected-bulk-action-button-above-each-portal-section-table-whenever-one-or-more-records-are-selected-the-button-must-be-hidden-when-no-records-are-selected",
+      "featureTitle": "Display a 'Delete Selected' bulk action button above each portal section table whenever one or more records are selected. The button must be hidden when no records are selected.",
       "files": [
-        "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx"
+        "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+        "frontend/src/pages/portal/label/ReleasesPage.tsx",
+        "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+        "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+        "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -62,10 +74,15 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-an-inline-edit-form-on-publishingworkdetail-that-allows-the-owner-or-admin-to-modify-title-registration-status-contributors-ownership-splits-and-notes-save-changes-to-the-backend-and-reflect-updates-immediately",
-      "featureTitle": "Implement an inline edit form on PublishingWorkDetail that allows the owner or admin to modify title, registration status, contributors, ownership splits, and notes, save changes to the backend, and reflect updates immediately.",
+      "featureId": "feature-show-a-confirmation-dialog-when-the-delete-selected-button-is-clicked-the-dialog-must-display-the-number-of-records-to-be-deleted-and-require-explicit-user-confirmation-before-proceeding-cancelling-the-dialog-must-leave-all-records-intact",
+      "featureTitle": "Show a confirmation dialog when the 'Delete Selected' button is clicked. The dialog must display the number of records to be deleted and require explicit user confirmation before proceeding. Cancelling the dialog must leave all records intact.",
       "files": [
-        "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx"
+        "frontend/src/components/bulk/BulkDeleteConfirmDialog.tsx",
+        "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+        "frontend/src/pages/portal/label/ReleasesPage.tsx",
+        "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+        "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+        "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -82,49 +99,14 @@
       "confidence": "high"
     },
     {
-      "featureId": "feature-implement-full-save-create-persist-functionality-for-new-release-records-the-create-dialog-on-releasespage-must-call-the-backend-mutation-validate-title-and-type-show-a-success-toast-close-the-dialog-and-refresh-the-releases-list",
-      "featureTitle": "Implement full save (create/persist) functionality for new Release records: the create dialog on ReleasesPage must call the backend mutation, validate title and type, show a success toast, close the dialog, and refresh the releases list.",
+      "featureId": "feature-wire-the-frontend-confirmation-dialog-s-confirm-delete-action-to-call-the-appropriate-backend-bulk-delete-function-for-the-current-portal-section-then-refresh-the-list-and-clear-all-selections-on-success-show-a-success-toast-with-the-count-of-deleted-records-show-an-error-banner-if-the-operation-fails",
+      "featureTitle": "Wire the frontend confirmation dialog's 'Confirm Delete' action to call the appropriate backend bulk delete function for the current portal section, then refresh the list and clear all selections on success. Show a success toast with the count of deleted records. Show an error banner if the operation fails.",
       "files": [
-        "frontend/src/pages/portal/label/ReleasesPage.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "user-approval@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-5"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-an-inline-edit-form-on-releasedetail-that-allows-the-owner-or-admin-to-modify-title-release-type-tracklist-key-dates-and-workflow-checklist-items-save-changes-to-the-backend-and-reflect-updates-immediately",
-      "featureTitle": "Implement an inline edit form on ReleaseDetail that allows the owner or admin to modify title, release type, tracklist, key dates, and workflow checklist items, save changes to the backend, and reflect updates immediately.",
-      "files": [
-        "frontend/src/pages/portal/label/ReleaseDetail.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "user-approval@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-6"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-full-save-create-persist-functionality-for-new-recording-project-records-the-create-dialog-on-recordingprojectspage-must-call-the-backend-mutation-validate-required-fields-show-a-success-toast-close-the-dialog-and-refresh-the-project-list",
-      "featureTitle": "Implement full save (create/persist) functionality for new Recording Project records: the create dialog on RecordingProjectsPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the project list.",
-      "files": [
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
+        "frontend/src/pages/portal/label/ReleasesPage.tsx",
+        "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+        "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
         "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx"
       ],
       "components": [
@@ -137,67 +119,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-7"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-an-inline-edit-form-on-recordingprojectdetail-that-allows-the-owner-or-admin-to-modify-project-metadata-fields-save-changes-to-the-backend-and-reflect-updates-immediately",
-      "featureTitle": "Implement an inline edit form on RecordingProjectDetail that allows the owner or admin to modify project metadata fields, save changes to the backend, and reflect updates immediately.",
-      "files": [
-        "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "user-approval@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-8"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-implement-an-inline-edit-form-on-artistdevelopmentdetail-that-allows-the-owner-or-admin-to-modify-goals-plans-and-milestones-fields-save-changes-to-the-backend-and-reflect-updates-immediately",
-      "featureTitle": "Implement an inline edit form on ArtistDevelopmentDetail that allows the owner or admin to modify goals, plans, and milestones fields, save changes to the backend, and reflect updates immediately.",
-      "files": [
-        "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "user-approval@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-10"
-      ],
-      "confidence": "high"
-    },
-    {
-      "featureId": "feature-add-react-query-mutation-hooks-in-usequeries-ts-for-each-of-the-five-entity-update-operations-updatemembership-updatepublishingwork-updaterelease-updaterecordingproject-updateartistdevelopment-that-call-the-corresponding-backend-update-endpoints-and-invalidate-relevant-query-caches-on-success",
-      "featureTitle": "Add React Query mutation hooks in useQueries.ts for each of the five entity update operations (updateMembership, updatePublishingWork, updateRelease, updateRecordingProject, updateArtistDevelopment) that call the corresponding backend update endpoints and invalidate relevant query caches on success.",
-      "files": [
-        "frontend/src/hooks/useQueries.ts"
-      ],
-      "components": [
-        "authorization@4.0.0",
-        "user-approval@3.0.0",
-        "core-infrastructure@1.0.2",
-        "shadcn-ui@1.0.0",
-        "build-template-react@1.0.0",
-        "initial-app@1.0.0",
-        "github-export-icp-cli@1.0.0"
-      ],
-      "testIds": [
-        "REQ-12"
+        "REQ-6"
       ],
       "confidence": "high"
     }

@@ -5,9 +5,11 @@ import {
   useGetCallerUserRole,
   useGetEntitiesForCaller,
   useCreateArtistDevelopment,
+  useBulkDeleteArtistDevelopment,
 } from '../../../hooks/useQueries';
 import { UserRole, ArtistDevelopment } from '../../../backend';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -25,8 +27,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, TrendingUp, Loader2 } from 'lucide-react';
+import { Plus, TrendingUp, Loader2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
 
 function formatDate(ts: bigint) {
   try {
@@ -45,16 +48,59 @@ export default function ArtistDevelopmentPage() {
   const { data: callerEntities, isLoading: loadingCaller } = useGetEntitiesForCaller();
 
   const createMutation = useCreateArtistDevelopment();
+  const bulkDelete = useBulkDeleteArtistDevelopment();
 
   const [createOpen, setCreateOpen] = useState(false);
   const [newArtistId, setNewArtistId] = useState('');
   const [newNotes, setNewNotes] = useState('');
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const isLoading = isAdmin ? loadingAll : loadingCaller;
 
   const entries: ArtistDevelopment[] = isAdmin
     ? (allEntries ?? [])
     : (callerEntities?.artistDevelopment ?? []);
+
+  const allSelected = entries.length > 0 && selectedIds.size === entries.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < entries.length;
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(entries.map((e) => e.id)));
+    }
+  };
+
+  const handleSelectRow = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      const result = await bulkDelete.mutateAsync(Array.from(selectedIds));
+      const deletedCount = result.deleted.length;
+      const failedCount = result.failed.length;
+      if (deletedCount > 0) {
+        toast.success(`Successfully deleted ${deletedCount} artist development entr${deletedCount !== 1 ? 'ies' : 'y'}.`);
+      }
+      if (failedCount > 0) {
+        toast.error(`${failedCount} entr${failedCount !== 1 ? 'ies' : 'y'} could not be deleted.`);
+      }
+      setSelectedIds(new Set());
+      setConfirmOpen(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Bulk delete failed.';
+      toast.error(msg);
+    }
+  };
 
   const handleCreate = async () => {
     if (!newArtistId.trim()) {
@@ -90,10 +136,23 @@ export default function ArtistDevelopmentPage() {
             {isAdmin ? 'All artist development entries' : 'Your artist development entries'}
           </p>
         </div>
-        <Button onClick={() => setCreateOpen(true)} size="sm" className="gap-2">
-          <Plus size={16} />
-          New Entry
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="gap-2"
+              onClick={() => setConfirmOpen(true)}
+            >
+              <Trash2 size={14} />
+              Delete {selectedIds.size} Selected
+            </Button>
+          )}
+          <Button onClick={() => setCreateOpen(true)} size="sm" className="gap-2">
+            <Plus size={16} />
+            New Entry
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -115,6 +174,15 @@ export default function ArtistDevelopmentPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={allSelected}
+                    data-state={someSelected ? 'indeterminate' : allSelected ? 'checked' : 'unchecked'}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all artist development entries"
+                    className={someSelected ? 'opacity-70' : ''}
+                  />
+                </TableHead>
                 <TableHead>Artist ID</TableHead>
                 <TableHead>Goals</TableHead>
                 <TableHead>Milestones</TableHead>
@@ -122,26 +190,50 @@ export default function ArtistDevelopmentPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {entries.map((entry) => (
-                <TableRow
-                  key={entry.id}
-                  className="cursor-pointer hover:bg-accent/50 transition-colors"
-                  onClick={() => navigate({ to: `/portal/artists/${entry.id}` })}
-                >
-                  <TableCell className="font-medium">{entry.artistId || '—'}</TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {Array.isArray(entry.goals) ? entry.goals.length : 0}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {Array.isArray(entry.milestones) ? entry.milestones.length : 0}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{formatDate(entry.created_at)}</TableCell>
-                </TableRow>
-              ))}
+              {entries.map((entry) => {
+                const isSelected = selectedIds.has(entry.id);
+                return (
+                  <TableRow
+                    key={entry.id}
+                    className={`cursor-pointer hover:bg-accent/50 transition-colors ${isSelected ? 'bg-muted/30' : ''}`}
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (target.closest('[role="checkbox"]') || target.closest('button')) return;
+                      navigate({ to: `/portal/artists/${entry.id}` });
+                    }}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => handleSelectRow(entry.id, !!checked)}
+                        aria-label={`Select ${entry.artistId}`}
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{entry.artistId || '—'}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {Array.isArray(entry.goals) ? entry.goals.length : 0}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {Array.isArray(entry.milestones) ? entry.milestones.length : 0}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{formatDate(entry.created_at)}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
       )}
+
+      <BulkDeleteConfirmDialog
+        open={confirmOpen}
+        count={selectedIds.size}
+        entityType="artist development entry"
+        entityTypePlural="artist development entries"
+        isPending={bulkDelete.isPending}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={handleBulkDelete}
+      />
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>

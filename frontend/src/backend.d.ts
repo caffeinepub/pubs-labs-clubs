@@ -146,6 +146,26 @@ export interface backendInterface {
     addPublishingWorkNotes(id: string, notes: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     assignReleaseOwners(releaseId: LabelEntityId, owners: Array<string>): Promise<void>;
+    bulkDeleteArtistDevelopment(ids: Array<ArtistDevelopmentId>): Promise<{
+        deleted: Array<ArtistDevelopmentId>;
+        failed: Array<ArtistDevelopmentId>;
+    }>;
+    bulkDeleteMembershipProfiles(ids: Array<MemberId>): Promise<{
+        deleted: Array<MemberId>;
+        failed: Array<MemberId>;
+    }>;
+    bulkDeletePublishingWorks(ids: Array<PublishingId>): Promise<{
+        deleted: Array<PublishingId>;
+        failed: Array<PublishingId>;
+    }>;
+    bulkDeleteRecordingProjects(ids: Array<RecodingId>): Promise<{
+        deleted: Array<RecodingId>;
+        failed: Array<RecodingId>;
+    }>;
+    bulkDeleteReleases(ids: Array<LabelEntityId>): Promise<{
+        deleted: Array<LabelEntityId>;
+        failed: Array<LabelEntityId>;
+    }>;
     createArtistDevelopment(artistId: string, goals: Array<string>, plans: Array<string>, milestones: Array<string>, internalNotes: string): Promise<ArtistDevelopment>;
     createMembershipProfile(id: MemberId, name: string, email: string): Promise<MembershipProfile>;
     createPublishingWork(title: string, contributors: Array<string>, ownershipSplits: Array<[string, bigint]>, iswc: string | null, isrc: string | null, registrationStatus: string): Promise<PublishingWork>;

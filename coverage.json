@@ -1,140 +1,120 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-03-02T20:29:56.426Z",
+  "generatedAt": "2026-03-02T23:51:58.344Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 12,
-    "implemented": 10,
+    "total": 6,
+    "implemented": 5,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Implement full save (create/persist) functionality for new Membership records: the create dialog on MembershipsPage must call the backend mutation, show inline validation errors, display a success toast on completion, close the dialog, and refresh the membership list.",
+        "summary": "Add a checkbox to each record row in the Memberships, Publishing Works, Releases, Recording Projects, and Artist Development list pages to allow individual record selection.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/portal/memberships/MembershipsPage.tsx"
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/portal/memberships/MembershipsPage.tsx"
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
         ]
       },
       {
-        "id": "REQ-10",
-        "summary": "Implement an inline edit form on ArtistDevelopmentDetail that allows the owner or admin to modify goals, plans, and milestones fields, save changes to the backend, and reflect updates immediately.",
+        "id": "REQ-2",
+        "summary": "Add a 'Select All' checkbox in the table header of each portal list page that toggles selection of all currently visible records. If all records are selected, it deselects all; if any are unselected, it selects all.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx"
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx"
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
         ]
       },
       {
-        "id": "REQ-11",
-        "summary": "Ensure the backend Motoko actor exposes update endpoints for all five entity types (Membership, PublishingWork, Release, RecordingProject, ArtistDevelopment) that accept a record ID and a set of updated fields, enforce ownership/admin authorization, and return the updated record or an error variant.",
+        "id": "REQ-3",
+        "summary": "Display a 'Delete Selected' bulk action button above each portal section table whenever one or more records are selected. The button must be hidden when no records are selected.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-4",
+        "summary": "Show a confirmation dialog when the 'Delete Selected' button is clicked. The dialog must display the number of records to be deleted and require explicit user confirmation before proceeding. Cancelling the dialog must leave all records intact.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/bulk/BulkDeleteConfirmDialog.tsx",
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/bulk/BulkDeleteConfirmDialog.tsx",
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-5",
+        "summary": "Implement bulk delete backend logic: add a batch delete function for each entity type (Membership, PublishingWork, Release, RecordingProject, ArtistDevelopment) that accepts an array of record IDs and deletes all matching records in a single call, respecting existing authorization rules (admin can delete any, owner can delete their own).",
         "status": "unknown",
         "plannedFiles": [],
         "matchedFiles": []
       },
       {
-        "id": "REQ-12",
-        "summary": "Add React Query mutation hooks in useQueries.ts for each of the five entity update operations (updateMembership, updatePublishingWork, updateRelease, updateRecordingProject, updateArtistDevelopment) that call the corresponding backend update endpoints and invalidate relevant query caches on success.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/hooks/useQueries.ts"
-        ],
-        "matchedFiles": [
-          "frontend/src/hooks/useQueries.ts"
-        ]
-      },
-      {
-        "id": "REQ-2",
-        "summary": "Implement an inline edit form on MembershipDetail that allows the owner or admin to modify name, email, and status fields, save changes to the backend, and reflect updates immediately on the page without a full reload.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/portal/memberships/MembershipDetail.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/portal/memberships/MembershipDetail.tsx"
-        ]
-      },
-      {
-        "id": "REQ-3",
-        "summary": "Implement full save (create/persist) functionality for new Publishing Work records: the create dialog on PublishingWorksPage must call the backend mutation, validate title and registration status, show a success toast, close the dialog, and refresh the works list.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-4",
-        "summary": "Implement an inline edit form on PublishingWorkDetail that allows the owner or admin to modify title, registration status, contributors, ownership splits, and notes, save changes to the backend, and reflect updates immediately.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx"
-        ]
-      },
-      {
-        "id": "REQ-5",
-        "summary": "Implement full save (create/persist) functionality for new Release records: the create dialog on ReleasesPage must call the backend mutation, validate title and type, show a success toast, close the dialog, and refresh the releases list.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/portal/label/ReleasesPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/portal/label/ReleasesPage.tsx"
-        ]
-      },
-      {
         "id": "REQ-6",
-        "summary": "Implement an inline edit form on ReleaseDetail that allows the owner or admin to modify title, release type, tracklist, key dates, and workflow checklist items, save changes to the backend, and reflect updates immediately.",
+        "summary": "Wire the frontend confirmation dialog's 'Confirm Delete' action to call the appropriate backend bulk delete function for the current portal section, then refresh the list and clear all selections on success. Show a success toast with the count of deleted records. Show an error banner if the operation fails.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/pages/portal/label/ReleaseDetail.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/portal/label/ReleaseDetail.tsx"
-        ]
-      },
-      {
-        "id": "REQ-7",
-        "summary": "Implement full save (create/persist) functionality for new Recording Project records: the create dialog on RecordingProjectsPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the project list.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx"
-        ]
-      },
-      {
-        "id": "REQ-8",
-        "summary": "Implement an inline edit form on RecordingProjectDetail that allows the owner or admin to modify project metadata fields, save changes to the backend, and reflect updates immediately.",
-        "status": "implemented",
-        "plannedFiles": [
-          "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx"
-        ],
-        "matchedFiles": [
-          "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx"
-        ]
-      },
-      {
-        "id": "REQ-9",
-        "summary": "Implement full save (create/persist) functionality for new Artist Development records: the create dialog on ArtistDevelopmentPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the entries list.",
-        "status": "missing",
-        "plannedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
           "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
         ],
-        "matchedFiles": []
+        "matchedFiles": [
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "frontend/src/pages/portal/label/ReleasesPage.tsx",
+          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
+        ]
       }
     ]
   },
@@ -146,18 +126,14 @@
     "frontend-implementation-plan.json",
     "frontend/src/backend.d.ts",
     "frontend/src/backend.ts",
+    "frontend/src/components/bulk/BulkDeleteConfirmDialog.tsx",
     "frontend/src/declarations/backend.did.d.ts",
     "frontend/src/declarations/backend.did.js",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/portal/admin/RoleAssignmentPage.tsx",
-    "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
-    "frontend/src/pages/portal/label/ReleaseDetail.tsx",
+    "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
     "frontend/src/pages/portal/label/ReleasesPage.tsx",
-    "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
     "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-    "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
     "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-    "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
     "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
     "project_state.json",
     "scratch/component-selection.json",

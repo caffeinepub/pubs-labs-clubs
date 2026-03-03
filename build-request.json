@@ -1,252 +1,141 @@
 {
   "kind": "build_request",
-  "title": "Save and edit records for all portal app sections",
+  "title": "Part 1a: Bulk Select & Delete across all portal sections",
   "projectName": "Higgins Music Hub",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Implement full save (create/persist) functionality for new Membership records: the create dialog on MembershipsPage must call the backend mutation, show inline validation errors, display a success toast on completion, close the dialog, and refresh the membership list.",
-      "target": "both",
+      "text": "Add a checkbox to each record row in the Memberships, Publishing Works, Releases, Recording Projects, and Artist Development list pages to allow individual record selection.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-recent"
         ],
         "quotes": [
-          "saving and editing of records to each"
+          "Checkbox selection on each record row across all portal sections"
         ]
       },
       "acceptanceCriteria": [
-        "Submitting the create dialog persists a new membership record to the backend canister.",
-        "Form validation prevents submission with empty required fields (name, email).",
-        "A success toast is shown and the dialog closes on successful save.",
-        "The membership list refreshes automatically after creation.",
-        "Backend errors are surfaced to the user inline."
+        "Each row in MembershipsPage, PublishingWorksPage, ReleasesPage, RecordingProjectsPage, and ArtistDevelopmentPage has a checkbox on the left side.",
+        "Checking a row's checkbox marks it as selected with a visible highlight.",
+        "Unchecking removes the selection highlight."
       ]
     },
     {
       "id": "REQ-2",
-      "text": "Implement an inline edit form on MembershipDetail that allows the owner or admin to modify name, email, and status fields, save changes to the backend, and reflect updates immediately on the page without a full reload.",
-      "target": "both",
+      "text": "Add a 'Select All' checkbox in the table header of each portal list page that toggles selection of all currently visible records. If all records are selected, it deselects all; if any are unselected, it selects all.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-recent"
         ],
         "quotes": [
-          "saving and editing of records to each"
+          "\"Select All\" toggle at the top of each table"
         ]
       },
       "acceptanceCriteria": [
-        "Clicking an Edit button on MembershipDetail opens an editable form pre-populated with current values.",
-        "Saving persists changes to the backend and the page reflects the updated data immediately.",
-        "Only the record owner or an admin sees the Edit button.",
-        "A success toast is shown on successful save; backend errors are displayed inline."
+        "A 'Select All' checkbox appears in the header row of each portal list table.",
+        "Clicking it selects all visible rows.",
+        "Clicking it again (when all are selected) deselects all rows.",
+        "The checkbox shows an indeterminate state when some but not all rows are selected."
       ]
     },
     {
       "id": "REQ-3",
-      "text": "Implement full save (create/persist) functionality for new Publishing Work records: the create dialog on PublishingWorksPage must call the backend mutation, validate title and registration status, show a success toast, close the dialog, and refresh the works list.",
-      "target": "both",
+      "text": "Display a 'Delete Selected' bulk action button above each portal section table whenever one or more records are selected. The button must be hidden when no records are selected.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-recent"
         ],
         "quotes": [
-          "saving and editing of records to each"
+          "Bulk delete button that removes all selected records at once"
         ]
       },
       "acceptanceCriteria": [
-        "Submitting the create dialog persists a new publishing work to the backend.",
-        "Title is required; submission is blocked if it is empty.",
-        "Success toast is shown and dialog closes after a successful save.",
-        "The publishing works list refreshes automatically.",
-        "Backend errors are surfaced inline."
+        "The 'Delete Selected' button is not visible when no checkboxes are checked.",
+        "The button appears and shows the count of selected records (e.g., 'Delete 3 Selected') when at least one record is checked.",
+        "The button is styled as a destructive action (red/danger color)."
       ]
     },
     {
       "id": "REQ-4",
-      "text": "Implement an inline edit form on PublishingWorkDetail that allows the owner or admin to modify title, registration status, contributors, ownership splits, and notes, save changes to the backend, and reflect updates immediately.",
-      "target": "both",
+      "text": "Show a confirmation dialog when the 'Delete Selected' button is clicked. The dialog must display the number of records to be deleted and require explicit user confirmation before proceeding. Cancelling the dialog must leave all records intact.",
+      "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-recent"
         ],
         "quotes": [
-          "saving and editing of records to each"
+          "Confirmation dialog before bulk deletion"
         ]
       },
       "acceptanceCriteria": [
-        "An Edit button (visible to owner or admin) opens a form pre-populated with current field values.",
-        "Ownership split validation (total ≤ 100%) is enforced before submission.",
-        "Changes persist to the backend and the detail page updates without a full reload.",
-        "Success toast on save; inline error display on failure."
+        "A modal confirmation dialog appears after clicking 'Delete Selected'.",
+        "The dialog states clearly how many records will be permanently deleted.",
+        "The dialog has a 'Confirm Delete' button and a 'Cancel' button.",
+        "Clicking 'Cancel' or dismissing the dialog performs no deletion.",
+        "Clicking 'Confirm Delete' triggers the deletion flow."
       ]
     },
     {
       "id": "REQ-5",
-      "text": "Implement full save (create/persist) functionality for new Release records: the create dialog on ReleasesPage must call the backend mutation, validate title and type, show a success toast, close the dialog, and refresh the releases list.",
-      "target": "both",
+      "text": "Implement bulk delete backend logic: add a batch delete function for each entity type (Membership, PublishingWork, Release, RecordingProject, ArtistDevelopment) that accepts an array of record IDs and deletes all matching records in a single call, respecting existing authorization rules (admin can delete any, owner can delete their own).",
+      "target": "backend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-recent"
         ],
         "quotes": [
-          "saving and editing of records to each"
+          "Bulk delete button that removes all selected records at once"
         ]
       },
       "acceptanceCriteria": [
-        "Submitting the create dialog persists a new release record to the backend.",
-        "Title and type are required; submission is blocked if either is empty.",
-        "Success toast shown and dialog closes after successful save.",
-        "Releases list refreshes automatically.",
-        "Backend errors are surfaced inline."
+        "A `bulkDeleteMemberships(ids: [Text]) : async [Text]` (or equivalent) function exists in the main actor and deletes all records whose IDs are in the provided list.",
+        "Equivalent bulk delete functions exist for PublishingWork, Release, RecordingProject, and ArtistDevelopment.",
+        "Only records the caller is authorized to delete are removed; unauthorized IDs are skipped and returned as a list of failed IDs.",
+        "The function returns successfully even if some IDs are not found."
       ]
     },
     {
       "id": "REQ-6",
-      "text": "Implement an inline edit form on ReleaseDetail that allows the owner or admin to modify title, release type, tracklist, key dates, and workflow checklist items, save changes to the backend, and reflect updates immediately.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "saving and editing of records to each"
-        ]
-      },
-      "acceptanceCriteria": [
-        "An Edit button (visible to owner or admin) opens a form pre-populated with existing values.",
-        "All editable fields update in the backend on save.",
-        "The detail page reflects changes immediately after saving.",
-        "Success toast on save; inline error display on failure."
-      ]
-    },
-    {
-      "id": "REQ-7",
-      "text": "Implement full save (create/persist) functionality for new Recording Project records: the create dialog on RecordingProjectsPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the project list.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "saving and editing of records to each"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Submitting the create dialog persists a new recording project to the backend.",
-        "Required fields are validated before submission.",
-        "Success toast shown and dialog closes after successful save.",
-        "Project list refreshes automatically.",
-        "Backend errors are surfaced inline."
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "text": "Implement an inline edit form on RecordingProjectDetail that allows the owner or admin to modify project metadata fields, save changes to the backend, and reflect updates immediately.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "saving and editing of records to each"
-        ]
-      },
-      "acceptanceCriteria": [
-        "An Edit button (visible to owner or admin) opens a form pre-populated with current values.",
-        "Changes persist to the backend on save.",
-        "Detail page updates immediately after saving.",
-        "Success toast on save; inline error display on failure."
-      ]
-    },
-    {
-      "id": "REQ-9",
-      "text": "Implement full save (create/persist) functionality for new Artist Development records: the create dialog on ArtistDevelopmentPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the entries list.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "saving and editing of records to each"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Submitting the create dialog persists a new artist development entry to the backend.",
-        "Required fields are validated before submission.",
-        "Success toast shown and dialog closes after successful save.",
-        "Artist development list refreshes automatically.",
-        "Backend errors are surfaced inline."
-      ]
-    },
-    {
-      "id": "REQ-10",
-      "text": "Implement an inline edit form on ArtistDevelopmentDetail that allows the owner or admin to modify goals, plans, and milestones fields, save changes to the backend, and reflect updates immediately.",
-      "target": "both",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "saving and editing of records to each"
-        ]
-      },
-      "acceptanceCriteria": [
-        "An Edit button (visible to owner or admin) opens a form pre-populated with current values.",
-        "Changes persist to the backend on save.",
-        "Detail page updates immediately after saving.",
-        "Success toast on save; inline error display on failure."
-      ]
-    },
-    {
-      "id": "REQ-11",
-      "text": "Ensure the backend Motoko actor exposes update endpoints for all five entity types (Membership, PublishingWork, Release, RecordingProject, ArtistDevelopment) that accept a record ID and a set of updated fields, enforce ownership/admin authorization, and return the updated record or an error variant.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-latest"
-        ],
-        "quotes": [
-          "saving and editing of records to each"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Each entity type has an updateXxx(id, fields) update call in the main actor.",
-        "Callers who are neither the record owner nor an admin receive an #Unauthorized error.",
-        "Successful updates return the full updated record.",
-        "Invalid IDs return a #NotFound error variant."
-      ]
-    },
-    {
-      "id": "REQ-12",
-      "text": "Add React Query mutation hooks in useQueries.ts for each of the five entity update operations (updateMembership, updatePublishingWork, updateRelease, updateRecordingProject, updateArtistDevelopment) that call the corresponding backend update endpoints and invalidate relevant query caches on success.",
+      "text": "Wire the frontend confirmation dialog's 'Confirm Delete' action to call the appropriate backend bulk delete function for the current portal section, then refresh the list and clear all selections on success. Show a success toast with the count of deleted records. Show an error banner if the operation fails.",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-latest"
+          "msg-recent"
         ],
         "quotes": [
-          "saving and editing of records to each"
+          "Bulk delete button that removes all selected records at once",
+          "Confirmation dialog before bulk deletion"
         ]
       },
       "acceptanceCriteria": [
-        "Each mutation hook is exported from useQueries.ts.",
-        "On success, the hook invalidates the corresponding list and detail queries so UI reflects the latest data.",
-        "Mutation errors are propagated to callers for inline display."
+        "After confirming deletion, the selected records are removed from the list without a full page reload.",
+        "A success toast notification appears confirming the number of records deleted.",
+        "All checkboxes are cleared and the 'Delete Selected' button hides after successful deletion.",
+        "If the backend call fails, an error banner is displayed and no records are removed from the UI.",
+        "The React Query cache for the affected section is invalidated so the list reflects the latest backend state."
       ]
     }
   ],
   "constraints": [
-    "All backend logic must remain in the single main actor (backend/main.mo).",
-    "Do not modify any files listed under frontend.immutablePaths.",
-    "Authorization checks (owner or admin) must be enforced on all update endpoints."
+    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "All Motoko backend logic must remain in the single actor in backend/main.mo.",
+    "Bulk delete must respect existing authorization rules — admins can delete any record, non-admins can only delete records they own."
   ],
   "nonGoals": [
-    "Real-time collaborative editing.",
-    "Bulk delete operations.",
-    "Restoring or changing the ApprovalGate / AuthGate bypass logic.",
-    "Changes to the visual theme or layout beyond the edit forms."
+    "Archive / soft-delete functionality (covered in Part 1b).",
+    "Clone / duplicate records (covered in Part 1b).",
+    "Record history / audit log (covered in Part 1c).",
+    "Global search, filtering, or sorting (Part 2).",
+    "Dashboard analytics (Part 3).",
+    "User role management UI changes (Part 4).",
+    "File attachments (Part 5).",
+    "Notifications (Part 6).",
+    "Comments/notes (Part 7).",
+    "Portal settings customization (Part 8)."
   ],
   "imageRequirements": {
     "required": [],

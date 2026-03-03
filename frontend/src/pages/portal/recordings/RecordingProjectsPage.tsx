@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, Mic, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, Mic, Loader2, AlertCircle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -36,9 +37,11 @@ import {
   useGetEntitiesForCaller,
   useCreateRecordingProject,
   useIsCallerAdmin,
+  useBulkDeleteRecordingProjects,
 } from '@/hooks/useQueries';
 import type { RecordingProject } from '../../../backend';
 import { ProjectStatus } from '../../../backend';
+import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
 
 function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
@@ -60,6 +63,7 @@ export default function RecordingProjectsPage() {
   const { data: allProjects, isLoading: loadingAll } = useGetAllRecordingProjects();
   const { data: callerEntities, isLoading: loadingCaller } = useGetEntitiesForCaller();
   const createProject = useCreateRecordingProject();
+  const bulkDelete = useBulkDeleteRecordingProjects();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formTitle, setFormTitle] = useState('');
@@ -69,10 +73,52 @@ export default function RecordingProjectsPage() {
   const [formNotes, setFormNotes] = useState('');
   const [formError, setFormError] = useState('');
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   const isLoading = isAdmin ? loadingAll : loadingCaller;
   const projects: RecordingProject[] = isAdmin
     ? (allProjects ?? [])
     : (callerEntities?.recordingProjects ?? []);
+
+  const allSelected = projects.length > 0 && selectedIds.size === projects.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < projects.length;
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(projects.map((p) => p.id)));
+    }
+  };
+
+  const handleSelectRow = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      const result = await bulkDelete.mutateAsync(Array.from(selectedIds));
+      const deletedCount = result.deleted.length;
+      const failedCount = result.failed.length;
+      if (deletedCount > 0) {
+        toast.success(`Successfully deleted ${deletedCount} recording project${deletedCount !== 1 ? 's' : ''}.`);
+      }
+      if (failedCount > 0) {
+        toast.error(`${failedCount} recording project${failedCount !== 1 ? 's' : ''} could not be deleted.`);
+      }
+      setSelectedIds(new Set());
+      setConfirmOpen(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Bulk delete failed.';
+      toast.error(msg);
+    }
+  };
 
   const handleOpenDialog = () => {
     setFormTitle('');
@@ -124,10 +170,23 @@ export default function RecordingProjectsPage() {
             </p>
           </div>
         </div>
-        <Button onClick={handleOpenDialog} className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Project
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="gap-2"
+              onClick={() => setConfirmOpen(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete {selectedIds.size} Selected
+            </Button>
+          )}
+          <Button onClick={handleOpenDialog} className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Project
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -149,6 +208,15 @@ export default function RecordingProjectsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={allSelected}
+                    data-state={someSelected ? 'indeterminate' : allSelected ? 'checked' : 'unchecked'}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all recording projects"
+                    className={someSelected ? 'opacity-70' : ''}
+                  />
+                </TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Participants</TableHead>
@@ -156,28 +224,51 @@ export default function RecordingProjectsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {projects.map((project) => (
-                <TableRow
-                  key={project.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => navigate({ to: `/portal/recordings/${project.id}` })}
-                >
-                  <TableCell className="font-medium">{project.title}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant(project.status as string)}>
-                      {formatStatus(project.status as string)}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {project.participants?.length ?? 0} participant(s)
-                  </TableCell>
-                  <TableCell className="text-muted-foreground font-mono text-xs">{project.id}</TableCell>
-                </TableRow>
-              ))}
+              {projects.map((project) => {
+                const isSelected = selectedIds.has(project.id);
+                return (
+                  <TableRow
+                    key={project.id}
+                    className={`cursor-pointer hover:bg-muted/50 ${isSelected ? 'bg-muted/30' : ''}`}
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (target.closest('[role="checkbox"]') || target.closest('button')) return;
+                      navigate({ to: `/portal/recordings/${project.id}` });
+                    }}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => handleSelectRow(project.id, !!checked)}
+                        aria-label={`Select ${project.title}`}
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{project.title}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant(project.status as string)}>
+                        {formatStatus(project.status as string)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {project.participants?.length ?? 0} participant(s)
+                    </TableCell>
+                    <TableCell className="text-muted-foreground font-mono text-xs">{project.id}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
       )}
+
+      <BulkDeleteConfirmDialog
+        open={confirmOpen}
+        count={selectedIds.size}
+        entityType="recording project"
+        isPending={bulkDelete.isPending}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={handleBulkDelete}
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
@@ -242,7 +333,7 @@ export default function RecordingProjectsPage() {
                 id="project-notes"
                 value={formNotes}
                 onChange={(e) => setFormNotes(e.target.value)}
-                placeholder="Session notes..."
+                placeholder="Session notes"
                 rows={2}
               />
             </div>

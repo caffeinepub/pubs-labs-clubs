@@ -219,7 +219,6 @@ actor {
       Runtime.trap("Unauthorized: Only users can update role information");
     };
     let role = AccessControl.getUserRole(accessControlState, caller);
-
     let existingProfile = userProfiles.get(caller);
 
     let signedInUser : SignedInUser = {
@@ -904,6 +903,181 @@ actor {
         };
         artistDevelopment.add(artistDevelopmentId, updatedRecord);
       };
+    };
+  };
+
+  // BULK DELETE FUNCTIONS
+  // Each bulk delete requires at least #user permission.
+  // Within the batch, each record is only deleted if the caller is the owner or an admin.
+  // Records that cannot be deleted (not found or unauthorized) are returned in the `failed` list.
+
+  public shared ({ caller }) func bulkDeleteMembershipProfiles(ids : [MemberId]) : async {
+    deleted : [MemberId];
+    failed : [MemberId];
+  } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete membership profiles");
+    };
+    var deletedMemberships : [MemberId] = [];
+    var failedMemberships : [MemberId] = [];
+    let isAdmin = AccessControl.isAdmin(accessControlState, caller);
+
+    func processId(id : MemberId) : () {
+      switch (memberships.get(id)) {
+        case (null) {
+          failedMemberships := failedMemberships.concat([id]);
+        };
+        case (?membership) {
+          if (isAdmin or caller == membership.profile.principal) {
+            memberships.remove(id);
+            deletedMemberships := deletedMemberships.concat([id]);
+          } else {
+            failedMemberships := failedMemberships.concat([id]);
+          };
+        };
+      };
+    };
+
+    for (id in ids.values()) { processId(id) };
+    {
+      deleted = deletedMemberships;
+      failed = failedMemberships;
+    };
+  };
+
+  public shared ({ caller }) func bulkDeletePublishingWorks(ids : [PublishingId]) : async {
+    deleted : [PublishingId];
+    failed : [PublishingId];
+  } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete publishing works");
+    };
+    var deletedWorks : [PublishingId] = [];
+    var failedWorks : [PublishingId] = [];
+    let isAdmin = AccessControl.isAdmin(accessControlState, caller);
+
+    func processId(id : PublishingId) : () {
+      switch (publishingCatalog.get(id)) {
+        case (null) {
+          failedWorks := failedWorks.concat([id]);
+        };
+        case (?work) {
+          if (isAdmin or caller == work.owner) {
+            publishingCatalog.remove(id);
+            deletedWorks := deletedWorks.concat([id]);
+          } else {
+            failedWorks := failedWorks.concat([id]);
+          };
+        };
+      };
+    };
+
+    for (id in ids.values()) { processId(id) };
+    {
+      deleted = deletedWorks;
+      failed = failedWorks;
+    };
+  };
+
+  public shared ({ caller }) func bulkDeleteReleases(ids : [LabelEntityId]) : async {
+    deleted : [LabelEntityId];
+    failed : [LabelEntityId];
+  } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete releases");
+    };
+    var deletedReleases : [LabelEntityId] = [];
+    var failedReleases : [LabelEntityId] = [];
+    let isAdmin = AccessControl.isAdmin(accessControlState, caller);
+
+    func processId(id : LabelEntityId) : () {
+      switch (releases.get(id)) {
+        case (null) {
+          failedReleases := failedReleases.concat([id]);
+        };
+        case (?release) {
+          if (isAdmin or caller == release.owner) {
+            releases.remove(id);
+            deletedReleases := deletedReleases.concat([id]);
+          } else {
+            failedReleases := failedReleases.concat([id]);
+          };
+        };
+      };
+    };
+
+    for (id in ids.values()) { processId(id) };
+    {
+      deleted = deletedReleases;
+      failed = failedReleases;
+    };
+  };
+
+  public shared ({ caller }) func bulkDeleteRecordingProjects(ids : [RecodingId]) : async {
+    deleted : [RecodingId];
+    failed : [RecodingId];
+  } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete recording projects");
+    };
+    var deletedProjects : [RecodingId] = [];
+    var failedProjects : [RecodingId] = [];
+    let isAdmin = AccessControl.isAdmin(accessControlState, caller);
+
+    func processId(id : RecodingId) : () {
+      switch (recordingProjects.get(id)) {
+        case (null) {
+          failedProjects := failedProjects.concat([id]);
+        };
+        case (?project) {
+          if (isAdmin or caller == project.owner) {
+            recordingProjects.remove(id);
+            deletedProjects := deletedProjects.concat([id]);
+          } else {
+            failedProjects := failedProjects.concat([id]);
+          };
+        };
+      };
+    };
+
+    for (id in ids.values()) { processId(id) };
+    {
+      deleted = deletedProjects;
+      failed = failedProjects;
+    };
+  };
+
+  public shared ({ caller }) func bulkDeleteArtistDevelopment(ids : [ArtistDevelopmentId]) : async {
+    deleted : [ArtistDevelopmentId];
+    failed : [ArtistDevelopmentId];
+  } {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete artist development entries");
+    };
+    var deletedArtists : [ArtistDevelopmentId] = [];
+    var failedArtists : [ArtistDevelopmentId] = [];
+    let isAdmin = AccessControl.isAdmin(accessControlState, caller);
+
+    func processId(id : ArtistDevelopmentId) : () {
+      switch (artistDevelopment.get(id)) {
+        case (null) {
+          failedArtists := failedArtists.concat([id]);
+        };
+        case (?entry) {
+          if (isAdmin or caller == entry.owner) {
+            artistDevelopment.remove(id);
+            deletedArtists := deletedArtists.concat([id]);
+          } else {
+            failedArtists := failedArtists.concat([id]);
+          };
+        };
+      };
+    };
+
+    for (id in ids.values()) { processId(id) };
+    {
+      deleted = deletedArtists;
+      failed = failedArtists;
     };
   };
 

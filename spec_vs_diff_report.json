@@ -1,16 +1,31 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-03-02T20:29:56.422Z",
-  "summary": "The diff implements the vast majority of requirements across both frontend and backend. All five entity types have create dialogs (REQ-1, REQ-3, REQ-5, REQ-7, REQ-9), inline edit forms on detail pages (REQ-2, REQ-4, REQ-6, REQ-8, REQ-10), React Query mutation hooks in useQueries.ts (REQ-12), and backend update endpoints (REQ-11). The backend main.mo is truncated so full verification of REQ-11 details is limited. The ArtistDevelopmentPage create dialog (REQ-9) is referenced via hooks but the page file itself is not shown in the diff. Overall coverage appears strong with minor uncertainties due to truncation.",
+  "generatedAt": "2026-03-02T23:51:58.340Z",
+  "summary": "The diff implements all six requirements for bulk select and delete across all portal sections. Frontend pages (Memberships, PublishingWorks, Releases, RecordingProjects, ArtistDevelopment) have checkboxes per row, Select All in headers, Delete Selected button, and confirmation dialog. Backend bulk delete functions are added in main.mo. React Query hooks for bulk delete are added in useQueries.ts. The implementation appears comprehensive with minor observable gaps noted below.",
   "missing_requirements": [
     {
-      "id": "REQ-9",
-      "requirement": "Implement full save (create/persist) functionality for new Artist Development records: the create dialog on ArtistDevelopmentPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the entries list.",
-      "reason": "The diff shows ArtistDevelopmentDetail.tsx (the edit form for REQ-10) but does not include an ArtistDevelopmentPage.tsx file with the create dialog. The frontend-file-summaries.txt also does not mention ArtistDevelopmentPage. There is no evidence the create dialog for artist development was implemented.",
+      "id": "REQ-2",
+      "requirement": "The checkbox shows an indeterminate state when some but not all rows are selected.",
+      "reason": "The diff tracks 'someSelected' state in all pages, but the rendering is truncated and it cannot be confirmed that the indeterminate prop is actually passed to the Select All checkbox element in the table header.",
       "evidence": [
-        "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
-        "frontend-file-summaries.txt"
+        "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+        "frontend/src/pages/portal/label/ReleasesPage.tsx",
+        "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+        "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+        "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "requirement": "If the backend call fails, an error banner is displayed and no records are removed from the UI.",
+      "reason": "The catch blocks in all page handlers call toast.error() rather than rendering a persistent error banner component. The requirement specifically calls for an error banner on failure, which is distinct from a transient toast notification.",
+      "evidence": [
+        "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
+        "frontend/src/pages/portal/label/ReleasesPage.tsx",
+        "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+        "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
+        "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx"
       ]
     }
   ],
@@ -19,16 +34,12 @@
   "changed_files": [
     "backend/main.mo",
     "frontend-file-summaries.txt",
+    "frontend/src/components/bulk/BulkDeleteConfirmDialog.tsx",
     "frontend/src/hooks/useQueries.ts",
-    "frontend/src/pages/portal/admin/RoleAssignmentPage.tsx",
-    "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
-    "frontend/src/pages/portal/label/ReleaseDetail.tsx",
+    "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
     "frontend/src/pages/portal/label/ReleasesPage.tsx",
-    "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
     "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-    "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
     "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-    "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
     "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
     "project_state.json"
   ]

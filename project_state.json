@@ -1,90 +1,52 @@
 {
   "schemaVersion": "1.0.0",
   "projectStateVersion": 3,
-  "summary": "Portal application with sections that display and offer create options. Now working on saving and editing records for each section, plus any remaining section features.",
+  "summary": "Portal app with record management enhancements being built. User is confirming and building features in parts, currently on Part 1a (Bulk Select & Delete).",
   "architectural_notes": [
-    "Portal Apps sections display correctly with create options per section (as of v37)"
+    "Portal is being enhanced incrementally with user confirmation before each part is built"
   ],
-  "known_issues": [],
+  "known_issues": [
+    "Previous build attempts (Version 38 enhancements) failed with AI processing errors; breaking into smaller sub-parts to mitigate"
+  ],
   "isFixRequest": false,
   "existing_features": [
     {
-      "id": "feature-implement-full-save-create-persist-functionality-for-new-membership-records-the-create-dialog-on-membershipspage-must-call-the-backend-mutation-show-inline-validation-errors-display-a-success-toast-on-completion-close-the-dialog-and-refresh-the-membership-list",
-      "title": "Implement full save (create/persist) functionality for new Membership records: the create dialog on MembershipsPage must call the backend mutation, show inline validation errors, display a success toast on completion, close the dialog, and refresh the membership list.",
+      "id": "feature-add-a-checkbox-to-each-record-row-in-the-memberships-publishing-works-releases-recording-projects-and-artist-development-list-pages-to-allow-individual-record-selection",
+      "title": "Add a checkbox to each record row in the Memberships, Publishing Works, Releases, Recording Projects, and Artist Development list pages to allow individual record selection.",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-an-inline-edit-form-on-membershipdetail-that-allows-the-owner-or-admin-to-modify-name-email-and-status-fields-save-changes-to-the-backend-and-reflect-updates-immediately-on-the-page-without-a-full-reload",
-      "title": "Implement an inline edit form on MembershipDetail that allows the owner or admin to modify name, email, and status fields, save changes to the backend, and reflect updates immediately on the page without a full reload.",
+      "id": "feature-add-a-select-all-checkbox-in-the-table-header-of-each-portal-list-page-that-toggles-selection-of-all-currently-visible-records-if-all-records-are-selected-it-deselects-all-if-any-are-unselected-it-selects-all",
+      "title": "Add a 'Select All' checkbox in the table header of each portal list page that toggles selection of all currently visible records. If all records are selected, it deselects all; if any are unselected, it selects all.",
       "reqIds": [
         "REQ-2"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-full-save-create-persist-functionality-for-new-publishing-work-records-the-create-dialog-on-publishingworkspage-must-call-the-backend-mutation-validate-title-and-registration-status-show-a-success-toast-close-the-dialog-and-refresh-the-works-list",
-      "title": "Implement full save (create/persist) functionality for new Publishing Work records: the create dialog on PublishingWorksPage must call the backend mutation, validate title and registration status, show a success toast, close the dialog, and refresh the works list.",
+      "id": "feature-display-a-delete-selected-bulk-action-button-above-each-portal-section-table-whenever-one-or-more-records-are-selected-the-button-must-be-hidden-when-no-records-are-selected",
+      "title": "Display a 'Delete Selected' bulk action button above each portal section table whenever one or more records are selected. The button must be hidden when no records are selected.",
       "reqIds": [
         "REQ-3"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-an-inline-edit-form-on-publishingworkdetail-that-allows-the-owner-or-admin-to-modify-title-registration-status-contributors-ownership-splits-and-notes-save-changes-to-the-backend-and-reflect-updates-immediately",
-      "title": "Implement an inline edit form on PublishingWorkDetail that allows the owner or admin to modify title, registration status, contributors, ownership splits, and notes, save changes to the backend, and reflect updates immediately.",
+      "id": "feature-show-a-confirmation-dialog-when-the-delete-selected-button-is-clicked-the-dialog-must-display-the-number-of-records-to-be-deleted-and-require-explicit-user-confirmation-before-proceeding-cancelling-the-dialog-must-leave-all-records-intact",
+      "title": "Show a confirmation dialog when the 'Delete Selected' button is clicked. The dialog must display the number of records to be deleted and require explicit user confirmation before proceeding. Cancelling the dialog must leave all records intact.",
       "reqIds": [
         "REQ-4"
       ],
       "version": 1
     },
     {
-      "id": "feature-implement-full-save-create-persist-functionality-for-new-release-records-the-create-dialog-on-releasespage-must-call-the-backend-mutation-validate-title-and-type-show-a-success-toast-close-the-dialog-and-refresh-the-releases-list",
-      "title": "Implement full save (create/persist) functionality for new Release records: the create dialog on ReleasesPage must call the backend mutation, validate title and type, show a success toast, close the dialog, and refresh the releases list.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-an-inline-edit-form-on-releasedetail-that-allows-the-owner-or-admin-to-modify-title-release-type-tracklist-key-dates-and-workflow-checklist-items-save-changes-to-the-backend-and-reflect-updates-immediately",
-      "title": "Implement an inline edit form on ReleaseDetail that allows the owner or admin to modify title, release type, tracklist, key dates, and workflow checklist items, save changes to the backend, and reflect updates immediately.",
+      "id": "feature-wire-the-frontend-confirmation-dialog-s-confirm-delete-action-to-call-the-appropriate-backend-bulk-delete-function-for-the-current-portal-section-then-refresh-the-list-and-clear-all-selections-on-success-show-a-success-toast-with-the-count-of-deleted-records-show-an-error-banner-if-the-operation-fails",
+      "title": "Wire the frontend confirmation dialog's 'Confirm Delete' action to call the appropriate backend bulk delete function for the current portal section, then refresh the list and clear all selections on success. Show a success toast with the count of deleted records. Show an error banner if the operation fails.",
       "reqIds": [
         "REQ-6"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-full-save-create-persist-functionality-for-new-recording-project-records-the-create-dialog-on-recordingprojectspage-must-call-the-backend-mutation-validate-required-fields-show-a-success-toast-close-the-dialog-and-refresh-the-project-list",
-      "title": "Implement full save (create/persist) functionality for new Recording Project records: the create dialog on RecordingProjectsPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the project list.",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-an-inline-edit-form-on-recordingprojectdetail-that-allows-the-owner-or-admin-to-modify-project-metadata-fields-save-changes-to-the-backend-and-reflect-updates-immediately",
-      "title": "Implement an inline edit form on RecordingProjectDetail that allows the owner or admin to modify project metadata fields, save changes to the backend, and reflect updates immediately.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-implement-an-inline-edit-form-on-artistdevelopmentdetail-that-allows-the-owner-or-admin-to-modify-goals-plans-and-milestones-fields-save-changes-to-the-backend-and-reflect-updates-immediately",
-      "title": "Implement an inline edit form on ArtistDevelopmentDetail that allows the owner or admin to modify goals, plans, and milestones fields, save changes to the backend, and reflect updates immediately.",
-      "reqIds": [
-        "REQ-10"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-react-query-mutation-hooks-in-usequeries-ts-for-each-of-the-five-entity-update-operations-updatemembership-updatepublishingwork-updaterelease-updaterecordingproject-updateartistdevelopment-that-call-the-corresponding-backend-update-endpoints-and-invalidate-relevant-query-caches-on-success",
-      "title": "Add React Query mutation hooks in useQueries.ts for each of the five entity update operations (updateMembership, updatePublishingWork, updateRelease, updateRecordingProject, updateArtistDevelopment) that call the corresponding backend update endpoints and invalidate relevant query caches on success.",
-      "reqIds": [
-        "REQ-12"
       ],
       "version": 1
     }
@@ -92,29 +54,75 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Save and edit records for each portal app section",
+      "summary": "Part 1a: Bulk select and delete records across all portal sections with confirmation dialog",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Part 1b: Duplicate/clone records and archive (soft delete) with restore capability",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Part 1c: Record history/audit log showing creator, editor, timestamps in a timeline panel",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Part 2: Global search, per-section column filters, sort by column, save filter presets, export to CSV",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Part 3: Summary dashboard with stats, visual charts, recent activity feed, quick-access widgets",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Part 4: Admin vs standard user roles, role management screen, locked sections for authorized users",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Part 5: File and image attachments per record with inline preview, download, and multi-attachment support",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Part 6: In-app notification bell with activity feed, mark as read, and per-user notification preferences",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Part 7: Comments/notes thread on each record with add/edit/delete, timestamps, and author display",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-10",
-      "summary": "Implement full save (create/persist) functionality for new Artist Development records: the create dialog on ArtistDevelopmentPage must call the backend mutation, validate required fields, show a success toast, close the dialog, and refresh the entries list.",
-      "reqIds": [
-        "REQ-9"
-      ],
+      "summary": "Part 8: Admin settings for renaming sections, toggle sections on/off, branding customization, custom fields",
+      "reqIds": [],
       "status": "pending"
     },
     {
-      "id": "AR-12",
-      "summary": "Ensure the backend Motoko actor exposes update endpoints for all five entity types (Membership, PublishingWork, Release, RecordingProject, ArtistDevelopment) that accept a record ID and a set of updated fields, enforce ownership/admin authorization, and return the updated record or an error variant.",
+      "id": "AR-15",
+      "summary": "Implement bulk delete backend logic: add a batch delete function for each entity type (Membership, PublishingWork, Release, RecordingProject, ArtistDevelopment) that accepts an array of record IDs and deletes all matching records in a single call, respecting existing authorization rules (admin can delete any, owner can delete their own).",
       "reqIds": [
-        "REQ-11"
+        "REQ-5"
       ],
       "status": "pending"
     }
   ],
   "gameProjectType": "none",
-  "projectName": "Higgins Music Hub",
+  "projectName": "Portal App",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

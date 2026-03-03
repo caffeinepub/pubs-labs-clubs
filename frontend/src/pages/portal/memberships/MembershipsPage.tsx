@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, Users, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, Users, Loader2, AlertCircle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -28,8 +29,10 @@ import {
   useGetAllMembershipProfiles,
   useCreateMembershipProfile,
   useIsCallerAdmin,
+  useBulkDeleteMemberships,
 } from '@/hooks/useQueries';
 import type { Membership, MembershipProfile } from '../../../backend';
+import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
 
 function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
@@ -47,6 +50,7 @@ export default function MembershipsPage() {
   const { data: callerMemberships, isLoading: loadingCaller } = useGetCallerMemberships();
   const { data: allProfiles, isLoading: loadingAll } = useGetAllMembershipProfiles();
   const createMembership = useCreateMembershipProfile();
+  const bulkDelete = useBulkDeleteMemberships();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formName, setFormName] = useState('');
@@ -54,11 +58,55 @@ export default function MembershipsPage() {
   const [formId, setFormId] = useState('');
   const [formError, setFormError] = useState('');
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const selectAllRef = useRef<HTMLButtonElement>(null);
+
   const isLoading = isAdmin ? loadingAll : loadingCaller;
 
   const profiles: MembershipProfile[] = isAdmin
     ? (allProfiles ?? [])
     : (callerMemberships ?? []).map((m: Membership) => m.profile);
+
+  const allSelected = profiles.length > 0 && selectedIds.size === profiles.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < profiles.length;
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(profiles.map((p) => p.id)));
+    }
+  };
+
+  const handleSelectRow = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      const result = await bulkDelete.mutateAsync(Array.from(selectedIds));
+      const deletedCount = result.deleted.length;
+      const failedCount = result.failed.length;
+      if (deletedCount > 0) {
+        toast.success(`Successfully deleted ${deletedCount} membership${deletedCount !== 1 ? 's' : ''}.`);
+      }
+      if (failedCount > 0) {
+        toast.error(`${failedCount} membership${failedCount !== 1 ? 's' : ''} could not be deleted.`);
+      }
+      setSelectedIds(new Set());
+      setConfirmOpen(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Bulk delete failed.';
+      toast.error(msg);
+    }
+  };
 
   const handleOpenDialog = () => {
     setFormName('');
@@ -70,18 +118,9 @@ export default function MembershipsPage() {
 
   const handleCreate = async () => {
     setFormError('');
-    if (!formName.trim()) {
-      setFormError('Name is required.');
-      return;
-    }
-    if (!formEmail.trim()) {
-      setFormError('Email is required.');
-      return;
-    }
-    if (!formId.trim()) {
-      setFormError('Member ID is required.');
-      return;
-    }
+    if (!formName.trim()) { setFormError('Name is required.'); return; }
+    if (!formEmail.trim()) { setFormError('Email is required.'); return; }
+    if (!formId.trim()) { setFormError('Member ID is required.'); return; }
 
     try {
       await createMembership.mutateAsync({ id: formId.trim(), name: formName.trim(), email: formEmail.trim() });
@@ -105,10 +144,23 @@ export default function MembershipsPage() {
             </p>
           </div>
         </div>
-        <Button onClick={handleOpenDialog} className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Membership
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="gap-2"
+              onClick={() => setConfirmOpen(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete {selectedIds.size} Selected
+            </Button>
+          )}
+          <Button onClick={handleOpenDialog} className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Membership
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -130,6 +182,16 @@ export default function MembershipsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    ref={selectAllRef}
+                    checked={allSelected}
+                    data-state={someSelected ? 'indeterminate' : allSelected ? 'checked' : 'unchecked'}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all memberships"
+                    className={someSelected ? 'opacity-70' : ''}
+                  />
+                </TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Status</TableHead>
@@ -138,27 +200,50 @@ export default function MembershipsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {profiles.map((profile) => (
-                <TableRow
-                  key={profile.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => navigate({ to: `/portal/memberships/${profile.id}` })}
-                >
-                  <TableCell className="font-medium">{profile.name}</TableCell>
-                  <TableCell className="text-muted-foreground">{profile.email}</TableCell>
-                  <TableCell>
-                    <Badge variant={statusVariant(profile.status as string)}>
-                      {profile.status as string}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{profile.tier}</TableCell>
-                  <TableCell className="text-muted-foreground font-mono text-xs">{profile.id}</TableCell>
-                </TableRow>
-              ))}
+              {profiles.map((profile) => {
+                const isSelected = selectedIds.has(profile.id);
+                return (
+                  <TableRow
+                    key={profile.id}
+                    className={`cursor-pointer hover:bg-muted/50 ${isSelected ? 'bg-muted/30' : ''}`}
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (target.closest('[role="checkbox"]') || target.closest('button')) return;
+                      navigate({ to: `/portal/memberships/${profile.id}` });
+                    }}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => handleSelectRow(profile.id, !!checked)}
+                        aria-label={`Select ${profile.name}`}
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{profile.name}</TableCell>
+                    <TableCell className="text-muted-foreground">{profile.email}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant(profile.status as string)}>
+                        {profile.status as string}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{profile.tier}</TableCell>
+                    <TableCell className="text-muted-foreground font-mono text-xs">{profile.id}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
       )}
+
+      <BulkDeleteConfirmDialog
+        open={confirmOpen}
+        count={selectedIds.size}
+        entityType="membership"
+        isPending={bulkDelete.isPending}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={handleBulkDelete}
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-md">

@@ -145,6 +145,29 @@ export interface _SERVICE {
     [LabelEntityId, Array<string>],
     undefined
   >,
+  'bulkDeleteArtistDevelopment' : ActorMethod<
+    [Array<ArtistDevelopmentId>],
+    {
+      'deleted' : Array<ArtistDevelopmentId>,
+      'failed' : Array<ArtistDevelopmentId>,
+    }
+  >,
+  'bulkDeleteMembershipProfiles' : ActorMethod<
+    [Array<MemberId>],
+    { 'deleted' : Array<MemberId>, 'failed' : Array<MemberId> }
+  >,
+  'bulkDeletePublishingWorks' : ActorMethod<
+    [Array<PublishingId>],
+    { 'deleted' : Array<PublishingId>, 'failed' : Array<PublishingId> }
+  >,
+  'bulkDeleteRecordingProjects' : ActorMethod<
+    [Array<RecodingId>],
+    { 'deleted' : Array<RecodingId>, 'failed' : Array<RecodingId> }
+  >,
+  'bulkDeleteReleases' : ActorMethod<
+    [Array<LabelEntityId>],
+    { 'deleted' : Array<LabelEntityId>, 'failed' : Array<LabelEntityId> }
+  >,
   'createArtistDevelopment' : ActorMethod<
     [string, Array<string>, Array<string>, Array<string>, string],
     ArtistDevelopment

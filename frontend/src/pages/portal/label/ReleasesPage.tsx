@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from '@tanstack/react-router';
-import { Plus, Disc, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, Disc, Loader2, AlertCircle, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
@@ -36,8 +37,10 @@ import {
   useGetEntitiesForCaller,
   useCreateRelease,
   useIsCallerAdmin,
+  useBulkDeleteReleases,
 } from '@/hooks/useQueries';
 import type { Release } from '../../../backend';
+import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
 
 const RELEASE_TYPES = ['Single', 'EP', 'Album', 'Compilation', 'Mixtape', 'Live', 'Other'];
 
@@ -47,6 +50,7 @@ export default function ReleasesPage() {
   const { data: allReleases, isLoading: loadingAll } = useGetAllReleases();
   const { data: callerEntities, isLoading: loadingCaller } = useGetEntitiesForCaller();
   const createRelease = useCreateRelease();
+  const bulkDelete = useBulkDeleteReleases();
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formTitle, setFormTitle] = useState('');
@@ -56,10 +60,52 @@ export default function ReleasesPage() {
   const [formOwners, setFormOwners] = useState('');
   const [formError, setFormError] = useState('');
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   const isLoading = isAdmin ? loadingAll : loadingCaller;
   const releases: Release[] = isAdmin
     ? (allReleases ?? [])
     : (callerEntities?.releases ?? []);
+
+  const allSelected = releases.length > 0 && selectedIds.size === releases.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < releases.length;
+
+  const handleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(releases.map((r) => r.id)));
+    }
+  };
+
+  const handleSelectRow = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      const result = await bulkDelete.mutateAsync(Array.from(selectedIds));
+      const deletedCount = result.deleted.length;
+      const failedCount = result.failed.length;
+      if (deletedCount > 0) {
+        toast.success(`Successfully deleted ${deletedCount} release${deletedCount !== 1 ? 's' : ''}.`);
+      }
+      if (failedCount > 0) {
+        toast.error(`${failedCount} release${failedCount !== 1 ? 's' : ''} could not be deleted.`);
+      }
+      setSelectedIds(new Set());
+      setConfirmOpen(false);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Bulk delete failed.';
+      toast.error(msg);
+    }
+  };
 
   const handleOpenDialog = () => {
     setFormTitle('');
@@ -114,10 +160,23 @@ export default function ReleasesPage() {
             </p>
           </div>
         </div>
-        <Button onClick={handleOpenDialog} className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Release
-        </Button>
+        <div className="flex items-center gap-2">
+          {selectedIds.size > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              className="gap-2"
+              onClick={() => setConfirmOpen(true)}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete {selectedIds.size} Selected
+            </Button>
+          )}
+          <Button onClick={handleOpenDialog} className="gap-2">
+            <Plus className="h-4 w-4" />
+            New Release
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -139,6 +198,15 @@ export default function ReleasesPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={allSelected}
+                    data-state={someSelected ? 'indeterminate' : allSelected ? 'checked' : 'unchecked'}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all releases"
+                    className={someSelected ? 'opacity-70' : ''}
+                  />
+                </TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Tracks</TableHead>
@@ -146,26 +214,49 @@ export default function ReleasesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {releases.map((release) => (
-                <TableRow
-                  key={release.id}
-                  className="cursor-pointer hover:bg-muted/50"
-                  onClick={() => navigate({ to: `/portal/releases/${release.id}` })}
-                >
-                  <TableCell className="font-medium">{release.title}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{release.releaseType}</Badge>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {release.tracklist?.length ?? 0} track(s)
-                  </TableCell>
-                  <TableCell className="text-muted-foreground font-mono text-xs">{release.id}</TableCell>
-                </TableRow>
-              ))}
+              {releases.map((release) => {
+                const isSelected = selectedIds.has(release.id);
+                return (
+                  <TableRow
+                    key={release.id}
+                    className={`cursor-pointer hover:bg-muted/50 ${isSelected ? 'bg-muted/30' : ''}`}
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement;
+                      if (target.closest('[role="checkbox"]') || target.closest('button')) return;
+                      navigate({ to: `/portal/releases/${release.id}` });
+                    }}
+                  >
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={(checked) => handleSelectRow(release.id, !!checked)}
+                        aria-label={`Select ${release.title}`}
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{release.title}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{release.releaseType}</Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {release.tracklist?.length ?? 0} track(s)
+                    </TableCell>
+                    <TableCell className="text-muted-foreground font-mono text-xs">{release.id}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </div>
       )}
+
+      <BulkDeleteConfirmDialog
+        open={confirmOpen}
+        count={selectedIds.size}
+        entityType="release"
+        isPending={bulkDelete.isPending}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={handleBulkDelete}
+      />
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="sm:max-w-lg">
