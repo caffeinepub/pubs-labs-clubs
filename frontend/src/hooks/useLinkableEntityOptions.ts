@@ -9,14 +9,13 @@ import {
   useGetEntitiesForCaller,
 } from './useQueries';
 import { normalizeToArray } from '../utils/arrays';
+import type { MembershipProfile, Membership } from '../backend';
 import type {
-  MembershipProfile,
   ArtistDevelopment,
   PublishingWork,
   Release,
   RecordingProject,
-  Membership,
-} from '../backend';
+} from '../types/entities';
 
 interface EntityOption {
   id: string;
@@ -37,8 +36,6 @@ export function useLinkableEntityOptions(): LinkableEntityOptions {
   const { isAdmin } = useCurrentUser();
 
   // Always call all hooks unconditionally (Rules of Hooks).
-  // The queries themselves will only fetch when the actor is ready;
-  // we gate which data we actually use on isAdmin below.
   const adminMemberships = useGetAllMembershipProfiles();
   const adminArtists = useGetAllArtistDevelopment();
   const adminWorks = useGetAllPublishingWorks();

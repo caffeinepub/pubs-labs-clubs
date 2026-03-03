@@ -12,7 +12,7 @@ export function useCurrentUser() {
       return actor.getCallerUserRole();
     },
     enabled: !!actor && !actorFetching,
-    retry: false
+    retry: false,
   });
 
   const approvalQuery = useQuery<boolean>({
@@ -22,17 +22,19 @@ export function useCurrentUser() {
       return actor.isCallerApproved();
     },
     enabled: !!actor && !actorFetching,
-    retry: false
+    retry: false,
   });
 
   const isAdmin = roleQuery.data === UserRole.admin;
   const isApproved = approvalQuery.data === true;
   const isLoading = actorFetching || roleQuery.isLoading || approvalQuery.isLoading;
+  const isFetched = !!actor && roleQuery.isFetched && approvalQuery.isFetched;
 
   return {
     role: roleQuery.data,
     isAdmin,
     isApproved,
-    isLoading
+    isLoading,
+    isFetched,
   };
 }

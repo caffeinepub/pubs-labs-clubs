@@ -5,17 +5,17 @@
   "architectural_notes": [],
   "known_issues": [],
   "isFixRequest": false,
-  "existing_features": [],
-  "new_feature_requests": [
+  "existing_features": [
     {
-      "id": "AR-1",
-      "summary": "Implement Part 2, Section 2 of the Higgins Music Hub portal build, continuing from where Part 2 Section 1 left off. Review the current state of the codebase, audit findings in portalAudit.ts, and the rollout documentation to determine which features, pages, or components are next in the build sequence for Section 2, then implement them.",
+      "id": "feature-split-what-was-previously-part-5-of-the-multi-step-flow-the-frontend-canister-upgrade-step-in-the-rollout-onboarding-wizard-or-guided-flow-into-two-distinct-sub-steps-part-5a-and-part-5b-each-sub-step-must-have-its-own-dedicated-screen-or-section-with-a-clear-title-description-of-the-action-to-be-taken-and-a-confirmation-prompt-that-the-user-must-explicitly-acknowledge-before-proceeding-to-the-next-sub-step",
+      "title": "Split what was previously 'Part 5' of the multi-step flow (the frontend canister upgrade step in the rollout/onboarding wizard or guided flow) into two distinct sub-steps: Part 5a and Part 5b. Each sub-step must have its own dedicated screen or section with a clear title, description of the action to be taken, and a confirmation prompt that the user must explicitly acknowledge before proceeding to the next sub-step.",
       "reqIds": [
         "REQ-1"
       ],
-      "status": "pending"
+      "version": 1
     }
   ],
+  "new_feature_requests": [],
   "projectName": "Higgins Music Hub",
   "clarification_mode": "instant",
   "clarification_rounds": 0

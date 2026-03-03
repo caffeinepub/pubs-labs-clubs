@@ -40,9 +40,11 @@ import {
   useBulkDeleteRecordingProjects,
   useDuplicateRecordingProject,
 } from '@/hooks/useQueries';
-import type { RecordingProject } from '../../../backend';
-import { ProjectStatus } from '../../../backend';
+import type { RecordingProject } from '../../../types/entities';
+import { ProjectStatus } from '../../../types/entities';
 import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
+import { useTableSort } from '@/hooks/useTableSort';
+import SortableTableHeader from '@/components/table/SortableTableHeader';
 
 function statusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
@@ -84,14 +86,16 @@ export default function RecordingProjectsPage() {
     ? (allProjects ?? [])
     : (callerEntities?.recordingProjects ?? []);
 
-  const allSelected = projects.length > 0 && selectedIds.size === projects.length;
-  const someSelected = selectedIds.size > 0 && selectedIds.size < projects.length;
+  const { sortBy, sortDirection, handleSort, sortedData: sortedProjects } = useTableSort(projects);
+
+  const allSelected = sortedProjects.length > 0 && selectedIds.size === sortedProjects.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < sortedProjects.length;
 
   const handleSelectAll = () => {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(projects.map((p) => p.id)));
+      setSelectedIds(new Set(sortedProjects.map((p) => p.id)));
     }
   };
 
@@ -140,7 +144,7 @@ export default function RecordingProjectsPage() {
   const handleOpenDialog = () => {
     setFormTitle('');
     setFormParticipants('');
-    setFormSessionDate(new Date().toISOString().split('T')[0]);
+    setFormSessionDate('');
     setFormStatus(ProjectStatus.planned);
     setFormNotes('');
     setFormError('');
@@ -210,11 +214,11 @@ export default function RecordingProjectsPage() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : projects.length === 0 ? (
+      ) : sortedProjects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Mic className="h-12 w-12 text-muted-foreground/40 mb-4" />
           <p className="text-muted-foreground text-lg font-medium">No recording projects yet</p>
-          <p className="text-muted-foreground/60 text-sm mt-1">Create your first project to get started.</p>
+          <p className="text-muted-foreground/60 text-sm mt-1">Create your first recording project to get started.</p>
           <Button onClick={handleOpenDialog} className="mt-4 gap-2">
             <Plus className="h-4 w-4" />
             New Project
@@ -232,15 +236,47 @@ export default function RecordingProjectsPage() {
                     aria-label="Select all recording projects"
                   />
                 </TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Participants</TableHead>
+                <SortableTableHeader
+                  label="Title"
+                  sortKey="title"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Status"
+                  sortKey="status"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Session Date"
+                  sortKey="sessionDate"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Participants"
+                  sortKey="participants"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
                 <TableHead>ID</TableHead>
+                <SortableTableHeader
+                  label="Created"
+                  sortKey="created_at"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {projects.map((project) => {
+              {sortedProjects.map((project) => {
                 const isSelected = selectedIds.has(project.id);
                 return (
                   <TableRow
@@ -265,10 +301,19 @@ export default function RecordingProjectsPage() {
                         {formatStatus(project.status as string)}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-muted-foreground text-xs">
+                      {new Date(Number(project.sessionDate) / 1_000_000).toLocaleDateString()}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {project.participants?.length ?? 0} participant(s)
+                      {project.participants.length > 0
+                        ? project.participants.slice(0, 2).join(', ') +
+                          (project.participants.length > 2 ? ` +${project.participants.length - 2} more` : '')
+                        : '—'}
                     </TableCell>
                     <TableCell className="text-muted-foreground font-mono text-xs">{project.id}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">
+                      {new Date(Number(project.created_at) / 1_000_000).toLocaleDateString()}
+                    </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <Button
                         variant="ghost"
@@ -331,7 +376,7 @@ export default function RecordingProjectsPage() {
               <Label htmlFor="project-status">Status</Label>
               <Select value={formStatus} onValueChange={(v) => setFormStatus(v as ProjectStatus)}>
                 <SelectTrigger id="project-status">
-                  <SelectValue />
+                  <SelectValue placeholder="Select status..." />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ProjectStatus.planned}>Planned</SelectItem>

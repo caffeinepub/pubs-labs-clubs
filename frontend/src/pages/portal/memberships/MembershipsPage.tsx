@@ -34,6 +34,8 @@ import {
 } from '@/hooks/useQueries';
 import type { Membership, MembershipProfile } from '../../../backend';
 import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
+import { useTableSort } from '@/hooks/useTableSort';
+import SortableTableHeader from '@/components/table/SortableTableHeader';
 
 const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   active: 'default',
@@ -66,14 +68,16 @@ export default function MembershipsPage() {
     ? (allProfiles ?? [])
     : (callerMemberships ?? []).map((m: Membership) => m.profile);
 
-  const allSelected = profiles.length > 0 && selectedIds.size === profiles.length;
-  const someSelected = selectedIds.size > 0 && selectedIds.size < profiles.length;
+  const { sortBy, sortDirection, handleSort, sortedData: sortedProfiles } = useTableSort(profiles);
+
+  const allSelected = sortedProfiles.length > 0 && selectedIds.size === sortedProfiles.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < sortedProfiles.length;
 
   const handleSelectAll = () => {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(profiles.map((p) => p.id)));
+      setSelectedIds(new Set(sortedProfiles.map((p) => p.id)));
     }
   };
 
@@ -178,7 +182,7 @@ export default function MembershipsPage() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : profiles.length === 0 ? (
+      ) : sortedProfiles.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Users className="h-12 w-12 text-muted-foreground/40 mb-4" />
           <p className="text-muted-foreground text-lg font-medium">No memberships yet</p>
@@ -200,16 +204,47 @@ export default function MembershipsPage() {
                     aria-label="Select all memberships"
                   />
                 </TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Tier</TableHead>
+                <SortableTableHeader
+                  label="Name"
+                  sortKey="name"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Email"
+                  sortKey="email"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Status"
+                  sortKey="status"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Tier"
+                  sortKey="tier"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
                 <TableHead>ID</TableHead>
+                <SortableTableHeader
+                  label="Created"
+                  sortKey="created_at"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {profiles.map((profile) => {
+              {sortedProfiles.map((profile) => {
                 const isSelected = selectedIds.has(profile.id);
                 return (
                   <TableRow
@@ -237,6 +272,9 @@ export default function MembershipsPage() {
                     </TableCell>
                     <TableCell className="text-muted-foreground">{profile.tier}</TableCell>
                     <TableCell className="text-muted-foreground font-mono text-xs">{profile.id}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">
+                      {new Date(Number(profile.created_at) / 1_000_000).toLocaleDateString()}
+                    </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <Button
                         variant="ghost"

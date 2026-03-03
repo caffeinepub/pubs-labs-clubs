@@ -13,28 +13,7 @@ import type { Principal } from '@icp-sdk/core/principal';
 export type ApprovalStatus = { 'pending' : null } |
   { 'approved' : null } |
   { 'rejected' : null };
-export interface ArtistDevelopment {
-  'id' : ArtistDevelopmentId,
-  'relatedRecordingProjects' : Array<RecodingId>,
-  'owner' : Principal,
-  'relatedLabelEntities' : Array<LabelEntityId>,
-  'artistId' : string,
-  'created_at' : Time,
-  'relatedArtistDevelopment' : Array<ArtistDevelopmentId>,
-  'relatedMemberships' : Array<MemberId>,
-  'goals' : Array<string>,
-  'plans' : Array<string>,
-  'internalNotes' : string,
-  'relatedPublishing' : Array<PublishingId>,
-  'milestones' : Array<string>,
-}
 export type ArtistDevelopmentId = string;
-export interface ByGoals {
-  'id' : ArtistDevelopmentId,
-  'artistId' : string,
-  'created_at' : Time,
-  'goals' : string,
-}
 export interface ChangeEvent {
   'id' : bigint,
   'operationType' : { 'link' : null } |
@@ -44,6 +23,16 @@ export interface ChangeEvent {
   'changedFields' : Array<string>,
   'timestamp' : bigint,
   'recordId' : string,
+}
+export interface DashboardStats {
+  'totalMemberships' : bigint,
+  'membershipStatusCounts' : Array<[T, bigint]>,
+  'totalRecordingProjects' : bigint,
+  'projectStatusCounts' : Array<[ProjectStatus, bigint]>,
+  'totalPublishingWorks' : bigint,
+  'totalArtistDevelopment' : bigint,
+  'releaseTypeCounts' : Array<[string, bigint]>,
+  'totalReleases' : bigint,
 }
 export type LabelEntityId = string;
 export type MemberId = string;
@@ -78,53 +67,7 @@ export type ProjectStatus = { 'in_progress' : null } |
   { 'planned' : null } |
   { 'archived' : null };
 export type PublishingId = string;
-export interface PublishingWork {
-  'id' : PublishingId,
-  'title' : string,
-  'ownershipSplits' : Array<[string, bigint]>,
-  'linkedProjects' : Array<RecodingId>,
-  'owner' : Principal,
-  'isrc' : [] | [string],
-  'iswc' : [] | [string],
-  'created_at' : Time,
-  'linkedReleases' : Array<LabelEntityId>,
-  'linkedMembers' : Array<MemberId>,
-  'notes' : string,
-  'registrationStatus' : string,
-  'contributors' : Array<string>,
-  'linkedArtists' : Array<ArtistDevelopmentId>,
-}
 export type RecodingId = string;
-export interface RecordingProject {
-  'id' : RecodingId,
-  'status' : ProjectStatus,
-  'title' : string,
-  'participants' : Array<string>,
-  'sessionDate' : Time,
-  'owner' : Principal,
-  'created_at' : Time,
-  'linkedReleases' : Array<LabelEntityId>,
-  'linkedWorks' : Array<PublishingId>,
-  'assetReferences' : Array<string>,
-  'linkedMembers' : Array<MemberId>,
-  'notes' : string,
-  'linkedArtists' : Array<ArtistDevelopmentId>,
-}
-export interface Release {
-  'id' : LabelEntityId,
-  'title' : string,
-  'workflowChecklist' : Array<string>,
-  'keyDates' : Array<string>,
-  'owners' : Array<string>,
-  'linkedProjects' : Array<RecodingId>,
-  'owner' : Principal,
-  'tracklist' : Array<string>,
-  'created_at' : Time,
-  'linkedWorks' : Array<PublishingId>,
-  'linkedMembers' : Array<MemberId>,
-  'linkedArtists' : Array<ArtistDevelopmentId>,
-  'releaseType' : string,
-}
 export interface SignedInUser {
   'principal' : Principal,
   'role' : UserRole,
@@ -175,164 +118,34 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addPublishingWorkNotes' : ActorMethod<[string, string], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'assignReleaseOwners' : ActorMethod<
-    [LabelEntityId, Array<string>],
-    undefined
-  >,
-  'bulkDeleteArtistDevelopment' : ActorMethod<
-    [Array<ArtistDevelopmentId>],
-    {
-      'deleted' : Array<ArtistDevelopmentId>,
-      'failed' : Array<ArtistDevelopmentId>,
-    }
-  >,
   'bulkDeleteMembershipProfiles' : ActorMethod<
     [Array<MemberId>],
     { 'deleted' : Array<MemberId>, 'failed' : Array<MemberId> }
-  >,
-  'bulkDeletePublishingWorks' : ActorMethod<
-    [Array<PublishingId>],
-    { 'deleted' : Array<PublishingId>, 'failed' : Array<PublishingId> }
-  >,
-  'bulkDeleteRecordingProjects' : ActorMethod<
-    [Array<RecodingId>],
-    { 'deleted' : Array<RecodingId>, 'failed' : Array<RecodingId> }
-  >,
-  'bulkDeleteReleases' : ActorMethod<
-    [Array<LabelEntityId>],
-    { 'deleted' : Array<LabelEntityId>, 'failed' : Array<LabelEntityId> }
-  >,
-  'createArtistDevelopment' : ActorMethod<
-    [string, Array<string>, Array<string>, Array<string>, string],
-    ArtistDevelopment
   >,
   'createMembershipProfile' : ActorMethod<
     [MemberId, string, string],
     MembershipProfile
   >,
-  'createPublishingWork' : ActorMethod<
-    [
-      string,
-      Array<string>,
-      Array<[string, bigint]>,
-      [] | [string],
-      [] | [string],
-      string,
-    ],
-    PublishingWork
-  >,
-  'createRecordingProject' : ActorMethod<
-    [string, Array<string>, Time, ProjectStatus, string],
-    RecordingProject
-  >,
-  'createRelease' : ActorMethod<
-    [string, string, Array<string>, Array<string>, Array<string>],
-    Release
-  >,
-  'duplicateArtistDevelopment' : ActorMethod<
-    [ArtistDevelopmentId],
-    ArtistDevelopment
-  >,
   'duplicateMembership' : ActorMethod<[MemberId], Membership>,
-  'duplicatePublishingWork' : ActorMethod<[PublishingId], PublishingWork>,
-  'duplicateRecordingProject' : ActorMethod<[RecodingId], RecordingProject>,
-  'duplicateRelease' : ActorMethod<[LabelEntityId], Release>,
-  'getAllArtistDevelopment' : ActorMethod<[], Array<ArtistDevelopment>>,
   'getAllKnownUsers' : ActorMethod<[], Array<SignedInUser>>,
   'getAllMembershipProfiles' : ActorMethod<[], Array<MembershipProfile>>,
-  'getAllPublishingWorks' : ActorMethod<[], Array<PublishingWork>>,
-  'getAllRecordingProjects' : ActorMethod<[], Array<RecordingProject>>,
-  'getAllReleases' : ActorMethod<[], Array<Release>>,
-  'getArtistDevelopment' : ActorMethod<
-    [ArtistDevelopmentId],
-    ArtistDevelopment
-  >,
-  'getArtistDevelopmentByGoals' : ActorMethod<[], Array<ByGoals>>,
   'getCallerMemberships' : ActorMethod<[], Array<Membership>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getChangeHistory' : ActorMethod<[string], Array<ChangeEvent>>,
-  'getEntitiesForCaller' : ActorMethod<
-    [],
-    {
-      'recordingProjects' : Array<RecordingProject>,
-      'artistDevelopment' : Array<ArtistDevelopment>,
-      'publishingWorks' : Array<PublishingWork>,
-      'releases' : Array<Release>,
-      'memberships' : Array<[MemberId, Membership]>,
-    }
-  >,
+  'getDashboardStats' : ActorMethod<[], DashboardStats>,
   'getMembershipDetails' : ActorMethod<[MemberId], Membership>,
   'getMembershipProfile' : ActorMethod<[MemberId], MembershipProfile>,
   'getMembershipProfilesByStatus' : ActorMethod<[T], Array<MembershipProfile>>,
-  'getPublishingWork' : ActorMethod<[string], PublishingWork>,
-  'getRecordingProject' : ActorMethod<[RecodingId], RecordingProject>,
-  'getRelease' : ActorMethod<[LabelEntityId], Release>,
   'getRemainingRolloutSteps' : ActorMethod<[], Array<[string, string]>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isCallerApproved' : ActorMethod<[], boolean>,
-  'linkMembershipToEntities' : ActorMethod<
-    [
-      MemberId,
-      Array<ArtistDevelopmentId>,
-      Array<PublishingId>,
-      Array<LabelEntityId>,
-      Array<RecodingId>,
-    ],
-    undefined
-  >,
-  'linkProjectToEntities' : ActorMethod<
-    [
-      RecodingId,
-      Array<MemberId>,
-      Array<ArtistDevelopmentId>,
-      Array<PublishingId>,
-      Array<LabelEntityId>,
-    ],
-    undefined
-  >,
-  'linkPublishingWorkToEntities' : ActorMethod<
-    [
-      PublishingId,
-      Array<MemberId>,
-      Array<ArtistDevelopmentId>,
-      Array<LabelEntityId>,
-      Array<RecodingId>,
-    ],
-    undefined
-  >,
-  'linkReleaseToEntities' : ActorMethod<
-    [
-      LabelEntityId,
-      Array<MemberId>,
-      Array<ArtistDevelopmentId>,
-      Array<PublishingId>,
-      Array<RecodingId>,
-    ],
-    undefined
-  >,
   'listApprovals' : ActorMethod<[], Array<UserApprovalInfo>>,
   'requestApproval' : ActorMethod<[], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setApproval' : ActorMethod<[Principal, ApprovalStatus], undefined>,
-  'updateArtistDevelopment' : ActorMethod<
-    [ArtistDevelopmentId, Array<string>, Array<string>, Array<string>, string],
-    ArtistDevelopment
-  >,
-  'updateArtistDevelopmentLinks' : ActorMethod<
-    [
-      ArtistDevelopmentId,
-      Array<MemberId>,
-      Array<PublishingId>,
-      Array<LabelEntityId>,
-      Array<RecodingId>,
-      Array<ArtistDevelopmentId>,
-    ],
-    undefined
-  >,
   'updateKnownUserRole' : ActorMethod<[], undefined>,
   'updateMembership' : ActorMethod<
     [MemberId, string, string, T],
@@ -353,25 +166,6 @@ export interface _SERVICE {
     MembershipProfile
   >,
   'updateMembershipStatus' : ActorMethod<[MemberId, T], MembershipProfile>,
-  'updatePublishingWork' : ActorMethod<
-    [string, string, string, Array<string>, Array<[string, bigint]>, string],
-    PublishingWork
-  >,
-  'updateRecordingProject' : ActorMethod<
-    [RecodingId, string, Array<string>, Time, ProjectStatus, string],
-    RecordingProject
-  >,
-  'updateRelease' : ActorMethod<
-    [
-      LabelEntityId,
-      string,
-      string,
-      Array<string>,
-      Array<string>,
-      Array<string>,
-    ],
-    Release
-  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

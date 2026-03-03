@@ -2,11 +2,11 @@ import { RouterProvider, createRouter, createRoute, createRootRoute, Outlet, red
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
-import { useInternetIdentity } from './hooks/useInternetIdentity';
 
 // Pages
 import LandingPage from './pages/LandingPage';
 import PortalLayout from './components/layout/PortalLayout';
+import PortalHome from './pages/portal/PortalHome';
 import MembershipsPage from './pages/portal/memberships/MembershipsPage';
 import PublishingWorksPage from './pages/portal/publishing/PublishingWorksPage';
 import ReleasesPage from './pages/portal/label/ReleasesPage';
@@ -15,11 +15,13 @@ import ArtistDevelopmentPage from './pages/portal/artists/ArtistDevelopmentPage'
 import AdminDashboardPage from './pages/portal/admin/AdminDashboardPage';
 import RoleAssignmentPage from './pages/portal/admin/RoleAssignmentPage';
 import AdminBootstrapPage from './pages/portal/admin/AdminBootstrapPage';
+import RolloutWizardPage from './pages/portal/admin/RolloutWizardPage';
 import MembershipDetail from './pages/portal/memberships/MembershipDetail';
 import PublishingWorkDetail from './pages/portal/publishing/PublishingWorkDetail';
 import ReleaseDetail from './pages/portal/label/ReleaseDetail';
 import RecordingProjectDetail from './pages/portal/recordings/RecordingProjectDetail';
 import ArtistDevelopmentDetail from './pages/portal/artists/ArtistDevelopmentDetail';
+import AuthGate from './components/auth/AuthGate';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,19 +44,30 @@ const indexRoute = createRoute({
   component: LandingPage,
 });
 
-// Portal parent route
+// Portal parent route (wrapped in AuthGate)
 const portalRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/portal',
-  component: PortalLayout,
+  component: () => (
+    <AuthGate>
+      <PortalLayout />
+    </AuthGate>
+  ),
 });
 
-// Portal index redirect
-const portalIndexRoute = createRoute({
+// Portal home route — default landing after login
+const portalHomeRoute = createRoute({
   getParentRoute: () => portalRoute,
   path: '/',
+  component: PortalHome,
+});
+
+// Portal index redirect (handles /portal with no trailing slash)
+const portalIndexRoute = createRoute({
+  getParentRoute: () => portalRoute,
+  path: '/home',
   beforeLoad: () => {
-    throw redirect({ to: '/portal/memberships' });
+    throw redirect({ to: '/portal' });
   },
 });
 
@@ -142,9 +155,16 @@ const adminBootstrapRoute = createRoute({
   component: AdminBootstrapPage,
 });
 
+const rolloutWizardRoute = createRoute({
+  getParentRoute: () => portalRoute,
+  path: '/admin/rollout-wizard',
+  component: RolloutWizardPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   portalRoute.addChildren([
+    portalHomeRoute,
     portalIndexRoute,
     membershipsRoute,
     membershipDetailRoute,
@@ -159,6 +179,7 @@ const routeTree = rootRoute.addChildren([
     adminDashboardRoute,
     roleAssignmentRoute,
     adminBootstrapRoute,
+    rolloutWizardRoute,
   ]),
 ]);
 
@@ -170,17 +191,11 @@ declare module '@tanstack/react-router' {
   }
 }
 
-function AppContent() {
-  return (
-    <RouterProvider router={router} />
-  );
-}
-
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-        <AppContent />
+        <RouterProvider router={router} />
         <Toaster />
       </ThemeProvider>
     </QueryClientProvider>

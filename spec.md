@@ -1,12 +1,15 @@
 # Specification
 
 ## Summary
-**Goal:** Implement Part 2, Section 2 of the Higgins Music Hub portal build, continuing from the current codebase state as defined by the rollout documentation and portal audit findings.
+**Goal:** Split the existing "Part 5" step in the onboarding/rollout wizard into two sequential sub-steps (Part 5a and Part 5b), each with its own screen and explicit confirmation prompt.
 
 **Planned changes:**
-- Review the current codebase, `portalAudit.ts`, and rollout documentation to identify features scoped to Part 2, Section 2
-- Implement all frontend pages, components, and backend Motoko logic designated for Part 2, Section 2
-- Ensure new functionality integrates with the existing portal routing structure
-- Preserve all entity types, cross-linking relationships, and features shipped in Part 2, Section 1
+- Divide Part 5 into two distinct sub-steps: Part 5a and Part 5b
+- Each sub-step gets its own dedicated screen with a title and description of the action to be performed
+- Add a confirmation prompt before Part 5a that the user must acknowledge before proceeding
+- Add a second confirmation prompt before Part 5b that the user must acknowledge before proceeding
+- Disable the "Continue"/"Proceed" button until the user confirms at each sub-step
+- Update the step indicator/progress tracker to reflect both sub-steps
+- Cancelling or declining a confirmation returns the user to the previous state without advancing
 
-**User-visible outcome:** All features scoped to Part 2, Section 2 of the Higgins Music Hub portal are functional and accessible through the existing portal, with no regressions to previously shipped functionality.
+**User-visible outcome:** Users going through the rollout/onboarding wizard will encounter Part 5 as two separate confirmed steps (5a and 5b), each requiring an explicit acknowledgement before moving forward, preventing accidental advancement through critical upgrade actions.

@@ -52,7 +52,6 @@ export default function ArtistDevelopmentDetail() {
     error: optionsError,
   } = useLinkableEntityOptions();
 
-  // canEditArtistDevelopment = canEditRecord(identity, isAdmin, owner)
   const canEdit = artist
     ? canEditArtistDevelopment(identity, isAdmin ?? false, artist.owner)
     : false;
@@ -99,12 +98,12 @@ export default function ArtistDevelopmentDetail() {
   }) => {
     updateLinks.mutate(
       {
-        artistDevelopmentId: id,
-        relatedMemberships: selected.memberIds,
-        relatedPublishing: selected.workIds,
-        relatedLabelEntities: selected.releaseIds,
-        relatedRecordingProjects: selected.projectIds,
-        relatedArtistDevelopment: selected.artistIds,
+        entryId: id,
+        memberIds: selected.memberIds,
+        publishingIds: selected.workIds,
+        releaseIds: selected.releaseIds,
+        projectIds: selected.projectIds,
+        artistIds: selected.artistIds,
       },
       {
         onSuccess: () => {
@@ -119,7 +118,6 @@ export default function ArtistDevelopmentDetail() {
     );
   };
 
-  // Array field helpers
   const makeArrayHelpers = (arr: string[], setArr: React.Dispatch<React.SetStateAction<string[]>>) => ({
     add: () => setArr([...arr, '']),
     remove: (i: number) => setArr(arr.filter((_, idx) => idx !== i)),

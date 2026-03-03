@@ -30,7 +30,7 @@ import EditLinksButton from '@/components/related/EditLinksButton';
 import EditRelatedDialog from '@/components/related/EditRelatedDialog';
 import { useLinkableEntityOptions } from '@/hooks/useLinkableEntityOptions';
 import { normalizeToArray } from '@/utils/arrays';
-import { ProjectStatus } from '../../../backend';
+import { ProjectStatus } from '../../../types/entities';
 import ChangeHistoryPanel from '@/components/history/ChangeHistoryPanel';
 
 function formatStatus(status: string): string {
@@ -75,7 +75,6 @@ export default function RecordingProjectDetail() {
     error: optionsError,
   } = useLinkableEntityOptions();
 
-  // canEditRecordingProject = canEditRecord(identity, isAdmin, owner)
   const canEdit = project
     ? canEditRecordingProject(identity, isAdmin ?? false, project.owner)
     : false;
@@ -84,7 +83,6 @@ export default function RecordingProjectDetail() {
     if (!project) return;
     setEditTitle(project.title);
     setEditParticipants(normalizeToArray<string>(project.participants).slice());
-    // Convert nanoseconds timestamp to date string
     const dateMs = Number(project.sessionDate) / 1_000_000;
     setEditSessionDate(new Date(dateMs).toISOString().split('T')[0]);
     setEditStatus(project.status as ProjectStatus);
@@ -150,7 +148,6 @@ export default function RecordingProjectDetail() {
     );
   };
 
-  // Array field helpers
   const makeArrayHelpers = (arr: string[], setArr: React.Dispatch<React.SetStateAction<string[]>>) => ({
     add: () => setArr([...arr, '']),
     remove: (i: number) => setArr(arr.filter((_, idx) => idx !== i)),
@@ -267,7 +264,6 @@ export default function RecordingProjectDetail() {
                 </div>
               </div>
 
-              {/* Participants */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Participants</Label>

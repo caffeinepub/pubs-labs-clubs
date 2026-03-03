@@ -100,77 +100,20 @@ export interface _CaffeineStorageCreateCertificateResult {
     method: string;
     blob_hash: string;
 }
-export interface ByGoals {
-    id: ArtistDevelopmentId;
-    artistId: string;
-    created_at: Time;
-    goals: string;
-}
-export interface ArtistDevelopment {
-    id: ArtistDevelopmentId;
-    relatedRecordingProjects: Array<RecodingId>;
-    owner: Principal;
-    relatedLabelEntities: Array<LabelEntityId>;
-    artistId: string;
-    created_at: Time;
-    relatedArtistDevelopment: Array<ArtistDevelopmentId>;
-    relatedMemberships: Array<MemberId>;
-    goals: Array<string>;
-    plans: Array<string>;
-    internalNotes: string;
-    relatedPublishing: Array<PublishingId>;
-    milestones: Array<string>;
+export interface DashboardStats {
+    totalMemberships: bigint;
+    membershipStatusCounts: Array<[T, bigint]>;
+    totalRecordingProjects: bigint;
+    projectStatusCounts: Array<[ProjectStatus, bigint]>;
+    totalPublishingWorks: bigint;
+    totalArtistDevelopment: bigint;
+    releaseTypeCounts: Array<[string, bigint]>;
+    totalReleases: bigint;
 }
 export type RecodingId = string;
-export interface RecordingProject {
-    id: RecodingId;
-    status: ProjectStatus;
-    title: string;
-    participants: Array<string>;
-    sessionDate: Time;
-    owner: Principal;
-    created_at: Time;
-    linkedReleases: Array<LabelEntityId>;
-    linkedWorks: Array<PublishingId>;
-    assetReferences: Array<string>;
-    linkedMembers: Array<MemberId>;
-    notes: string;
-    linkedArtists: Array<ArtistDevelopmentId>;
-}
 export interface UserApprovalInfo {
     status: ApprovalStatus;
     principal: Principal;
-}
-export interface PublishingWork {
-    id: PublishingId;
-    title: string;
-    ownershipSplits: Array<[string, bigint]>;
-    linkedProjects: Array<RecodingId>;
-    owner: Principal;
-    isrc?: string;
-    iswc?: string;
-    created_at: Time;
-    linkedReleases: Array<LabelEntityId>;
-    linkedMembers: Array<MemberId>;
-    notes: string;
-    registrationStatus: string;
-    contributors: Array<string>;
-    linkedArtists: Array<ArtistDevelopmentId>;
-}
-export interface Release {
-    id: LabelEntityId;
-    title: string;
-    workflowChecklist: Array<string>;
-    keyDates: Array<string>;
-    owners: Array<string>;
-    linkedProjects: Array<RecodingId>;
-    owner: Principal;
-    tracklist: Array<string>;
-    created_at: Time;
-    linkedWorks: Array<PublishingId>;
-    linkedMembers: Array<MemberId>;
-    linkedArtists: Array<ArtistDevelopmentId>;
-    releaseType: string;
 }
 export type ArtistDevelopmentId = string;
 export interface SignedInUser {
@@ -256,88 +199,38 @@ export interface backendInterface {
     _caffeineStorageRefillCashier(refillInformation: _CaffeineStorageRefillInformation | null): Promise<_CaffeineStorageRefillResult>;
     _caffeineStorageUpdateGatewayPrincipals(): Promise<void>;
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
-    addPublishingWorkNotes(id: string, notes: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    assignReleaseOwners(releaseId: LabelEntityId, owners: Array<string>): Promise<void>;
-    bulkDeleteArtistDevelopment(ids: Array<ArtistDevelopmentId>): Promise<{
-        deleted: Array<ArtistDevelopmentId>;
-        failed: Array<ArtistDevelopmentId>;
-    }>;
     bulkDeleteMembershipProfiles(ids: Array<MemberId>): Promise<{
         deleted: Array<MemberId>;
         failed: Array<MemberId>;
     }>;
-    bulkDeletePublishingWorks(ids: Array<PublishingId>): Promise<{
-        deleted: Array<PublishingId>;
-        failed: Array<PublishingId>;
-    }>;
-    bulkDeleteRecordingProjects(ids: Array<RecodingId>): Promise<{
-        deleted: Array<RecodingId>;
-        failed: Array<RecodingId>;
-    }>;
-    bulkDeleteReleases(ids: Array<LabelEntityId>): Promise<{
-        deleted: Array<LabelEntityId>;
-        failed: Array<LabelEntityId>;
-    }>;
-    createArtistDevelopment(artistId: string, goals: Array<string>, plans: Array<string>, milestones: Array<string>, internalNotes: string): Promise<ArtistDevelopment>;
     createMembershipProfile(id: MemberId, name: string, email: string): Promise<MembershipProfile>;
-    createPublishingWork(title: string, contributors: Array<string>, ownershipSplits: Array<[string, bigint]>, iswc: string | null, isrc: string | null, registrationStatus: string): Promise<PublishingWork>;
-    createRecordingProject(title: string, participants: Array<string>, sessionDate: Time, status: ProjectStatus, notes: string): Promise<RecordingProject>;
-    createRelease(title: string, releaseType: string, tracklist: Array<string>, keyDates: Array<string>, owners: Array<string>): Promise<Release>;
-    duplicateArtistDevelopment(id: ArtistDevelopmentId): Promise<ArtistDevelopment>;
     duplicateMembership(id: MemberId): Promise<Membership>;
-    duplicatePublishingWork(id: PublishingId): Promise<PublishingWork>;
-    duplicateRecordingProject(id: RecodingId): Promise<RecordingProject>;
-    duplicateRelease(id: LabelEntityId): Promise<Release>;
-    getAllArtistDevelopment(): Promise<Array<ArtistDevelopment>>;
     getAllKnownUsers(): Promise<Array<SignedInUser>>;
     getAllMembershipProfiles(): Promise<Array<MembershipProfile>>;
-    getAllPublishingWorks(): Promise<Array<PublishingWork>>;
-    getAllRecordingProjects(): Promise<Array<RecordingProject>>;
-    getAllReleases(): Promise<Array<Release>>;
-    getArtistDevelopment(entryId: ArtistDevelopmentId): Promise<ArtistDevelopment>;
-    getArtistDevelopmentByGoals(): Promise<Array<ByGoals>>;
     getCallerMemberships(): Promise<Array<Membership>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getChangeHistory(recordId: string): Promise<Array<ChangeEvent>>;
-    getEntitiesForCaller(): Promise<{
-        recordingProjects: Array<RecordingProject>;
-        artistDevelopment: Array<ArtistDevelopment>;
-        publishingWorks: Array<PublishingWork>;
-        releases: Array<Release>;
-        memberships: Array<[MemberId, Membership]>;
-    }>;
+    getDashboardStats(): Promise<DashboardStats>;
     getMembershipDetails(id: MemberId): Promise<Membership>;
     getMembershipProfile(id: MemberId): Promise<MembershipProfile>;
     getMembershipProfilesByStatus(status: T): Promise<Array<MembershipProfile>>;
-    getPublishingWork(id: string): Promise<PublishingWork>;
-    getRecordingProject(projectId: RecodingId): Promise<RecordingProject>;
-    getRelease(releaseId: LabelEntityId): Promise<Release>;
     getRemainingRolloutSteps(): Promise<Array<[string, string]>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     isCallerApproved(): Promise<boolean>;
-    linkMembershipToEntities(memberId: MemberId, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, releaseIds: Array<LabelEntityId>, projectIds: Array<RecodingId>): Promise<void>;
-    linkProjectToEntities(projectId: RecodingId, memberIds: Array<MemberId>, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, releaseIds: Array<LabelEntityId>): Promise<void>;
-    linkPublishingWorkToEntities(workId: PublishingId, memberIds: Array<MemberId>, artistIds: Array<ArtistDevelopmentId>, releaseIds: Array<LabelEntityId>, projectIds: Array<RecodingId>): Promise<void>;
-    linkReleaseToEntities(releaseId: LabelEntityId, memberIds: Array<MemberId>, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, projectIds: Array<RecodingId>): Promise<void>;
     listApprovals(): Promise<Array<UserApprovalInfo>>;
     requestApproval(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setApproval(user: Principal, status: ApprovalStatus): Promise<void>;
-    updateArtistDevelopment(entryId: ArtistDevelopmentId, goals: Array<string>, plans: Array<string>, milestones: Array<string>, internalNotes: string): Promise<ArtistDevelopment>;
-    updateArtistDevelopmentLinks(artistDevelopmentId: ArtistDevelopmentId, relatedMemberships: Array<MemberId>, relatedPublishing: Array<PublishingId>, relatedLabelEntities: Array<LabelEntityId>, relatedRecordingProjects: Array<RecodingId>, relatedArtistDevelopment: Array<ArtistDevelopmentId>): Promise<void>;
     updateKnownUserRole(): Promise<void>;
     updateMembership(id: MemberId, name: string, email: string, status: T): Promise<MembershipProfile>;
     updateMembershipLinks(id: MemberId, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, releaseIds: Array<LabelEntityId>, projectIds: Array<RecodingId>): Promise<void>;
     updateMembershipProfileFields(id: MemberId, name: string, email: string): Promise<MembershipProfile>;
     updateMembershipStatus(id: MemberId, status: T): Promise<MembershipProfile>;
-    updatePublishingWork(id: string, title: string, registrationStatus: string, contributors: Array<string>, ownershipSplits: Array<[string, bigint]>, notes: string): Promise<PublishingWork>;
-    updateRecordingProject(projectId: RecodingId, title: string, participants: Array<string>, sessionDate: Time, status: ProjectStatus, notes: string): Promise<RecordingProject>;
-    updateRelease(releaseId: LabelEntityId, title: string, releaseType: string, tracklist: Array<string>, keyDates: Array<string>, workflowChecklist: Array<string>): Promise<Release>;
 }
-import type { ApprovalStatus as _ApprovalStatus, ArtistDevelopment as _ArtistDevelopment, ArtistDevelopmentId as _ArtistDevelopmentId, ChangeEvent as _ChangeEvent, LabelEntityId as _LabelEntityId, MemberId as _MemberId, Membership as _Membership, MembershipProfile as _MembershipProfile, MembershipTier as _MembershipTier, ProjectStatus as _ProjectStatus, PublishingId as _PublishingId, PublishingWork as _PublishingWork, RecodingId as _RecodingId, RecordingProject as _RecordingProject, Release as _Release, SignedInUser as _SignedInUser, T as _T, Time as _Time, UserApprovalInfo as _UserApprovalInfo, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
+import type { ApprovalStatus as _ApprovalStatus, ArtistDevelopmentId as _ArtistDevelopmentId, ChangeEvent as _ChangeEvent, DashboardStats as _DashboardStats, LabelEntityId as _LabelEntityId, MemberId as _MemberId, Membership as _Membership, MembershipProfile as _MembershipProfile, MembershipTier as _MembershipTier, ProjectStatus as _ProjectStatus, PublishingId as _PublishingId, RecodingId as _RecodingId, SignedInUser as _SignedInUser, T as _T, Time as _Time, UserApprovalInfo as _UserApprovalInfo, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
     async _caffeineStorageBlobIsLive(arg0: Uint8Array): Promise<boolean> {
@@ -438,20 +331,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async addPublishingWorkNotes(arg0: string, arg1: string): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.addPublishingWorkNotes(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.addPublishingWorkNotes(arg0, arg1);
-            return result;
-        }
-    }
     async assignCallerUserRole(arg0: Principal, arg1: UserRole): Promise<void> {
         if (this.processError) {
             try {
@@ -463,37 +342,6 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.assignCallerUserRole(arg0, to_candid_UserRole_n8(this._uploadFile, this._downloadFile, arg1));
-            return result;
-        }
-    }
-    async assignReleaseOwners(arg0: LabelEntityId, arg1: Array<string>): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.assignReleaseOwners(arg0, arg1);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.assignReleaseOwners(arg0, arg1);
-            return result;
-        }
-    }
-    async bulkDeleteArtistDevelopment(arg0: Array<ArtistDevelopmentId>): Promise<{
-        deleted: Array<ArtistDevelopmentId>;
-        failed: Array<ArtistDevelopmentId>;
-    }> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.bulkDeleteArtistDevelopment(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.bulkDeleteArtistDevelopment(arg0);
             return result;
         }
     }
@@ -514,71 +362,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async bulkDeletePublishingWorks(arg0: Array<PublishingId>): Promise<{
-        deleted: Array<PublishingId>;
-        failed: Array<PublishingId>;
-    }> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.bulkDeletePublishingWorks(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.bulkDeletePublishingWorks(arg0);
-            return result;
-        }
-    }
-    async bulkDeleteRecordingProjects(arg0: Array<RecodingId>): Promise<{
-        deleted: Array<RecodingId>;
-        failed: Array<RecodingId>;
-    }> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.bulkDeleteRecordingProjects(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.bulkDeleteRecordingProjects(arg0);
-            return result;
-        }
-    }
-    async bulkDeleteReleases(arg0: Array<LabelEntityId>): Promise<{
-        deleted: Array<LabelEntityId>;
-        failed: Array<LabelEntityId>;
-    }> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.bulkDeleteReleases(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.bulkDeleteReleases(arg0);
-            return result;
-        }
-    }
-    async createArtistDevelopment(arg0: string, arg1: Array<string>, arg2: Array<string>, arg3: Array<string>, arg4: string): Promise<ArtistDevelopment> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.createArtistDevelopment(arg0, arg1, arg2, arg3, arg4);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.createArtistDevelopment(arg0, arg1, arg2, arg3, arg4);
-            return result;
-        }
-    }
     async createMembershipProfile(arg0: MemberId, arg1: string, arg2: string): Promise<MembershipProfile> {
         if (this.processError) {
             try {
@@ -593,318 +376,130 @@ export class Backend implements backendInterface {
             return from_candid_MembershipProfile_n10(this._uploadFile, this._downloadFile, result);
         }
     }
-    async createPublishingWork(arg0: string, arg1: Array<string>, arg2: Array<[string, bigint]>, arg3: string | null, arg4: string | null, arg5: string): Promise<PublishingWork> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.createPublishingWork(arg0, arg1, arg2, to_candid_opt_n14(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n14(this._uploadFile, this._downloadFile, arg4), arg5);
-                return from_candid_PublishingWork_n15(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.createPublishingWork(arg0, arg1, arg2, to_candid_opt_n14(this._uploadFile, this._downloadFile, arg3), to_candid_opt_n14(this._uploadFile, this._downloadFile, arg4), arg5);
-            return from_candid_PublishingWork_n15(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async createRecordingProject(arg0: string, arg1: Array<string>, arg2: Time, arg3: ProjectStatus, arg4: string): Promise<RecordingProject> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.createRecordingProject(arg0, arg1, arg2, to_candid_ProjectStatus_n18(this._uploadFile, this._downloadFile, arg3), arg4);
-                return from_candid_RecordingProject_n20(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.createRecordingProject(arg0, arg1, arg2, to_candid_ProjectStatus_n18(this._uploadFile, this._downloadFile, arg3), arg4);
-            return from_candid_RecordingProject_n20(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async createRelease(arg0: string, arg1: string, arg2: Array<string>, arg3: Array<string>, arg4: Array<string>): Promise<Release> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.createRelease(arg0, arg1, arg2, arg3, arg4);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.createRelease(arg0, arg1, arg2, arg3, arg4);
-            return result;
-        }
-    }
-    async duplicateArtistDevelopment(arg0: ArtistDevelopmentId): Promise<ArtistDevelopment> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.duplicateArtistDevelopment(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.duplicateArtistDevelopment(arg0);
-            return result;
-        }
-    }
     async duplicateMembership(arg0: MemberId): Promise<Membership> {
         if (this.processError) {
             try {
                 const result = await this.actor.duplicateMembership(arg0);
-                return from_candid_Membership_n24(this._uploadFile, this._downloadFile, result);
+                return from_candid_Membership_n14(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.duplicateMembership(arg0);
-            return from_candid_Membership_n24(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async duplicatePublishingWork(arg0: PublishingId): Promise<PublishingWork> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.duplicatePublishingWork(arg0);
-                return from_candid_PublishingWork_n15(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.duplicatePublishingWork(arg0);
-            return from_candid_PublishingWork_n15(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async duplicateRecordingProject(arg0: RecodingId): Promise<RecordingProject> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.duplicateRecordingProject(arg0);
-                return from_candid_RecordingProject_n20(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.duplicateRecordingProject(arg0);
-            return from_candid_RecordingProject_n20(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async duplicateRelease(arg0: LabelEntityId): Promise<Release> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.duplicateRelease(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.duplicateRelease(arg0);
-            return result;
-        }
-    }
-    async getAllArtistDevelopment(): Promise<Array<ArtistDevelopment>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAllArtistDevelopment();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAllArtistDevelopment();
-            return result;
+            return from_candid_Membership_n14(this._uploadFile, this._downloadFile, result);
         }
     }
     async getAllKnownUsers(): Promise<Array<SignedInUser>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllKnownUsers();
-                return from_candid_vec_n26(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAllKnownUsers();
-            return from_candid_vec_n26(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n16(this._uploadFile, this._downloadFile, result);
         }
     }
     async getAllMembershipProfiles(): Promise<Array<MembershipProfile>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getAllMembershipProfiles();
-                return from_candid_vec_n32(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n22(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getAllMembershipProfiles();
-            return from_candid_vec_n32(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getAllPublishingWorks(): Promise<Array<PublishingWork>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAllPublishingWorks();
-                return from_candid_vec_n33(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAllPublishingWorks();
-            return from_candid_vec_n33(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getAllRecordingProjects(): Promise<Array<RecordingProject>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAllRecordingProjects();
-                return from_candid_vec_n34(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAllRecordingProjects();
-            return from_candid_vec_n34(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getAllReleases(): Promise<Array<Release>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getAllReleases();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getAllReleases();
-            return result;
-        }
-    }
-    async getArtistDevelopment(arg0: ArtistDevelopmentId): Promise<ArtistDevelopment> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getArtistDevelopment(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getArtistDevelopment(arg0);
-            return result;
-        }
-    }
-    async getArtistDevelopmentByGoals(): Promise<Array<ByGoals>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getArtistDevelopmentByGoals();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getArtistDevelopmentByGoals();
-            return result;
+            return from_candid_vec_n22(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerMemberships(): Promise<Array<Membership>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerMemberships();
-                return from_candid_vec_n35(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n23(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerMemberships();
-            return from_candid_vec_n35(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n23(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserProfile(): Promise<UserProfile | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserProfile();
-                return from_candid_opt_n31(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserProfile();
-            return from_candid_opt_n31(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
         }
     }
     async getCallerUserRole(): Promise<UserRole> {
         if (this.processError) {
             try {
                 const result = await this.actor.getCallerUserRole();
-                return from_candid_UserRole_n29(this._uploadFile, this._downloadFile, result);
+                return from_candid_UserRole_n19(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getCallerUserRole();
-            return from_candid_UserRole_n29(this._uploadFile, this._downloadFile, result);
+            return from_candid_UserRole_n19(this._uploadFile, this._downloadFile, result);
         }
     }
     async getChangeHistory(arg0: string): Promise<Array<ChangeEvent>> {
         if (this.processError) {
             try {
                 const result = await this.actor.getChangeHistory(arg0);
-                return from_candid_vec_n36(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n24(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getChangeHistory(arg0);
-            return from_candid_vec_n36(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n24(this._uploadFile, this._downloadFile, result);
         }
     }
-    async getEntitiesForCaller(): Promise<{
-        recordingProjects: Array<RecordingProject>;
-        artistDevelopment: Array<ArtistDevelopment>;
-        publishingWorks: Array<PublishingWork>;
-        releases: Array<Release>;
-        memberships: Array<[MemberId, Membership]>;
-    }> {
+    async getDashboardStats(): Promise<DashboardStats> {
         if (this.processError) {
             try {
-                const result = await this.actor.getEntitiesForCaller();
-                return from_candid_record_n40(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.getDashboardStats();
+                return from_candid_DashboardStats_n28(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getEntitiesForCaller();
-            return from_candid_record_n40(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor.getDashboardStats();
+            return from_candid_DashboardStats_n28(this._uploadFile, this._downloadFile, result);
         }
     }
     async getMembershipDetails(arg0: MemberId): Promise<Membership> {
         if (this.processError) {
             try {
                 const result = await this.actor.getMembershipDetails(arg0);
-                return from_candid_Membership_n24(this._uploadFile, this._downloadFile, result);
+                return from_candid_Membership_n14(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getMembershipDetails(arg0);
-            return from_candid_Membership_n24(this._uploadFile, this._downloadFile, result);
+            return from_candid_Membership_n14(this._uploadFile, this._downloadFile, result);
         }
     }
     async getMembershipProfile(arg0: MemberId): Promise<MembershipProfile> {
@@ -924,57 +519,15 @@ export class Backend implements backendInterface {
     async getMembershipProfilesByStatus(arg0: T): Promise<Array<MembershipProfile>> {
         if (this.processError) {
             try {
-                const result = await this.actor.getMembershipProfilesByStatus(to_candid_T_n43(this._uploadFile, this._downloadFile, arg0));
-                return from_candid_vec_n32(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor.getMembershipProfilesByStatus(to_candid_T_n36(this._uploadFile, this._downloadFile, arg0));
+                return from_candid_vec_n22(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.getMembershipProfilesByStatus(to_candid_T_n43(this._uploadFile, this._downloadFile, arg0));
-            return from_candid_vec_n32(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getPublishingWork(arg0: string): Promise<PublishingWork> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getPublishingWork(arg0);
-                return from_candid_PublishingWork_n15(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getPublishingWork(arg0);
-            return from_candid_PublishingWork_n15(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getRecordingProject(arg0: RecodingId): Promise<RecordingProject> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getRecordingProject(arg0);
-                return from_candid_RecordingProject_n20(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getRecordingProject(arg0);
-            return from_candid_RecordingProject_n20(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async getRelease(arg0: LabelEntityId): Promise<Release> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getRelease(arg0);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getRelease(arg0);
-            return result;
+            const result = await this.actor.getMembershipProfilesByStatus(to_candid_T_n36(this._uploadFile, this._downloadFile, arg0));
+            return from_candid_vec_n22(this._uploadFile, this._downloadFile, result);
         }
     }
     async getRemainingRolloutSteps(): Promise<Array<[string, string]>> {
@@ -995,14 +548,14 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getUserProfile(arg0);
-                return from_candid_opt_n31(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getUserProfile(arg0);
-            return from_candid_opt_n31(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n21(this._uploadFile, this._downloadFile, result);
         }
     }
     async isCallerAdmin(): Promise<boolean> {
@@ -1033,74 +586,18 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async linkMembershipToEntities(arg0: MemberId, arg1: Array<ArtistDevelopmentId>, arg2: Array<PublishingId>, arg3: Array<LabelEntityId>, arg4: Array<RecodingId>): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.linkMembershipToEntities(arg0, arg1, arg2, arg3, arg4);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.linkMembershipToEntities(arg0, arg1, arg2, arg3, arg4);
-            return result;
-        }
-    }
-    async linkProjectToEntities(arg0: RecodingId, arg1: Array<MemberId>, arg2: Array<ArtistDevelopmentId>, arg3: Array<PublishingId>, arg4: Array<LabelEntityId>): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.linkProjectToEntities(arg0, arg1, arg2, arg3, arg4);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.linkProjectToEntities(arg0, arg1, arg2, arg3, arg4);
-            return result;
-        }
-    }
-    async linkPublishingWorkToEntities(arg0: PublishingId, arg1: Array<MemberId>, arg2: Array<ArtistDevelopmentId>, arg3: Array<LabelEntityId>, arg4: Array<RecodingId>): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.linkPublishingWorkToEntities(arg0, arg1, arg2, arg3, arg4);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.linkPublishingWorkToEntities(arg0, arg1, arg2, arg3, arg4);
-            return result;
-        }
-    }
-    async linkReleaseToEntities(arg0: LabelEntityId, arg1: Array<MemberId>, arg2: Array<ArtistDevelopmentId>, arg3: Array<PublishingId>, arg4: Array<RecodingId>): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.linkReleaseToEntities(arg0, arg1, arg2, arg3, arg4);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.linkReleaseToEntities(arg0, arg1, arg2, arg3, arg4);
-            return result;
-        }
-    }
     async listApprovals(): Promise<Array<UserApprovalInfo>> {
         if (this.processError) {
             try {
                 const result = await this.actor.listApprovals();
-                return from_candid_vec_n45(this._uploadFile, this._downloadFile, result);
+                return from_candid_vec_n38(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.listApprovals();
-            return from_candid_vec_n45(this._uploadFile, this._downloadFile, result);
+            return from_candid_vec_n38(this._uploadFile, this._downloadFile, result);
         }
     }
     async requestApproval(): Promise<void> {
@@ -1134,42 +631,14 @@ export class Backend implements backendInterface {
     async setApproval(arg0: Principal, arg1: ApprovalStatus): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor.setApproval(arg0, to_candid_ApprovalStatus_n50(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.setApproval(arg0, to_candid_ApprovalStatus_n43(this._uploadFile, this._downloadFile, arg1));
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.setApproval(arg0, to_candid_ApprovalStatus_n50(this._uploadFile, this._downloadFile, arg1));
-            return result;
-        }
-    }
-    async updateArtistDevelopment(arg0: ArtistDevelopmentId, arg1: Array<string>, arg2: Array<string>, arg3: Array<string>, arg4: string): Promise<ArtistDevelopment> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updateArtistDevelopment(arg0, arg1, arg2, arg3, arg4);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updateArtistDevelopment(arg0, arg1, arg2, arg3, arg4);
-            return result;
-        }
-    }
-    async updateArtistDevelopmentLinks(arg0: ArtistDevelopmentId, arg1: Array<MemberId>, arg2: Array<PublishingId>, arg3: Array<LabelEntityId>, arg4: Array<RecodingId>, arg5: Array<ArtistDevelopmentId>): Promise<void> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updateArtistDevelopmentLinks(arg0, arg1, arg2, arg3, arg4, arg5);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updateArtistDevelopmentLinks(arg0, arg1, arg2, arg3, arg4, arg5);
+            const result = await this.actor.setApproval(arg0, to_candid_ApprovalStatus_n43(this._uploadFile, this._downloadFile, arg1));
             return result;
         }
     }
@@ -1190,14 +659,14 @@ export class Backend implements backendInterface {
     async updateMembership(arg0: MemberId, arg1: string, arg2: string, arg3: T): Promise<MembershipProfile> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateMembership(arg0, arg1, arg2, to_candid_T_n43(this._uploadFile, this._downloadFile, arg3));
+                const result = await this.actor.updateMembership(arg0, arg1, arg2, to_candid_T_n36(this._uploadFile, this._downloadFile, arg3));
                 return from_candid_MembershipProfile_n10(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateMembership(arg0, arg1, arg2, to_candid_T_n43(this._uploadFile, this._downloadFile, arg3));
+            const result = await this.actor.updateMembership(arg0, arg1, arg2, to_candid_T_n36(this._uploadFile, this._downloadFile, arg3));
             return from_candid_MembershipProfile_n10(this._uploadFile, this._downloadFile, result);
         }
     }
@@ -1232,100 +701,52 @@ export class Backend implements backendInterface {
     async updateMembershipStatus(arg0: MemberId, arg1: T): Promise<MembershipProfile> {
         if (this.processError) {
             try {
-                const result = await this.actor.updateMembershipStatus(arg0, to_candid_T_n43(this._uploadFile, this._downloadFile, arg1));
+                const result = await this.actor.updateMembershipStatus(arg0, to_candid_T_n36(this._uploadFile, this._downloadFile, arg1));
                 return from_candid_MembershipProfile_n10(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor.updateMembershipStatus(arg0, to_candid_T_n43(this._uploadFile, this._downloadFile, arg1));
+            const result = await this.actor.updateMembershipStatus(arg0, to_candid_T_n36(this._uploadFile, this._downloadFile, arg1));
             return from_candid_MembershipProfile_n10(this._uploadFile, this._downloadFile, result);
         }
     }
-    async updatePublishingWork(arg0: string, arg1: string, arg2: string, arg3: Array<string>, arg4: Array<[string, bigint]>, arg5: string): Promise<PublishingWork> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updatePublishingWork(arg0, arg1, arg2, arg3, arg4, arg5);
-                return from_candid_PublishingWork_n15(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updatePublishingWork(arg0, arg1, arg2, arg3, arg4, arg5);
-            return from_candid_PublishingWork_n15(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async updateRecordingProject(arg0: RecodingId, arg1: string, arg2: Array<string>, arg3: Time, arg4: ProjectStatus, arg5: string): Promise<RecordingProject> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updateRecordingProject(arg0, arg1, arg2, arg3, to_candid_ProjectStatus_n18(this._uploadFile, this._downloadFile, arg4), arg5);
-                return from_candid_RecordingProject_n20(this._uploadFile, this._downloadFile, result);
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updateRecordingProject(arg0, arg1, arg2, arg3, to_candid_ProjectStatus_n18(this._uploadFile, this._downloadFile, arg4), arg5);
-            return from_candid_RecordingProject_n20(this._uploadFile, this._downloadFile, result);
-        }
-    }
-    async updateRelease(arg0: LabelEntityId, arg1: string, arg2: string, arg3: Array<string>, arg4: Array<string>, arg5: Array<string>): Promise<Release> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.updateRelease(arg0, arg1, arg2, arg3, arg4, arg5);
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.updateRelease(arg0, arg1, arg2, arg3, arg4, arg5);
-            return result;
-        }
-    }
 }
-function from_candid_ApprovalStatus_n48(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ApprovalStatus): ApprovalStatus {
-    return from_candid_variant_n49(_uploadFile, _downloadFile, value);
+function from_candid_ApprovalStatus_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ApprovalStatus): ApprovalStatus {
+    return from_candid_variant_n42(_uploadFile, _downloadFile, value);
 }
-function from_candid_ChangeEvent_n37(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ChangeEvent): ChangeEvent {
-    return from_candid_record_n38(_uploadFile, _downloadFile, value);
+function from_candid_ChangeEvent_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ChangeEvent): ChangeEvent {
+    return from_candid_record_n26(_uploadFile, _downloadFile, value);
+}
+function from_candid_DashboardStats_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _DashboardStats): DashboardStats {
+    return from_candid_record_n29(_uploadFile, _downloadFile, value);
 }
 function from_candid_MembershipProfile_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _MembershipProfile): MembershipProfile {
     return from_candid_record_n11(_uploadFile, _downloadFile, value);
 }
-function from_candid_Membership_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Membership): Membership {
-    return from_candid_record_n25(_uploadFile, _downloadFile, value);
+function from_candid_Membership_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _Membership): Membership {
+    return from_candid_record_n15(_uploadFile, _downloadFile, value);
 }
-function from_candid_ProjectStatus_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ProjectStatus): ProjectStatus {
-    return from_candid_variant_n23(_uploadFile, _downloadFile, value);
+function from_candid_ProjectStatus_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ProjectStatus): ProjectStatus {
+    return from_candid_variant_n35(_uploadFile, _downloadFile, value);
 }
-function from_candid_PublishingWork_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _PublishingWork): PublishingWork {
-    return from_candid_record_n16(_uploadFile, _downloadFile, value);
-}
-function from_candid_RecordingProject_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _RecordingProject): RecordingProject {
-    return from_candid_record_n21(_uploadFile, _downloadFile, value);
-}
-function from_candid_SignedInUser_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SignedInUser): SignedInUser {
-    return from_candid_record_n28(_uploadFile, _downloadFile, value);
+function from_candid_SignedInUser_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _SignedInUser): SignedInUser {
+    return from_candid_record_n18(_uploadFile, _downloadFile, value);
 }
 function from_candid_T_n12(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _T): T {
     return from_candid_variant_n13(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserApprovalInfo_n46(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserApprovalInfo): UserApprovalInfo {
-    return from_candid_record_n47(_uploadFile, _downloadFile, value);
+function from_candid_UserApprovalInfo_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserApprovalInfo): UserApprovalInfo {
+    return from_candid_record_n40(_uploadFile, _downloadFile, value);
 }
-function from_candid_UserRole_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
-    return from_candid_variant_n30(_uploadFile, _downloadFile, value);
+function from_candid_UserRole_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
+    return from_candid_variant_n20(_uploadFile, _downloadFile, value);
 }
 function from_candid__CaffeineStorageRefillResult_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: __CaffeineStorageRefillResult): _CaffeineStorageRefillResult {
     return from_candid_record_n5(_uploadFile, _downloadFile, value);
 }
-function from_candid_opt_n17(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
-    return value.length === 0 ? null : value[0];
-}
-function from_candid_opt_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+function from_candid_opt_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
     return value.length === 0 ? null : value[0];
 }
 function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [boolean]): boolean | null {
@@ -1370,100 +791,7 @@ function from_candid_record_n11(_uploadFile: (file: ExternalBlob) => Promise<Uin
         notes: value.notes
     };
 }
-function from_candid_record_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    id: _PublishingId;
-    title: string;
-    ownershipSplits: Array<[string, bigint]>;
-    linkedProjects: Array<_RecodingId>;
-    owner: Principal;
-    isrc: [] | [string];
-    iswc: [] | [string];
-    created_at: _Time;
-    linkedReleases: Array<_LabelEntityId>;
-    linkedMembers: Array<_MemberId>;
-    notes: string;
-    registrationStatus: string;
-    contributors: Array<string>;
-    linkedArtists: Array<_ArtistDevelopmentId>;
-}): {
-    id: PublishingId;
-    title: string;
-    ownershipSplits: Array<[string, bigint]>;
-    linkedProjects: Array<RecodingId>;
-    owner: Principal;
-    isrc?: string;
-    iswc?: string;
-    created_at: Time;
-    linkedReleases: Array<LabelEntityId>;
-    linkedMembers: Array<MemberId>;
-    notes: string;
-    registrationStatus: string;
-    contributors: Array<string>;
-    linkedArtists: Array<ArtistDevelopmentId>;
-} {
-    return {
-        id: value.id,
-        title: value.title,
-        ownershipSplits: value.ownershipSplits,
-        linkedProjects: value.linkedProjects,
-        owner: value.owner,
-        isrc: record_opt_to_undefined(from_candid_opt_n17(_uploadFile, _downloadFile, value.isrc)),
-        iswc: record_opt_to_undefined(from_candid_opt_n17(_uploadFile, _downloadFile, value.iswc)),
-        created_at: value.created_at,
-        linkedReleases: value.linkedReleases,
-        linkedMembers: value.linkedMembers,
-        notes: value.notes,
-        registrationStatus: value.registrationStatus,
-        contributors: value.contributors,
-        linkedArtists: value.linkedArtists
-    };
-}
-function from_candid_record_n21(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    id: _RecodingId;
-    status: _ProjectStatus;
-    title: string;
-    participants: Array<string>;
-    sessionDate: _Time;
-    owner: Principal;
-    created_at: _Time;
-    linkedReleases: Array<_LabelEntityId>;
-    linkedWorks: Array<_PublishingId>;
-    assetReferences: Array<string>;
-    linkedMembers: Array<_MemberId>;
-    notes: string;
-    linkedArtists: Array<_ArtistDevelopmentId>;
-}): {
-    id: RecodingId;
-    status: ProjectStatus;
-    title: string;
-    participants: Array<string>;
-    sessionDate: Time;
-    owner: Principal;
-    created_at: Time;
-    linkedReleases: Array<LabelEntityId>;
-    linkedWorks: Array<PublishingId>;
-    assetReferences: Array<string>;
-    linkedMembers: Array<MemberId>;
-    notes: string;
-    linkedArtists: Array<ArtistDevelopmentId>;
-} {
-    return {
-        id: value.id,
-        status: from_candid_ProjectStatus_n22(_uploadFile, _downloadFile, value.status),
-        title: value.title,
-        participants: value.participants,
-        sessionDate: value.sessionDate,
-        owner: value.owner,
-        created_at: value.created_at,
-        linkedReleases: value.linkedReleases,
-        linkedWorks: value.linkedWorks,
-        assetReferences: value.assetReferences,
-        linkedMembers: value.linkedMembers,
-        notes: value.notes,
-        linkedArtists: value.linkedArtists
-    };
-}
-function from_candid_record_n25(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     linkedProjects: Array<_RecodingId>;
     tier: _MembershipTier;
     linkedReleases: Array<_LabelEntityId>;
@@ -1487,7 +815,7 @@ function from_candid_record_n25(_uploadFile: (file: ExternalBlob) => Promise<Uin
         profile: from_candid_MembershipProfile_n10(_uploadFile, _downloadFile, value.profile)
     };
 }
-function from_candid_record_n28(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     principal: Principal;
     role: _UserRole;
     profile: [] | [_UserProfile];
@@ -1498,11 +826,11 @@ function from_candid_record_n28(_uploadFile: (file: ExternalBlob) => Promise<Uin
 } {
     return {
         principal: value.principal,
-        role: from_candid_UserRole_n29(_uploadFile, _downloadFile, value.role),
-        profile: record_opt_to_undefined(from_candid_opt_n31(_uploadFile, _downloadFile, value.profile))
+        role: from_candid_UserRole_n19(_uploadFile, _downloadFile, value.role),
+        profile: record_opt_to_undefined(from_candid_opt_n21(_uploadFile, _downloadFile, value.profile))
     };
 }
-function from_candid_record_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     id: bigint;
     operationType: {
         link: null;
@@ -1525,35 +853,44 @@ function from_candid_record_n38(_uploadFile: (file: ExternalBlob) => Promise<Uin
 } {
     return {
         id: value.id,
-        operationType: from_candid_variant_n39(_uploadFile, _downloadFile, value.operationType),
+        operationType: from_candid_variant_n27(_uploadFile, _downloadFile, value.operationType),
         author: value.author,
         changedFields: value.changedFields,
         timestamp: value.timestamp,
         recordId: value.recordId
     };
 }
-function from_candid_record_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    recordingProjects: Array<_RecordingProject>;
-    artistDevelopment: Array<_ArtistDevelopment>;
-    publishingWorks: Array<_PublishingWork>;
-    releases: Array<_Release>;
-    memberships: Array<[_MemberId, _Membership]>;
+function from_candid_record_n29(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    totalMemberships: bigint;
+    membershipStatusCounts: Array<[_T, bigint]>;
+    totalRecordingProjects: bigint;
+    projectStatusCounts: Array<[_ProjectStatus, bigint]>;
+    totalPublishingWorks: bigint;
+    totalArtistDevelopment: bigint;
+    releaseTypeCounts: Array<[string, bigint]>;
+    totalReleases: bigint;
 }): {
-    recordingProjects: Array<RecordingProject>;
-    artistDevelopment: Array<ArtistDevelopment>;
-    publishingWorks: Array<PublishingWork>;
-    releases: Array<Release>;
-    memberships: Array<[MemberId, Membership]>;
+    totalMemberships: bigint;
+    membershipStatusCounts: Array<[T, bigint]>;
+    totalRecordingProjects: bigint;
+    projectStatusCounts: Array<[ProjectStatus, bigint]>;
+    totalPublishingWorks: bigint;
+    totalArtistDevelopment: bigint;
+    releaseTypeCounts: Array<[string, bigint]>;
+    totalReleases: bigint;
 } {
     return {
-        recordingProjects: from_candid_vec_n34(_uploadFile, _downloadFile, value.recordingProjects),
-        artistDevelopment: value.artistDevelopment,
-        publishingWorks: from_candid_vec_n33(_uploadFile, _downloadFile, value.publishingWorks),
-        releases: value.releases,
-        memberships: from_candid_vec_n41(_uploadFile, _downloadFile, value.memberships)
+        totalMemberships: value.totalMemberships,
+        membershipStatusCounts: from_candid_vec_n30(_uploadFile, _downloadFile, value.membershipStatusCounts),
+        totalRecordingProjects: value.totalRecordingProjects,
+        projectStatusCounts: from_candid_vec_n32(_uploadFile, _downloadFile, value.projectStatusCounts),
+        totalPublishingWorks: value.totalPublishingWorks,
+        totalArtistDevelopment: value.totalArtistDevelopment,
+        releaseTypeCounts: value.releaseTypeCounts,
+        totalReleases: value.totalReleases
     };
 }
-function from_candid_record_n47(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_record_n40(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     status: _ApprovalStatus;
     principal: Principal;
 }): {
@@ -1561,7 +898,7 @@ function from_candid_record_n47(_uploadFile: (file: ExternalBlob) => Promise<Uin
     principal: Principal;
 } {
     return {
-        status: from_candid_ApprovalStatus_n48(_uploadFile, _downloadFile, value.status),
+        status: from_candid_ApprovalStatus_n41(_uploadFile, _downloadFile, value.status),
         principal: value.principal
     };
 }
@@ -1577,10 +914,16 @@ function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint
         topped_up_amount: record_opt_to_undefined(from_candid_opt_n7(_uploadFile, _downloadFile, value.topped_up_amount))
     };
 }
-function from_candid_tuple_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [_MemberId, _Membership]): [MemberId, Membership] {
+function from_candid_tuple_n31(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [_T, bigint]): [T, bigint] {
     return [
-        value[0],
-        from_candid_Membership_n24(_uploadFile, _downloadFile, value[1])
+        from_candid_T_n12(_uploadFile, _downloadFile, value[0]),
+        value[1]
+    ];
+}
+function from_candid_tuple_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [_ProjectStatus, bigint]): [ProjectStatus, bigint] {
+    return [
+        from_candid_ProjectStatus_n34(_uploadFile, _downloadFile, value[0]),
+        value[1]
     ];
 }
 function from_candid_variant_n13(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -1594,7 +937,25 @@ function from_candid_variant_n13(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): T {
     return "applicant" in value ? T.applicant : "active" in value ? T.active : "inactive" in value ? T.inactive : "paused" in value ? T.paused : value;
 }
-function from_candid_variant_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n20(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    admin: null;
+} | {
+    user: null;
+} | {
+    guest: null;
+}): UserRole {
+    return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
+}
+function from_candid_variant_n27(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+    link: null;
+} | {
+    create: null;
+} | {
+    update: null;
+}): Variant_link_create_update {
+    return "link" in value ? Variant_link_create_update.link : "create" in value ? Variant_link_create_update.create : "update" in value ? Variant_link_create_update.update : value;
+}
+function from_candid_variant_n35(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     in_progress: null;
 } | {
     completed: null;
@@ -1605,25 +966,7 @@ function from_candid_variant_n23(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): ProjectStatus {
     return "in_progress" in value ? ProjectStatus.in_progress : "completed" in value ? ProjectStatus.completed : "planned" in value ? ProjectStatus.planned : "archived" in value ? ProjectStatus.archived : value;
 }
-function from_candid_variant_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    admin: null;
-} | {
-    user: null;
-} | {
-    guest: null;
-}): UserRole {
-    return "admin" in value ? UserRole.admin : "user" in value ? UserRole.user : "guest" in value ? UserRole.guest : value;
-}
-function from_candid_variant_n39(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
-    link: null;
-} | {
-    create: null;
-} | {
-    update: null;
-}): Variant_link_create_update {
-    return "link" in value ? Variant_link_create_update.link : "create" in value ? Variant_link_create_update.create : "update" in value ? Variant_link_create_update.update : value;
-}
-function from_candid_variant_n49(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
+function from_candid_variant_n42(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     pending: null;
 } | {
     approved: null;
@@ -1632,38 +975,32 @@ function from_candid_variant_n49(_uploadFile: (file: ExternalBlob) => Promise<Ui
 }): ApprovalStatus {
     return "pending" in value ? ApprovalStatus.pending : "approved" in value ? ApprovalStatus.approved : "rejected" in value ? ApprovalStatus.rejected : value;
 }
-function from_candid_vec_n26(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_SignedInUser>): Array<SignedInUser> {
-    return value.map((x)=>from_candid_SignedInUser_n27(_uploadFile, _downloadFile, x));
+function from_candid_vec_n16(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_SignedInUser>): Array<SignedInUser> {
+    return value.map((x)=>from_candid_SignedInUser_n17(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_MembershipProfile>): Array<MembershipProfile> {
+function from_candid_vec_n22(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_MembershipProfile>): Array<MembershipProfile> {
     return value.map((x)=>from_candid_MembershipProfile_n10(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n33(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_PublishingWork>): Array<PublishingWork> {
-    return value.map((x)=>from_candid_PublishingWork_n15(_uploadFile, _downloadFile, x));
+function from_candid_vec_n23(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Membership>): Array<Membership> {
+    return value.map((x)=>from_candid_Membership_n14(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n34(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_RecordingProject>): Array<RecordingProject> {
-    return value.map((x)=>from_candid_RecordingProject_n20(_uploadFile, _downloadFile, x));
+function from_candid_vec_n24(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ChangeEvent>): Array<ChangeEvent> {
+    return value.map((x)=>from_candid_ChangeEvent_n25(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n35(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_Membership>): Array<Membership> {
-    return value.map((x)=>from_candid_Membership_n24(_uploadFile, _downloadFile, x));
+function from_candid_vec_n30(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<[_T, bigint]>): Array<[T, bigint]> {
+    return value.map((x)=>from_candid_tuple_n31(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_ChangeEvent>): Array<ChangeEvent> {
-    return value.map((x)=>from_candid_ChangeEvent_n37(_uploadFile, _downloadFile, x));
+function from_candid_vec_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<[_ProjectStatus, bigint]>): Array<[ProjectStatus, bigint]> {
+    return value.map((x)=>from_candid_tuple_n33(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n41(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<[_MemberId, _Membership]>): Array<[MemberId, Membership]> {
-    return value.map((x)=>from_candid_tuple_n42(_uploadFile, _downloadFile, x));
+function from_candid_vec_n38(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_UserApprovalInfo>): Array<UserApprovalInfo> {
+    return value.map((x)=>from_candid_UserApprovalInfo_n39(_uploadFile, _downloadFile, x));
 }
-function from_candid_vec_n45(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Array<_UserApprovalInfo>): Array<UserApprovalInfo> {
-    return value.map((x)=>from_candid_UserApprovalInfo_n46(_uploadFile, _downloadFile, x));
-}
-function to_candid_ApprovalStatus_n50(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ApprovalStatus): _ApprovalStatus {
-    return to_candid_variant_n51(_uploadFile, _downloadFile, value);
-}
-function to_candid_ProjectStatus_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ProjectStatus): _ProjectStatus {
-    return to_candid_variant_n19(_uploadFile, _downloadFile, value);
-}
-function to_candid_T_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: T): _T {
+function to_candid_ApprovalStatus_n43(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ApprovalStatus): _ApprovalStatus {
     return to_candid_variant_n44(_uploadFile, _downloadFile, value);
+}
+function to_candid_T_n36(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: T): _T {
+    return to_candid_variant_n37(_uploadFile, _downloadFile, value);
 }
 function to_candid_UserRole_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n9(_uploadFile, _downloadFile, value);
@@ -1674,9 +1011,6 @@ function to_candid__CaffeineStorageRefillInformation_n2(_uploadFile: (file: Exte
 function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CaffeineStorageRefillInformation | null): [] | [__CaffeineStorageRefillInformation] {
     return value === null ? candid_none() : candid_some(to_candid__CaffeineStorageRefillInformation_n2(_uploadFile, _downloadFile, value));
 }
-function to_candid_opt_n14(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: string | null): [] | [string] {
-    return value === null ? candid_none() : candid_some(value);
-}
 function to_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     proposed_top_up_amount?: bigint;
 }): {
@@ -1686,26 +1020,7 @@ function to_candid_record_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8A
         proposed_top_up_amount: value.proposed_top_up_amount ? candid_some(value.proposed_top_up_amount) : candid_none()
     };
 }
-function to_candid_variant_n19(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ProjectStatus): {
-    in_progress: null;
-} | {
-    completed: null;
-} | {
-    planned: null;
-} | {
-    archived: null;
-} {
-    return value == ProjectStatus.in_progress ? {
-        in_progress: null
-    } : value == ProjectStatus.completed ? {
-        completed: null
-    } : value == ProjectStatus.planned ? {
-        planned: null
-    } : value == ProjectStatus.archived ? {
-        archived: null
-    } : value;
-}
-function to_candid_variant_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: T): {
+function to_candid_variant_n37(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: T): {
     applicant: null;
 } | {
     active: null;
@@ -1724,7 +1039,7 @@ function to_candid_variant_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint
         paused: null
     } : value;
 }
-function to_candid_variant_n51(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ApprovalStatus): {
+function to_candid_variant_n44(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: ApprovalStatus): {
     pending: null;
 } | {
     approved: null;

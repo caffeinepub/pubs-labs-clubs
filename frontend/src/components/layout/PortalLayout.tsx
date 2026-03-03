@@ -14,9 +14,10 @@ import {
   Shield,
   Settings,
   Menu,
-  X,
   LogOut,
   ChevronRight,
+  Home,
+  Rocket,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -25,9 +26,11 @@ interface NavItem {
   path: string;
   icon: React.ReactNode;
   adminOnly?: boolean;
+  exact?: boolean;
 }
 
 const navItems: NavItem[] = [
+  { label: 'Home', path: '/portal', icon: <Home size={18} />, exact: true },
   { label: 'Memberships', path: '/portal/memberships', icon: <Users size={18} /> },
   { label: 'Publishing Works', path: '/portal/publishing', icon: <Music size={18} /> },
   { label: 'Releases', path: '/portal/releases', icon: <Disc size={18} /> },
@@ -36,6 +39,7 @@ const navItems: NavItem[] = [
   { label: 'Dashboard', path: '/portal/admin', icon: <LayoutDashboard size={18} />, adminOnly: true },
   { label: 'Role Assignment', path: '/portal/admin/roles', icon: <Shield size={18} />, adminOnly: true },
   { label: 'Bootstrap', path: '/portal/admin/bootstrap', icon: <Settings size={18} />, adminOnly: true },
+  { label: 'Rollout Wizard', path: '/portal/admin/rollout-wizard', icon: <Rocket size={18} />, adminOnly: true },
 ];
 
 export default function PortalLayout() {
@@ -62,12 +66,19 @@ export default function PortalLayout() {
 
   const visibleNavItems = navItems.filter(item => !item.adminOnly || isAdmin);
 
+  const isNavItemActive = (item: NavItem): boolean => {
+    if (item.exact) {
+      return currentPath === item.path;
+    }
+    return currentPath === item.path || currentPath.startsWith(item.path + '/');
+  };
+
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="p-6 border-b border-sidebar-border">
         <button
-          onClick={() => navigate({ to: '/' })}
+          onClick={() => navigate({ to: '/portal' })}
           className="flex items-center gap-3 hover:opacity-80 transition-opacity"
         >
           <img src="/assets/generated/higgins-music-logo.dim_512x512.png" alt="Higgins Music" className="w-8 h-8 rounded-full object-cover" />
@@ -81,7 +92,7 @@ export default function PortalLayout() {
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {visibleNavItems.map((item) => {
-          const isActive = currentPath === item.path || currentPath.startsWith(item.path + '/');
+          const isActive = isNavItemActive(item);
           return (
             <button
               key={item.path}

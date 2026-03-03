@@ -11,77 +11,20 @@ export type PublishingId = string;
 export type Time = bigint;
 export type LabelEntityId = string;
 export type MemberId = string;
-export interface ByGoals {
-    id: ArtistDevelopmentId;
-    artistId: string;
-    created_at: Time;
-    goals: string;
-}
-export interface ArtistDevelopment {
-    id: ArtistDevelopmentId;
-    relatedRecordingProjects: Array<RecodingId>;
-    owner: Principal;
-    relatedLabelEntities: Array<LabelEntityId>;
-    artistId: string;
-    created_at: Time;
-    relatedArtistDevelopment: Array<ArtistDevelopmentId>;
-    relatedMemberships: Array<MemberId>;
-    goals: Array<string>;
-    plans: Array<string>;
-    internalNotes: string;
-    relatedPublishing: Array<PublishingId>;
-    milestones: Array<string>;
+export interface DashboardStats {
+    totalMemberships: bigint;
+    membershipStatusCounts: Array<[T, bigint]>;
+    totalRecordingProjects: bigint;
+    projectStatusCounts: Array<[ProjectStatus, bigint]>;
+    totalPublishingWorks: bigint;
+    totalArtistDevelopment: bigint;
+    releaseTypeCounts: Array<[string, bigint]>;
+    totalReleases: bigint;
 }
 export type RecodingId = string;
-export interface RecordingProject {
-    id: RecodingId;
-    status: ProjectStatus;
-    title: string;
-    participants: Array<string>;
-    sessionDate: Time;
-    owner: Principal;
-    created_at: Time;
-    linkedReleases: Array<LabelEntityId>;
-    linkedWorks: Array<PublishingId>;
-    assetReferences: Array<string>;
-    linkedMembers: Array<MemberId>;
-    notes: string;
-    linkedArtists: Array<ArtistDevelopmentId>;
-}
 export interface UserApprovalInfo {
     status: ApprovalStatus;
     principal: Principal;
-}
-export interface PublishingWork {
-    id: PublishingId;
-    title: string;
-    ownershipSplits: Array<[string, bigint]>;
-    linkedProjects: Array<RecodingId>;
-    owner: Principal;
-    isrc?: string;
-    iswc?: string;
-    created_at: Time;
-    linkedReleases: Array<LabelEntityId>;
-    linkedMembers: Array<MemberId>;
-    notes: string;
-    registrationStatus: string;
-    contributors: Array<string>;
-    linkedArtists: Array<ArtistDevelopmentId>;
-}
-export interface Release {
-    id: LabelEntityId;
-    title: string;
-    workflowChecklist: Array<string>;
-    keyDates: Array<string>;
-    owners: Array<string>;
-    linkedProjects: Array<RecodingId>;
-    owner: Principal;
-    tracklist: Array<string>;
-    created_at: Time;
-    linkedWorks: Array<PublishingId>;
-    linkedMembers: Array<MemberId>;
-    linkedArtists: Array<ArtistDevelopmentId>;
-    releaseType: string;
 }
 export type ArtistDevelopmentId = string;
 export interface SignedInUser {
@@ -156,84 +99,34 @@ export enum Variant_link_create_update {
     update = "update"
 }
 export interface backendInterface {
-    addPublishingWorkNotes(id: string, notes: string): Promise<void>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
-    assignReleaseOwners(releaseId: LabelEntityId, owners: Array<string>): Promise<void>;
-    bulkDeleteArtistDevelopment(ids: Array<ArtistDevelopmentId>): Promise<{
-        deleted: Array<ArtistDevelopmentId>;
-        failed: Array<ArtistDevelopmentId>;
-    }>;
     bulkDeleteMembershipProfiles(ids: Array<MemberId>): Promise<{
         deleted: Array<MemberId>;
         failed: Array<MemberId>;
     }>;
-    bulkDeletePublishingWorks(ids: Array<PublishingId>): Promise<{
-        deleted: Array<PublishingId>;
-        failed: Array<PublishingId>;
-    }>;
-    bulkDeleteRecordingProjects(ids: Array<RecodingId>): Promise<{
-        deleted: Array<RecodingId>;
-        failed: Array<RecodingId>;
-    }>;
-    bulkDeleteReleases(ids: Array<LabelEntityId>): Promise<{
-        deleted: Array<LabelEntityId>;
-        failed: Array<LabelEntityId>;
-    }>;
-    createArtistDevelopment(artistId: string, goals: Array<string>, plans: Array<string>, milestones: Array<string>, internalNotes: string): Promise<ArtistDevelopment>;
     createMembershipProfile(id: MemberId, name: string, email: string): Promise<MembershipProfile>;
-    createPublishingWork(title: string, contributors: Array<string>, ownershipSplits: Array<[string, bigint]>, iswc: string | null, isrc: string | null, registrationStatus: string): Promise<PublishingWork>;
-    createRecordingProject(title: string, participants: Array<string>, sessionDate: Time, status: ProjectStatus, notes: string): Promise<RecordingProject>;
-    createRelease(title: string, releaseType: string, tracklist: Array<string>, keyDates: Array<string>, owners: Array<string>): Promise<Release>;
-    duplicateArtistDevelopment(id: ArtistDevelopmentId): Promise<ArtistDevelopment>;
     duplicateMembership(id: MemberId): Promise<Membership>;
-    duplicatePublishingWork(id: PublishingId): Promise<PublishingWork>;
-    duplicateRecordingProject(id: RecodingId): Promise<RecordingProject>;
-    duplicateRelease(id: LabelEntityId): Promise<Release>;
-    getAllArtistDevelopment(): Promise<Array<ArtistDevelopment>>;
     getAllKnownUsers(): Promise<Array<SignedInUser>>;
     getAllMembershipProfiles(): Promise<Array<MembershipProfile>>;
-    getAllPublishingWorks(): Promise<Array<PublishingWork>>;
-    getAllRecordingProjects(): Promise<Array<RecordingProject>>;
-    getAllReleases(): Promise<Array<Release>>;
-    getArtistDevelopment(entryId: ArtistDevelopmentId): Promise<ArtistDevelopment>;
-    getArtistDevelopmentByGoals(): Promise<Array<ByGoals>>;
     getCallerMemberships(): Promise<Array<Membership>>;
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getChangeHistory(recordId: string): Promise<Array<ChangeEvent>>;
-    getEntitiesForCaller(): Promise<{
-        recordingProjects: Array<RecordingProject>;
-        artistDevelopment: Array<ArtistDevelopment>;
-        publishingWorks: Array<PublishingWork>;
-        releases: Array<Release>;
-        memberships: Array<[MemberId, Membership]>;
-    }>;
+    getDashboardStats(): Promise<DashboardStats>;
     getMembershipDetails(id: MemberId): Promise<Membership>;
     getMembershipProfile(id: MemberId): Promise<MembershipProfile>;
     getMembershipProfilesByStatus(status: T): Promise<Array<MembershipProfile>>;
-    getPublishingWork(id: string): Promise<PublishingWork>;
-    getRecordingProject(projectId: RecodingId): Promise<RecordingProject>;
-    getRelease(releaseId: LabelEntityId): Promise<Release>;
     getRemainingRolloutSteps(): Promise<Array<[string, string]>>;
     getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
     isCallerApproved(): Promise<boolean>;
-    linkMembershipToEntities(memberId: MemberId, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, releaseIds: Array<LabelEntityId>, projectIds: Array<RecodingId>): Promise<void>;
-    linkProjectToEntities(projectId: RecodingId, memberIds: Array<MemberId>, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, releaseIds: Array<LabelEntityId>): Promise<void>;
-    linkPublishingWorkToEntities(workId: PublishingId, memberIds: Array<MemberId>, artistIds: Array<ArtistDevelopmentId>, releaseIds: Array<LabelEntityId>, projectIds: Array<RecodingId>): Promise<void>;
-    linkReleaseToEntities(releaseId: LabelEntityId, memberIds: Array<MemberId>, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, projectIds: Array<RecodingId>): Promise<void>;
     listApprovals(): Promise<Array<UserApprovalInfo>>;
     requestApproval(): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setApproval(user: Principal, status: ApprovalStatus): Promise<void>;
-    updateArtistDevelopment(entryId: ArtistDevelopmentId, goals: Array<string>, plans: Array<string>, milestones: Array<string>, internalNotes: string): Promise<ArtistDevelopment>;
-    updateArtistDevelopmentLinks(artistDevelopmentId: ArtistDevelopmentId, relatedMemberships: Array<MemberId>, relatedPublishing: Array<PublishingId>, relatedLabelEntities: Array<LabelEntityId>, relatedRecordingProjects: Array<RecodingId>, relatedArtistDevelopment: Array<ArtistDevelopmentId>): Promise<void>;
     updateKnownUserRole(): Promise<void>;
     updateMembership(id: MemberId, name: string, email: string, status: T): Promise<MembershipProfile>;
     updateMembershipLinks(id: MemberId, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, releaseIds: Array<LabelEntityId>, projectIds: Array<RecodingId>): Promise<void>;
     updateMembershipProfileFields(id: MemberId, name: string, email: string): Promise<MembershipProfile>;
     updateMembershipStatus(id: MemberId, status: T): Promise<MembershipProfile>;
-    updatePublishingWork(id: string, title: string, registrationStatus: string, contributors: Array<string>, ownershipSplits: Array<[string, bigint]>, notes: string): Promise<PublishingWork>;
-    updateRecordingProject(projectId: RecodingId, title: string, participants: Array<string>, sessionDate: Time, status: ProjectStatus, notes: string): Promise<RecordingProject>;
-    updateRelease(releaseId: LabelEntityId, title: string, releaseType: string, tracklist: Array<string>, keyDates: Array<string>, workflowChecklist: Array<string>): Promise<Release>;
 }

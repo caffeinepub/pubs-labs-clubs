@@ -1,118 +1,55 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Higgins Music Hub - Part 2 Section 2 Implementation",
+  "title": "Split Part 5 of the onboarding/rollout flow into two confirmed sub-steps",
   "requirements": [
     {
       "id": "REQ-1",
-      "summary": "Implement Part 2 Section 2 features identified in portalAudit.ts and rollout documentation, continuing the portal build sequence from Part 2 Section 1",
+      "summary": "Split the frontend canister upgrade step (Part 5) into two distinct sub-steps (Part 5a and Part 5b), each with its own screen, description, and confirmation prompt that must be acknowledged before proceeding",
       "acceptanceCriteria": [
-        "All features scoped to Part 2 Section 2 are implemented and functional",
-        "No regressions introduced to features shipped in Part 2 Section 1",
-        "Frontend compiles without TypeScript errors",
-        "Backend Motoko code compiles without errors",
-        "New functionality is accessible through the existing portal routing structure"
+        "Part 5 is divided into exactly two sequential sub-steps (Part 5a and Part 5b).",
+        "Each sub-step displays its own descriptive content explaining what action is about to be performed.",
+        "A confirmation dialog or inline confirmation prompt appears before entering Part 5a, requiring the user to confirm before proceeding.",
+        "A second confirmation dialog or inline confirmation prompt appears before entering Part 5b, requiring the user to confirm before proceeding.",
+        "Users cannot skip either confirmation — the 'Continue' / 'Proceed' action is disabled until confirmation is given.",
+        "The step indicator/progress tracker (if present) reflects the two sub-steps correctly.",
+        "Declining or cancelling a confirmation returns the user to the previous state without advancing."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/utils/portalAudit.ts",
-          "operation": "modify",
-          "description": "Review the current audit findings to identify which features are marked as Part 2 Section 2. Verify the priority levels (high/medium/low) and section assignments for incomplete items. This file serves as the single source of truth for what remains to be built."
-        },
-        {
           "path": "frontend/ROLLOUT_STEPS.md",
           "operation": "modify",
-          "description": "Review the remaining deployment steps to understand the rollout sequence and identify any Part 2 Section 2 scope items. Verify which steps have been completed and which are pending. Update completion status for any Section 2 work as it is implemented."
+          "description": "Update the rollout steps documentation to reflect the split of Part 5 into Part 5a and Part 5b. Each sub-step must have its own numbered section with clear action items and acceptance criteria. Part 5a should cover the preparation phase for the frontend canister upgrade (e.g., verifying build artifacts, confirming deployment readiness). Part 5b should cover the actual frontend canister upgrade execution (e.g., deploying to mainnet, verifying the upgrade). Preserve all existing step content and maintain consistency with the documentation structure used in Steps 1-9.5 and Step 10."
         },
         {
-          "path": "frontend/src/pages/portal/admin/AdminDashboardPage.tsx",
-          "operation": "modify",
-          "description": "If Part 2 Section 2 includes new admin dashboard features or metrics based on the audit findings, implement those additions. Ensure the PortalAuditSummary component continues to reflect accurate completion status for newly implemented sections."
+          "path": "frontend/src/pages/portal/admin/RolloutWizardPage.tsx",
+          "operation": "create",
+          "description": "Create a new admin-only multi-step wizard page component for guiding administrators through the rollout process. This component should render a step indicator showing all rollout steps including the newly split Part 5a and Part 5b. Each step should display descriptive content from ROLLOUT_STEPS.md. Implement navigation controls (Back/Next) that are disabled until the current step's confirmation is acknowledged. For Part 5a and Part 5b specifically, include confirmation checkboxes or radio buttons that must be checked before the Next button becomes enabled. Store wizard state (current step, confirmation status) in React state. Use shadcn/ui components (Card, Button, Checkbox, Alert) for consistent styling. Ensure the wizard is only accessible to admin users."
         },
         {
-          "path": "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-          "operation": "modify",
-          "description": "If Part 2 Section 2 includes membership-related features identified in the audit (e.g., tier management, filtering, or additional fields), implement those capabilities. Ensure all membership CRUD operations remain functional and integrate any new UI components needed."
+          "path": "frontend/src/pages/portal/admin/RolloutConfirmationDialog.tsx",
+          "operation": "create",
+          "description": "Create a reusable confirmation dialog component for rollout step confirmations. Accept props for title, description, confirmationText, onConfirm, and onCancel callbacks. Use shadcn/ui AlertDialog component. Display a checkbox labeled with the confirmationText prop that must be checked before the Confirm button becomes enabled. Include Cancel and Confirm buttons with appropriate styling (Cancel as ghost variant, Confirm as default). Call onCancel if the dialog is closed without confirming. This dialog will be used by RolloutWizardPage for both Part 5a and Part 5b confirmation prompts."
         },
         {
-          "path": "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
+          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Implement any Section 2 enhancements to the membership detail view based on audit findings. This may include additional inline-editable fields, tier selection UI, or agreement management capabilities. Verify related entity linking continues to work after changes."
+          "description": "Add a new route '/portal/admin/rollout-wizard' for the RolloutWizardPage component. Place this route under the admin section alongside existing admin routes like '/portal/admin/dashboard' and '/portal/admin/roles'. Wrap the route with AuthGate to ensure only authenticated users can access it. The route should be registered in the TanStack Router route tree structure following the existing pattern."
         },
         {
-          "path": "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
+          "path": "frontend/src/components/layout/PortalLayout.tsx",
           "operation": "modify",
-          "description": "If Part 2 Section 2 scope includes publishing work enhancements (e.g., advanced filtering, batch operations, or metadata fields), implement those features. Maintain consistency with the existing create/duplicate/bulk-delete patterns."
+          "description": "Add a navigation item for 'Rollout Wizard' in the sidebar navigation array. The item should have icon: Settings, label: 'Rollout Wizard', href: '/portal/admin/rollout-wizard', and adminOnly: true. Position it in the admin section of the navigation array after the existing admin items (Dashboard, Roles, Bootstrap). Ensure the navigation item is filtered based on the user's admin role using the existing isAdmin check."
         },
         {
-          "path": "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
-          "operation": "modify",
-          "description": "Implement any Section 2 enhancements to publishing work detail views identified in the audit. This may include ISWC/ISRC validation, ownership split visualization, or contributor role assignment. Ensure change history tracking continues to function."
+          "path": "frontend/src/types/rollout.ts",
+          "operation": "create",
+          "description": "Define TypeScript types for the rollout wizard state management. Include a RolloutStep interface with fields: id (string), title (string), description (string), requiresConfirmation (boolean), confirmationText (optional string), isCompleted (boolean). Define a RolloutWizardState interface with fields: currentStepIndex (number), steps (RolloutStep[]), confirmations (Map<string, boolean>). Export these types for use in RolloutWizardPage and related components."
         },
         {
-          "path": "frontend/src/pages/portal/label/ReleasesPage.tsx",
-          "operation": "modify",
-          "description": "If Part 2 Section 2 includes label/release features from the audit (e.g., workflow checklist management, distribution status tracking, or release scheduling), implement those capabilities. Ensure the releases table and bulk operations remain functional."
-        },
-        {
-          "path": "frontend/src/pages/portal/label/ReleaseDetail.tsx",
-          "operation": "modify",
-          "description": "Implement any Section 2 enhancements to release detail views based on audit findings. This may include workflow checklist editing, key date management, or owner assignment UI. Verify the tracklist and key dates arrays render and update correctly."
-        },
-        {
-          "path": "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "operation": "modify",
-          "description": "If Part 2 Section 2 scope includes recording project features (e.g., asset reference management, session notes, or advanced status filtering), implement those capabilities. Maintain consistency with existing project creation and management patterns."
-        },
-        {
-          "path": "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
-          "operation": "modify",
-          "description": "Implement any Section 2 enhancements to recording project detail views identified in the audit. This may include asset reference fields, participant role management, or session metadata. Ensure inline editing and related entity linking continue to work."
-        },
-        {
-          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
-          "operation": "modify",
-          "description": "If Part 2 Section 2 includes artist development features from the audit (e.g., milestone tracking, goal filtering, or plan visualization), implement those capabilities. Ensure the artist list table and bulk operations remain functional."
-        },
-        {
-          "path": "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
-          "operation": "modify",
-          "description": "Implement any Section 2 enhancements to artist development detail views based on audit findings. This may include milestone editing UI, goal progress tracking, or plan timeline visualization. Verify goals, plans, and milestones arrays render and update correctly."
-        },
-        {
-          "path": "frontend/src/components/feedback/SectionPlaceholder.tsx",
-          "operation": "modify",
-          "description": "As Part 2 Section 2 features are implemented, remove or update any SectionPlaceholder components that were serving as temporary UI for those features. Ensure the priority-based styling (high/medium/low) accurately reflects remaining unbuilt sections."
-        },
-        {
-          "path": "frontend/src/components/admin/PortalAuditSummary.tsx",
-          "operation": "modify",
-          "description": "Verify the audit summary correctly reflects newly completed Section 2 features. Update the component to filter out or mark completed any audit findings that are resolved by Section 2 work. Ensure the grouped, prioritized display remains accurate."
-        },
-        {
-          "path": "frontend/src/hooks/useQueries.ts",
-          "operation": "modify",
-          "description": "If Part 2 Section 2 introduces new backend queries or mutations (beyond those already defined in the backend interface), add corresponding React Query hooks. Ensure all hooks follow the existing patterns for error handling, caching, and invalidation."
-        },
-        {
-          "path": "frontend/src/components/related/EditRelatedDialog.tsx",
-          "operation": "modify",
-          "description": "If Part 2 Section 2 requires enhancements to the related entity linking dialog (e.g., new entity types, validation rules, or UI improvements), implement those changes. Ensure the dialog continues to support all existing link operations across all five entity types."
-        },
-        {
-          "path": "frontend/src/components/related/RelatedRecordsSection.tsx",
-          "operation": "modify",
-          "description": "If Section 2 introduces new related record types or visualization requirements, update the RelatedRecordsSection component. Maintain the existing badge-based navigation and ensure human-readable label resolution continues to work for non-admin users."
-        },
-        {
-          "path": "frontend/SMOKE_TEST_21_7.md",
-          "operation": "modify",
-          "description": "Update the smoke test checklist to include verification steps for all Part 2 Section 2 features. Add new test cases for any implemented functionality while preserving existing Section 1 test coverage. Document expected outcomes and entity ID requirements."
-        },
-        {
-          "path": "frontend/SMOKE_TEST_21_7_SESSION_LOG.md",
-          "operation": "modify",
-          "description": "Update the session log template to include fields for recording Section 2 feature test results. Add columns or sections for capturing entity IDs, console output, and pass/fail outcomes specific to newly implemented capabilities."
+          "path": "frontend/src/hooks/useRolloutWizard.ts",
+          "operation": "create",
+          "description": "Create a custom React hook for managing rollout wizard state. Export a useRolloutWizard hook that returns: currentStep (RolloutStep), allSteps (RolloutStep[]), canProceed (boolean), goToNextStep (function), goToPreviousStep (function), confirmCurrentStep (function), resetWizard (function). Initialize the steps array with all rollout steps including Part 5a and Part 5b as separate entries. Implement logic to enable/disable navigation based on confirmation status. Use useState for local state management. This hook will be consumed by RolloutWizardPage to manage wizard flow."
         }
       ]
     }

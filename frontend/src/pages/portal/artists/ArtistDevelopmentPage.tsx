@@ -32,8 +32,10 @@ import {
   useBulkDeleteArtistDevelopment,
   useDuplicateArtistDevelopment,
 } from '@/hooks/useQueries';
-import type { ArtistDevelopment } from '../../../backend';
+import type { ArtistDevelopment } from '../../../types/entities';
 import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
+import { useTableSort } from '@/hooks/useTableSort';
+import SortableTableHeader from '@/components/table/SortableTableHeader';
 
 export default function ArtistDevelopmentPage() {
   const navigate = useNavigate();
@@ -61,14 +63,16 @@ export default function ArtistDevelopmentPage() {
     ? (allEntries ?? [])
     : (callerEntities?.artistDevelopment ?? []);
 
-  const allSelected = entries.length > 0 && selectedIds.size === entries.length;
-  const someSelected = selectedIds.size > 0 && selectedIds.size < entries.length;
+  const { sortBy, sortDirection, handleSort, sortedData: sortedEntries } = useTableSort(entries);
+
+  const allSelected = sortedEntries.length > 0 && selectedIds.size === sortedEntries.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < sortedEntries.length;
 
   const handleSelectAll = () => {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(entries.map((e) => e.id)));
+      setSelectedIds(new Set(sortedEntries.map((e) => e.id)));
     }
   };
 
@@ -186,7 +190,7 @@ export default function ArtistDevelopmentPage() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : entries.length === 0 ? (
+      ) : sortedEntries.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <TrendingUp className="h-12 w-12 text-muted-foreground/40 mb-4" />
           <p className="text-muted-foreground text-lg font-medium">No artist development entries yet</p>
@@ -205,18 +209,49 @@ export default function ArtistDevelopmentPage() {
                   <Checkbox
                     checked={allSelected ? true : someSelected ? 'indeterminate' : false}
                     onCheckedChange={handleSelectAll}
-                    aria-label="Select all artist development entries"
+                    aria-label="Select all entries"
                   />
                 </TableHead>
-                <TableHead>Artist ID</TableHead>
-                <TableHead>Goals</TableHead>
-                <TableHead>Milestones</TableHead>
-                <TableHead>ID</TableHead>
+                <SortableTableHeader
+                  label="Artist ID"
+                  sortKey="artistId"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Goals"
+                  sortKey="goals"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Plans"
+                  sortKey="plans"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Milestones"
+                  sortKey="milestones"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Created"
+                  sortKey="created_at"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {entries.map((entry) => {
+              {sortedEntries.map((entry) => {
                 const isSelected = selectedIds.has(entry.id);
                 return (
                   <TableRow
@@ -238,21 +273,32 @@ export default function ArtistDevelopmentPage() {
                     <TableCell className="font-medium">{entry.artistId}</TableCell>
                     <TableCell className="text-muted-foreground">
                       {entry.goals.length > 0
-                        ? entry.goals.slice(0, 1).join(', ') +
-                          (entry.goals.length > 1 ? ` +${entry.goals.length - 1} more` : '')
+                        ? entry.goals.slice(0, 2).join(', ') +
+                          (entry.goals.length > 2 ? ` +${entry.goals.length - 2} more` : '')
                         : '—'}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {entry.milestones.length} milestone{entry.milestones.length !== 1 ? 's' : ''}
+                      {entry.plans.length > 0
+                        ? entry.plans.slice(0, 2).join(', ') +
+                          (entry.plans.length > 2 ? ` +${entry.plans.length - 2} more` : '')
+                        : '—'}
                     </TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">{entry.id}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {entry.milestones.length > 0
+                        ? entry.milestones.slice(0, 2).join(', ') +
+                          (entry.milestones.length > 2 ? ` +${entry.milestones.length - 2} more` : '')
+                        : '—'}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground text-xs">
+                      {new Date(Number(entry.created_at) / 1_000_000).toLocaleDateString()}
+                    </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={(e) => handleDuplicate(entry.id, e)}
                         disabled={duplicatingId === entry.id}
-                        title="Duplicate artist development entry"
+                        title="Duplicate entry"
                       >
                         {duplicatingId === entry.id ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -285,7 +331,7 @@ export default function ArtistDevelopmentPage() {
           <DialogHeader>
             <DialogTitle>Create New Artist Development Entry</DialogTitle>
             <DialogDescription>
-              Add a new artist development plan or CRM entry.
+              Add a new artist development plan and goals.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
@@ -301,7 +347,7 @@ export default function ArtistDevelopmentPage() {
                 id="artist-id"
                 value={formArtistId}
                 onChange={(e) => setFormArtistId(e.target.value)}
-                placeholder="e.g. artist-name or unique identifier"
+                placeholder="Artist identifier"
               />
             </div>
             <div className="space-y-1.5">
@@ -321,7 +367,7 @@ export default function ArtistDevelopmentPage() {
                 value={formPlans}
                 onChange={(e) => setFormPlans(e.target.value)}
                 placeholder="Action plans, one per line"
-                rows={2}
+                rows={3}
               />
             </div>
             <div className="space-y-1.5">
@@ -331,7 +377,7 @@ export default function ArtistDevelopmentPage() {
                 value={formMilestones}
                 onChange={(e) => setFormMilestones(e.target.value)}
                 placeholder="Key milestones, one per line"
-                rows={2}
+                rows={3}
               />
             </div>
             <div className="space-y-1.5">

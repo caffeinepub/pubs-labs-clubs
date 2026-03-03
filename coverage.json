@@ -1,56 +1,50 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-03-03T05:06:32.157Z",
+  "generatedAt": "2026-03-03T09:43:21.420Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
     "total": 1,
-    "implemented": 0,
+    "implemented": 1,
     "items": [
       {
         "id": "REQ-1",
-        "summary": "Implement Part 2, Section 2 of the Higgins Music Hub portal build, continuing from where Part 2 Section 1 left off. Review the current state of the codebase, audit findings in portalAudit.ts, and the rollout documentation to determine which features, pages, or components are next in the build sequence for Section 2, then implement them.",
-        "status": "missing",
+        "summary": "Split what was previously 'Part 5' of the multi-step flow (the frontend canister upgrade step in the rollout/onboarding wizard or guided flow) into two distinct sub-steps: Part 5a and Part 5b. Each sub-step must have its own dedicated screen or section with a clear title, description of the action to be taken, and a confirmation prompt that the user must explicitly acknowledge before proceeding to the next sub-step.",
+        "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/portalAudit.ts",
           "frontend/ROLLOUT_STEPS.md",
-          "frontend/src/pages/portal/admin/AdminDashboardPage.tsx",
-          "frontend/src/pages/portal/memberships/MembershipsPage.tsx",
-          "frontend/src/pages/portal/memberships/MembershipDetail.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorksPage.tsx",
-          "frontend/src/pages/portal/publishing/PublishingWorkDetail.tsx",
-          "frontend/src/pages/portal/label/ReleasesPage.tsx",
-          "frontend/src/pages/portal/label/ReleaseDetail.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectsPage.tsx",
-          "frontend/src/pages/portal/recordings/RecordingProjectDetail.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentPage.tsx",
-          "frontend/src/pages/portal/artists/ArtistDevelopmentDetail.tsx",
-          "frontend/src/components/feedback/SectionPlaceholder.tsx",
-          "frontend/src/components/admin/PortalAuditSummary.tsx",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/components/related/EditRelatedDialog.tsx",
-          "frontend/src/components/related/RelatedRecordsSection.tsx",
-          "frontend/SMOKE_TEST_21_7.md",
-          "frontend/SMOKE_TEST_21_7_SESSION_LOG.md"
+          "frontend/src/pages/portal/admin/RolloutWizardPage.tsx",
+          "frontend/src/pages/portal/admin/RolloutConfirmationDialog.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/layout/PortalLayout.tsx",
+          "frontend/src/types/rollout.ts",
+          "frontend/src/hooks/useRolloutWizard.ts"
         ],
-        "matchedFiles": []
+        "matchedFiles": [
+          "frontend/src/pages/portal/admin/RolloutWizardPage.tsx",
+          "frontend/src/pages/portal/admin/RolloutConfirmationDialog.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/layout/PortalLayout.tsx",
+          "frontend/src/types/rollout.ts",
+          "frontend/src/hooks/useRolloutWizard.ts"
+        ]
       }
     ]
   },
   "changedFiles": [
-    "backend/blob-storage/Mixin.mo",
-    "backend/blob-storage/Storage.mo",
-    "backend/main.mo",
     "build-request.json",
-    "caffeine.lock.json",
     "feature_evidence.json",
+    "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/backend.ts",
-    "frontend/src/declarations/backend.did.d.ts",
-    "frontend/src/declarations/backend.did.js",
+    "frontend/src/App.tsx",
+    "frontend/src/components/layout/PortalLayout.tsx",
+    "frontend/src/hooks/useRolloutWizard.ts",
+    "frontend/src/pages/portal/admin/RolloutConfirmationDialog.tsx",
+    "frontend/src/pages/portal/admin/RolloutWizardPage.tsx",
+    "frontend/src/types/rollout.ts",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

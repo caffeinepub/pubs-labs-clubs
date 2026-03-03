@@ -40,10 +40,12 @@ import {
   useBulkDeleteReleases,
   useDuplicateRelease,
 } from '@/hooks/useQueries';
-import type { Release } from '../../../backend';
+import type { Release } from '../../../types/entities';
 import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
+import { useTableSort } from '@/hooks/useTableSort';
+import SortableTableHeader from '@/components/table/SortableTableHeader';
 
-const RELEASE_TYPES = ['Single', 'EP', 'Album', 'Compilation', 'Mixtape', 'Live', 'Other'];
+const RELEASE_TYPES = ['Single', 'EP', 'Album', 'Compilation', 'Mixtape', 'Other'];
 
 export default function ReleasesPage() {
   const navigate = useNavigate();
@@ -56,9 +58,8 @@ export default function ReleasesPage() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [formTitle, setFormTitle] = useState('');
-  const [formReleaseType, setFormReleaseType] = useState('');
+  const [formReleaseType, setFormReleaseType] = useState('Single');
   const [formTracklist, setFormTracklist] = useState('');
-  const [formKeyDates, setFormKeyDates] = useState('');
   const [formOwners, setFormOwners] = useState('');
   const [formError, setFormError] = useState('');
 
@@ -71,14 +72,16 @@ export default function ReleasesPage() {
     ? (allReleases ?? [])
     : (callerEntities?.releases ?? []);
 
-  const allSelected = releases.length > 0 && selectedIds.size === releases.length;
-  const someSelected = selectedIds.size > 0 && selectedIds.size < releases.length;
+  const { sortBy, sortDirection, handleSort, sortedData: sortedReleases } = useTableSort(releases);
+
+  const allSelected = sortedReleases.length > 0 && selectedIds.size === sortedReleases.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < sortedReleases.length;
 
   const handleSelectAll = () => {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(releases.map((r) => r.id)));
+      setSelectedIds(new Set(sortedReleases.map((r) => r.id)));
     }
   };
 
@@ -126,9 +129,8 @@ export default function ReleasesPage() {
 
   const handleOpenDialog = () => {
     setFormTitle('');
-    setFormReleaseType('');
+    setFormReleaseType('Single');
     setFormTracklist('');
-    setFormKeyDates('');
     setFormOwners('');
     setFormError('');
     setDialogOpen(true);
@@ -140,13 +142,7 @@ export default function ReleasesPage() {
       setFormError('Title is required.');
       return;
     }
-    if (!formReleaseType) {
-      setFormError('Release type is required.');
-      return;
-    }
-
     const tracklist = formTracklist.split('\n').map((t) => t.trim()).filter(Boolean);
-    const keyDates = formKeyDates.split('\n').map((d) => d.trim()).filter(Boolean);
     const owners = formOwners.split('\n').map((o) => o.trim()).filter(Boolean);
 
     try {
@@ -154,7 +150,7 @@ export default function ReleasesPage() {
         title: formTitle.trim(),
         releaseType: formReleaseType,
         tracklist,
-        keyDates,
+        keyDates: [],
         owners,
       });
       toast.success('Release created successfully!');
@@ -200,7 +196,7 @@ export default function ReleasesPage() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : releases.length === 0 ? (
+      ) : sortedReleases.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <Disc className="h-12 w-12 text-muted-foreground/40 mb-4" />
           <p className="text-muted-foreground text-lg font-medium">No releases yet</p>
@@ -222,15 +218,40 @@ export default function ReleasesPage() {
                     aria-label="Select all releases"
                   />
                 </TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Tracks</TableHead>
+                <SortableTableHeader
+                  label="Title"
+                  sortKey="title"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Type"
+                  sortKey="releaseType"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Owners"
+                  sortKey="owners"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
                 <TableHead>ID</TableHead>
+                <SortableTableHeader
+                  label="Created"
+                  sortKey="created_at"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {releases.map((release) => {
+              {sortedReleases.map((release) => {
                 const isSelected = selectedIds.has(release.id);
                 return (
                   <TableRow
@@ -251,12 +272,18 @@ export default function ReleasesPage() {
                     </TableCell>
                     <TableCell className="font-medium">{release.title}</TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{release.releaseType}</Badge>
+                      <Badge variant="outline">{release.releaseType}</Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {release.tracklist?.length ?? 0} track(s)
+                      {release.owners.length > 0
+                        ? release.owners.slice(0, 2).join(', ') +
+                          (release.owners.length > 2 ? ` +${release.owners.length - 2} more` : '')
+                        : '—'}
                     </TableCell>
                     <TableCell className="text-muted-foreground font-mono text-xs">{release.id}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">
+                      {new Date(Number(release.created_at) / 1_000_000).toLocaleDateString()}
+                    </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <Button
                         variant="ghost"
@@ -296,7 +323,7 @@ export default function ReleasesPage() {
           <DialogHeader>
             <DialogTitle>Create New Release</DialogTitle>
             <DialogDescription>
-              Add a new release to your label catalog.
+              Add a new label release to your catalog.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
@@ -316,14 +343,14 @@ export default function ReleasesPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="release-type">Release Type <span className="text-destructive">*</span></Label>
+              <Label htmlFor="release-type">Release Type</Label>
               <Select value={formReleaseType} onValueChange={setFormReleaseType}>
                 <SelectTrigger id="release-type">
                   <SelectValue placeholder="Select type..." />
                 </SelectTrigger>
                 <SelectContent>
-                  {RELEASE_TYPES.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  {RELEASE_TYPES.map((type) => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -334,18 +361,8 @@ export default function ReleasesPage() {
                 id="release-tracklist"
                 value={formTracklist}
                 onChange={(e) => setFormTracklist(e.target.value)}
-                placeholder="Track names, one per line"
-                rows={3}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="release-keydates">Key Dates (one per line)</Label>
-              <Textarea
-                id="release-keydates"
-                value={formKeyDates}
-                onChange={(e) => setFormKeyDates(e.target.value)}
-                placeholder="e.g. Release: 2024-06-01"
-                rows={2}
+                placeholder="Track titles, one per line"
+                rows={4}
               />
             </div>
             <div className="space-y-1.5">

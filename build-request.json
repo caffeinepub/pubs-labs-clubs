@@ -1,39 +1,42 @@
 {
   "kind": "build_request",
-  "title": "Implement Part 2, Section 2 of Higgins Music Hub build",
+  "title": "Split Part 5 of the onboarding/rollout flow into two confirmed sub-steps",
   "projectName": "Higgins Music Hub",
   "priority": "normal",
   "requirements": [
     {
       "id": "REQ-1",
-      "text": "Implement Part 2, Section 2 of the Higgins Music Hub portal build, continuing from where Part 2 Section 1 left off. Review the current state of the codebase, audit findings in portalAudit.ts, and the rollout documentation to determine which features, pages, or components are next in the build sequence for Section 2, then implement them.",
-      "target": "both",
+      "text": "Split what was previously 'Part 5' of the multi-step flow (the frontend canister upgrade step in the rollout/onboarding wizard or guided flow) into two distinct sub-steps: Part 5a and Part 5b. Each sub-step must have its own dedicated screen or section with a clear title, description of the action to be taken, and a confirmation prompt that the user must explicitly acknowledge before proceeding to the next sub-step.",
+      "target": "frontend",
       "source": {
         "messageIds": [
           "msg-4"
         ],
         "quotes": [
-          "Go to Part 2 Section 2, thanks"
+          "Proceed by breaking Part 5 into 2 with confirmation before each"
         ]
       },
       "acceptanceCriteria": [
-        "All features scoped to Part 2 Section 2 are implemented and functional",
-        "No regressions introduced to features shipped in Part 2 Section 1",
-        "Frontend compiles without TypeScript errors",
-        "Backend Motoko code compiles without errors",
-        "New functionality is accessible through the existing portal routing structure"
+        "Part 5 is divided into exactly two sequential sub-steps (Part 5a and Part 5b).",
+        "Each sub-step displays its own descriptive content explaining what action is about to be performed.",
+        "A confirmation dialog or inline confirmation prompt appears before entering Part 5a, requiring the user to confirm before proceeding.",
+        "A second confirmation dialog or inline confirmation prompt appears before entering Part 5b, requiring the user to confirm before proceeding.",
+        "Users cannot skip either confirmation — the 'Continue' / 'Proceed' action is disabled until confirmation is given.",
+        "The step indicator/progress tracker (if present) reflects the two sub-steps correctly.",
+        "Declining or cancelling a confirmation returns the user to the previous state without advancing."
       ]
     }
   ],
   "constraints": [
-    "Do not modify files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui",
-    "All Motoko logic must remain in the single main actor file (backend/main.mo)",
-    "Preserve all existing entity types and cross-linking relationships defined in the backend"
+    "Do not modify any files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or frontend/src/components/ui.",
+    "Do not alter backend logic or data models — this is a frontend-only change.",
+    "Preserve all existing step content; only split and add confirmations, do not remove or rewrite step descriptions."
   ],
   "nonGoals": [
-    "Re-implementing or modifying features already shipped in Part 2 Section 1",
-    "Changes to the smoke test or rollout documentation files",
-    "Deployment or canister upgrade steps"
+    "Restructuring any other parts of the flow (Parts 1–4 or Part 6+).",
+    "Changing backend canister upgrade logic or Motoko code.",
+    "Modifying rollout documentation markdown files (ROLLOUT_STEPS.md, SMOKE_TEST_*.md) unless they are rendered as part of the UI flow.",
+    "Adding new features or portal sections unrelated to the step split."
   ],
   "imageRequirements": {
     "required": [],

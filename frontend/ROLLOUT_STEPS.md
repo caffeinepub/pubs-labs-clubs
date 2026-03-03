@@ -141,9 +141,9 @@ Before executing Step 10B, confirm the following conditions from Step 10A are al
 
 ---
 
-### Step 10C — Frontend Asset Deployment and Post-Deploy Smoke Test
+### Step 10C — Frontend Canister Upgrade
 
-**Description**: Deploy the frontend assets to the ICP mainnet, verify the application is accessible at the production URL, and run the full post-deployment smoke test covering all portal routes and Edit Links dialogs for both admin and non-admin approved member roles.
+**Description**: Deploy the compiled frontend assets to the ICP mainnet frontend canister, verify the deployment completed successfully, and run a full post-deployment smoke test covering all five portal detail routes, Edit Links dialogs for both admin and non-admin roles, and AuthGate/ApprovalGate behavior.
 
 ---
 
@@ -163,114 +163,7 @@ Before executing Step 10C, confirm the following conditions from Step 10B are al
 
 ---
 
-#### Step 10C — Action Checklist
+#### Step 10C — Deployment Command
 
-1. [ ] Deploy frontend assets to mainnet: `dfx deploy frontend --network ic`
-2. [ ] Confirm the frontend deploy command exits with a success status
-3. [ ] Record the mainnet frontend URL from the deploy output
-4. [ ] Navigate to the mainnet frontend URL in a browser and confirm the landing page loads
-5. [ ] Confirm the hero image, branding, and navigation render correctly
-6. [ ] Confirm no console errors on the landing page
-7. [ ] Log in as the admin user via Internet Identity on mainnet
-8. [ ] Verify AuthGate allows the admin through to the portal
-9. [ ] Verify ApprovalGate allows the admin through (admins are always approved)
-10. [ ] Test all five portal detail routes as admin (memberships, publishing, releases, recordings, artists)
-11. [ ] Open the "Edit Links" dialog on each of the five detail routes as admin
-12. [ ] Log out admin and log in as a non-admin approved member
-13. [ ] Verify AuthGate and ApprovalGate allow the approved member through
-14. [ ] Test all five portal detail routes as the non-admin approved member
-15. [ ] Open the "Edit Links" dialog on each of the five detail routes as the non-admin member
-16. [ ] Review browser console throughout the entire smoke test for errors
-17. [ ] Complete the full smoke test checklist in `SMOKE_TEST_STEP_10_MAINNET.md` — Section 10C
-18. [ ] Document all test user principals, entity IDs, and outcomes
+Run the following command to deploy the frontend canister to mainnet:
 
-#### Step 10C — Acceptance Criteria
-
-- Frontend assets deploy successfully to mainnet
-- Landing page is accessible at the production URL and renders correctly
-- No console errors on the landing page
-- Admin user can log in and access the portal (AuthGate + ApprovalGate pass)
-- Non-admin approved member can log in and access the portal (AuthGate + ApprovalGate pass)
-- All five portal detail routes load without runtime errors for both roles
-- "Edit Links" dialogs open and function correctly for both roles
-- Admin sees all entities in Edit Links dialogs; member sees only their own
-- No critical console errors or backend traps during smoke test
-- Full smoke test checklist in `SMOKE_TEST_STEP_10_MAINNET.md` is completed and documented
-
-#### Step 10C — Evidence Fields
-
-**Frontend Deploy Output**: _____________  
-**Mainnet Frontend URL**: _____________  
-**Landing Page Load Result**: _____________  
-**Admin Principal**: _____________  
-**Admin AuthGate Result**: _____________  
-**Admin ApprovalGate Result**: _____________  
-**Member Principal**: _____________  
-**Member AuthGate Result**: _____________  
-**Member ApprovalGate Result**: _____________  
-**Console Error Summary**: _____________  
-**Smoke Test Overall Result (PASS/FAIL)**: _____________  
-**Timestamp**: _____________
-
----
-
-**References**:
-- Mainnet smoke test checklist: `frontend/SMOKE_TEST_STEP_10_MAINNET.md`
-- Previous smoke test format: `frontend/SMOKE_TEST_21_7.md`
-- Results template format: `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`
-- Execution log format: `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md`
-
----
-
-### Step 11 — Post-Launch Refinements
-
-**Description**: Incorporate user feedback to improve UX and performance, fix remaining bugs and issues, and integrate CI/CD pipeline.
-
-**Refinement Tasks**:
-- Collect and analyze user feedback
-- Prioritize and implement UX improvements
-- Fix reported bugs and issues
-- Optimize performance based on real-world usage
-- Set up CI/CD pipeline for automated testing and deployment
-
-**Acceptance Criteria**:
-- User feedback is collected and analyzed
-- High-priority improvements are implemented
-- Critical bugs are resolved
-- Performance is optimized
-- CI/CD pipeline is operational
-
----
-
-### Step 12 — Long-Term Maintenance
-
-**Description**: Plan and implement system maintenance procedures, add improvements as needed, train core team on system maintenance, and maintain documentation and change logs.
-
-**Maintenance Tasks**:
-- Establish regular maintenance schedule
-- Document maintenance procedures
-- Train team members on system administration
-- Keep documentation up to date
-- Plan and implement feature enhancements
-- Monitor system health and performance
-
-**Acceptance Criteria**:
-- Maintenance procedures are documented and followed
-- Team is trained on system maintenance
-- Documentation is current and accurate
-- System remains stable and performant
-- Feature enhancements are planned and implemented as needed
-
----
-
-## Next Step to Execute
-
-**Current Step**: Step 10A — Pre-Deployment Checks and Canister Preparation
-
-**Action Required**: Begin the mainnet deployment sequence by completing Step 10A first. Each sub-step (10A → 10B → 10C) must be fully confirmed before proceeding to the next. Follow the confirmation gates at the top of each sub-step section and complete the corresponding smoke test sections in `frontend/SMOKE_TEST_STEP_10_MAINNET.md`.
-
-**References**:
-- Mainnet smoke test checklist: `frontend/SMOKE_TEST_STEP_10_MAINNET.md`
-- Previous smoke test examples: `frontend/SMOKE_TEST_21_7.md`, `frontend/SMOKE_TEST_21_7_SESSION_LOG.md`
-- Results template format: `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` (Rollout 21.7 section)
-- Execution log format: `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md`

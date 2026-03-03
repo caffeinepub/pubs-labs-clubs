@@ -1,4 +1,31 @@
 {
   "kind": "feature_evidence_report",
-  "features": []
+  "features": [
+    {
+      "featureId": "feature-split-what-was-previously-part-5-of-the-multi-step-flow-the-frontend-canister-upgrade-step-in-the-rollout-onboarding-wizard-or-guided-flow-into-two-distinct-sub-steps-part-5a-and-part-5b-each-sub-step-must-have-its-own-dedicated-screen-or-section-with-a-clear-title-description-of-the-action-to-be-taken-and-a-confirmation-prompt-that-the-user-must-explicitly-acknowledge-before-proceeding-to-the-next-sub-step",
+      "featureTitle": "Split what was previously 'Part 5' of the multi-step flow (the frontend canister upgrade step in the rollout/onboarding wizard or guided flow) into two distinct sub-steps: Part 5a and Part 5b. Each sub-step must have its own dedicated screen or section with a clear title, description of the action to be taken, and a confirmation prompt that the user must explicitly acknowledge before proceeding to the next sub-step.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/PortalLayout.tsx",
+        "frontend/src/hooks/useRolloutWizard.ts",
+        "frontend/src/pages/portal/admin/RolloutConfirmationDialog.tsx",
+        "frontend/src/pages/portal/admin/RolloutWizardPage.tsx",
+        "frontend/src/types/rollout.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "user-approval@3.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0",
+        "blob-storage@4.0.0"
+      ],
+      "testIds": [
+        "REQ-1"
+      ],
+      "confidence": "high"
+    }
+  ]
 }

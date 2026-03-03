@@ -1,16 +1,15 @@
 import { useNavigate } from '@tanstack/react-router';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useCurrentUser } from '../../hooks/useCurrentUser';
 import { useGetEntitiesForCaller } from '../../hooks/useQueries';
 import { normalizeToArray } from '../../utils/arrays';
+import type { Membership } from '../../backend';
 import type {
-  Membership,
   ArtistDevelopment,
   PublishingWork,
   Release,
   RecordingProject,
-} from '../../backend';
+} from '../../types/entities';
 
 interface RelatedRecordsSectionProps {
   linkedMembers?: string[];
@@ -31,8 +30,6 @@ export default function RelatedRecordsSection({
   const { isAdmin } = useCurrentUser();
 
   // Always call the hook unconditionally (Rules of Hooks).
-  // For admins the data won't be used for label resolution (we just show IDs),
-  // but the hook must still be called.
   const { data: callerEntities } = useGetEntitiesForCaller();
 
   const safeLinkedMembers = normalizeToArray<string>(linkedMembers);

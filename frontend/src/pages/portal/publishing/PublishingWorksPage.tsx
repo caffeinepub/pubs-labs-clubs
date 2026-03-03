@@ -33,8 +33,10 @@ import {
   useBulkDeletePublishingWorks,
   useDuplicatePublishingWork,
 } from '@/hooks/useQueries';
-import type { PublishingWork } from '../../../backend';
+import type { PublishingWork } from '../../../types/entities';
 import BulkDeleteConfirmDialog from '@/components/bulk/BulkDeleteConfirmDialog';
+import { useTableSort } from '@/hooks/useTableSort';
+import SortableTableHeader from '@/components/table/SortableTableHeader';
 
 export default function PublishingWorksPage() {
   const navigate = useNavigate();
@@ -62,14 +64,16 @@ export default function PublishingWorksPage() {
     ? (allWorks ?? [])
     : (callerEntities?.publishingWorks ?? []);
 
-  const allSelected = works.length > 0 && selectedIds.size === works.length;
-  const someSelected = selectedIds.size > 0 && selectedIds.size < works.length;
+  const { sortBy, sortDirection, handleSort, sortedData: sortedWorks } = useTableSort(works);
+
+  const allSelected = sortedWorks.length > 0 && selectedIds.size === sortedWorks.length;
+  const someSelected = selectedIds.size > 0 && selectedIds.size < sortedWorks.length;
 
   const handleSelectAll = () => {
     if (allSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(works.map((w) => w.id)));
+      setSelectedIds(new Set(sortedWorks.map((w) => w.id)));
     }
   };
 
@@ -131,11 +135,7 @@ export default function PublishingWorksPage() {
       setFormError('Title is required.');
       return;
     }
-
-    const contributors = formContributors
-      .split('\n')
-      .map((c) => c.trim())
-      .filter(Boolean);
+    const contributors = formContributors.split('\n').map((c) => c.trim()).filter(Boolean);
 
     try {
       await createWork.mutateAsync({
@@ -144,7 +144,7 @@ export default function PublishingWorksPage() {
         ownershipSplits: [],
         iswc: formIswc.trim() || null,
         isrc: formIsrc.trim() || null,
-        registrationStatus: formRegistrationStatus.trim() || 'unregistered',
+        registrationStatus: formRegistrationStatus.trim() || 'Unregistered',
       });
       toast.success('Publishing work created successfully!');
       setDialogOpen(false);
@@ -162,7 +162,7 @@ export default function PublishingWorksPage() {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Publishing Works</h1>
             <p className="text-sm text-muted-foreground">
-              {isAdmin ? 'All publishing works' : 'Your publishing catalog'}
+              {isAdmin ? 'All publishing works' : 'Your publishing works'}
             </p>
           </div>
         </div>
@@ -189,11 +189,11 @@ export default function PublishingWorksPage() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : works.length === 0 ? (
+      ) : sortedWorks.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <BookOpen className="h-12 w-12 text-muted-foreground/40 mb-4" />
           <p className="text-muted-foreground text-lg font-medium">No publishing works yet</p>
-          <p className="text-muted-foreground/60 text-sm mt-1">Add your first publishing work to get started.</p>
+          <p className="text-muted-foreground/60 text-sm mt-1">Create your first publishing work to get started.</p>
           <Button onClick={handleOpenDialog} className="mt-4 gap-2">
             <Plus className="h-4 w-4" />
             New Work
@@ -211,15 +211,40 @@ export default function PublishingWorksPage() {
                     aria-label="Select all publishing works"
                   />
                 </TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Registration</TableHead>
-                <TableHead>Contributors</TableHead>
+                <SortableTableHeader
+                  label="Title"
+                  sortKey="title"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Status"
+                  sortKey="registrationStatus"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
+                <SortableTableHeader
+                  label="Contributors"
+                  sortKey="contributors"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
                 <TableHead>ID</TableHead>
+                <SortableTableHeader
+                  label="Created"
+                  sortKey="created_at"
+                  currentSortBy={sortBy}
+                  currentDirection={sortDirection}
+                  onSort={handleSort}
+                />
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {works.map((work) => {
+              {sortedWorks.map((work) => {
                 const isSelected = selectedIds.has(work.id);
                 return (
                   <TableRow
@@ -240,15 +265,18 @@ export default function PublishingWorksPage() {
                     </TableCell>
                     <TableCell className="font-medium">{work.title}</TableCell>
                     <TableCell>
-                      <Badge variant="outline">{work.registrationStatus || 'unregistered'}</Badge>
+                      <Badge variant="outline">{work.registrationStatus}</Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {work.contributors.length > 0
                         ? work.contributors.slice(0, 2).join(', ') +
-                          (work.contributors.length > 2 ? ` +${work.contributors.length - 2}` : '')
+                          (work.contributors.length > 2 ? ` +${work.contributors.length - 2} more` : '')
                         : '—'}
                     </TableCell>
                     <TableCell className="text-muted-foreground font-mono text-xs">{work.id}</TableCell>
+                    <TableCell className="text-muted-foreground text-xs">
+                      {new Date(Number(work.created_at) / 1_000_000).toLocaleDateString()}
+                    </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <Button
                         variant="ghost"
@@ -313,7 +341,7 @@ export default function PublishingWorksPage() {
                 id="work-status"
                 value={formRegistrationStatus}
                 onChange={(e) => setFormRegistrationStatus(e.target.value)}
-                placeholder="e.g. registered, unregistered"
+                placeholder="e.g. Registered, Pending, Unregistered"
               />
             </div>
             <div className="space-y-1.5">
