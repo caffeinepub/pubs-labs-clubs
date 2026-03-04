@@ -1,180 +1,289 @@
-import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { useGetAllRecordingProjects, useCreateRecordingProject } from '../../../hooks/useQueries';
-import { useCurrentUser } from '../../../hooks/useCurrentUser';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Mic, Plus } from 'lucide-react';
-import EmptyState from '../../../components/feedback/EmptyState';
-import LoadingState from '../../../components/feedback/LoadingState';
-import { ProjectStatus } from '../../../backend';
+import BulkDeleteConfirmDialog from "@/components/bulk/BulkDeleteConfirmDialog";
+import SortableTableHeader from "@/components/table/SortableTableHeader";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  type RecordingProject,
+  useCreateRecordingProject,
+  useDeleteRecordingProject,
+  useDuplicateRecordingProject,
+  useGetRecordingProjects,
+} from "@/hooks/useQueries";
+import { useTableSort } from "@/hooks/useTableSort";
+import { useNavigate } from "@tanstack/react-router";
+import { Copy, Loader2, Plus, Trash2 } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function RecordingProjectsPage() {
   const navigate = useNavigate();
-  const { isAdmin } = useCurrentUser();
-  const { data: projects = [], isLoading } = useGetAllRecordingProjects();
-  const createMutation = useCreateRecordingProject();
+  const { data: projects = [], isLoading } = useGetRecordingProjects();
+  const createProject = useCreateRecordingProject();
+  const deleteProjects = useDeleteRecordingProject();
+  const duplicateProject = useDuplicateRecordingProject();
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    participants: '',
-    sessionDate: '',
-    status: ProjectStatus.planned,
-    notes: ''
-  });
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showCreate, setShowCreate] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [formTitle, setFormTitle] = useState("");
 
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    const sessionDateMs = new Date(formData.sessionDate).getTime();
-    createMutation.mutate({
-      title: formData.title,
-      participants: formData.participants.split(',').map(p => p.trim()).filter(Boolean),
-      sessionDate: BigInt(sessionDateMs * 1000000),
-      status: formData.status,
-      notes: formData.notes
-    }, {
-      onSuccess: () => {
-        setDialogOpen(false);
-        setFormData({
-          title: '',
-          participants: '',
-          sessionDate: '',
-          status: ProjectStatus.planned,
-          notes: ''
-        });
-      }
+  const { sortedData, sortBy, sortDirection, handleSort } = useTableSort(
+    projects,
+    "title",
+  );
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
   };
 
+  const toggleSelectAll = () => {
+    if (selected.size === sortedData.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(sortedData.map((p) => p.id)));
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!formTitle.trim()) return;
+    try {
+      await createProject.mutateAsync({
+        owner: "",
+        title: formTitle.trim(),
+        participants: [],
+        sessionDate: BigInt(0),
+        status: "planned",
+        notes: "",
+        assetReferences: [],
+        linkedMembers: [],
+        linkedArtists: [],
+        linkedWorks: [],
+        linkedReleases: [],
+      });
+      toast.success("Recording project created");
+      setShowCreate(false);
+      setFormTitle("");
+    } catch {
+      toast.error("Failed to create project");
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await deleteProjects.mutateAsync(Array.from(selected));
+      toast.success(`Deleted ${selected.size} project(s)`);
+      setSelected(new Set());
+      setShowDeleteConfirm(false);
+    } catch {
+      toast.error("Failed to delete projects");
+    }
+  };
+
+  const handleDuplicate = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await duplicateProject.mutateAsync(id);
+      toast.success("Project duplicated");
+    } catch {
+      toast.error("Failed to duplicate project");
+    }
+  };
+
   if (isLoading) {
-    return <LoadingState />;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Recording Projects</h1>
-          <p className="text-muted-foreground">Manage production projects and sessions (reference links only)</p>
+          <h1 className="text-2xl font-bold">Recording Projects</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Manage recording sessions and projects.
+          </p>
         </div>
-        {isAdmin && (
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                New Project
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Create Recording Project</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleCreate} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title *</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Project title"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="participants">Participants (comma-separated)</Label>
-                  <Input
-                    id="participants"
-                    value={formData.participants}
-                    onChange={(e) => setFormData({ ...formData, participants: e.target.value })}
-                    placeholder="Artist, Producer, Engineer"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="sessionDate">Session Date *</Label>
-                  <Input
-                    id="sessionDate"
-                    type="date"
-                    value={formData.sessionDate}
-                    onChange={(e) => setFormData({ ...formData, sessionDate: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={formData.status}
-                    onValueChange={(value) => setFormData({ ...formData, status: value as ProjectStatus })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={ProjectStatus.planned}>Planned</SelectItem>
-                      <SelectItem value={ProjectStatus.in_progress}>In Progress</SelectItem>
-                      <SelectItem value={ProjectStatus.completed}>Completed</SelectItem>
-                      <SelectItem value={ProjectStatus.archived}>Archived</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notes</Label>
-                  <Textarea
-                    id="notes"
-                    value={formData.notes}
-                    onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    placeholder="Project notes..."
-                    rows={3}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? 'Creating...' : 'Create Project'}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        )}
+        <div className="flex gap-2">
+          {selected.size > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete ({selected.size})
+            </Button>
+          )}
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            New Project
+          </Button>
+        </div>
       </div>
 
-      {projects.length === 0 ? (
-        <EmptyState
-          icon={Mic}
-          title="No recording projects yet"
-          description="Create your first recording project to start managing production sessions."
-          actionLabel={isAdmin ? "Create Project" : undefined}
-          onAction={isAdmin ? () => setDialogOpen(true) : undefined}
-        />
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {projects.map((project) => (
-            <Card 
-              key={project.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => navigate({ to: '/portal/recordings/$id', params: { id: project.id } })}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-10">
+              <Checkbox
+                checked={
+                  selected.size === sortedData.length && sortedData.length > 0
+                }
+                onCheckedChange={toggleSelectAll}
+              />
+            </TableHead>
+            <SortableTableHeader
+              sortKey="title"
+              currentSortBy={sortBy}
+              currentDirection={sortDirection}
+              onSort={handleSort}
+              label="Title"
+            />
+            <SortableTableHeader
+              sortKey="status"
+              currentSortBy={sortBy}
+              currentDirection={sortDirection}
+              onSort={handleSort}
+              label="Status"
+            />
+            <SortableTableHeader
+              sortKey="created_at"
+              currentSortBy={sortBy}
+              currentDirection={sortDirection}
+              onSort={handleSort}
+              label="Created"
+            />
+            <TableHead className="w-20">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sortedData.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={5}
+                className="text-center text-muted-foreground py-8"
+              >
+                No recording projects yet.
+              </TableCell>
+            </TableRow>
+          ) : (
+            sortedData.map((project) => (
+              <TableRow
+                key={project.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() =>
+                  navigate({ to: `/portal/recordings/${project.id}` })
+                }
+              >
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={selected.has(project.id)}
+                    onCheckedChange={() => toggleSelect(project.id)}
+                  />
+                </TableCell>
+                <TableCell className="font-medium">
+                  {project.title || "—"}
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline" className="capitalize">
+                    {project.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {new Date(
+                    Number(project.created_at / BigInt(1_000_000)),
+                  ).toLocaleDateString()}
+                </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => handleDuplicate(project.id, e)}
+                    title="Duplicate"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+
+      {/* Create Dialog */}
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Recording Project</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <label htmlFor="rp-create-title" className="text-sm font-medium">
+                Project Title
+              </label>
+              <Input
+                id="rp-create-title"
+                className="mt-1"
+                placeholder="Enter project title"
+                value={formTitle}
+                onChange={(e) => setFormTitle(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreate}
+              disabled={!formTitle.trim() || createProject.isPending}
             >
-              <CardHeader>
-                <CardTitle className="truncate">{project.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1 text-sm">
-                  <p className="text-muted-foreground capitalize">{project.status.replace('_', ' ')}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {project.participants.length} participant{project.participants.length !== 1 ? 's' : ''}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(Number(project.sessionDate) / 1000000).toLocaleDateString()}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              {createProject.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : null}
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Confirm */}
+      <BulkDeleteConfirmDialog
+        open={showDeleteConfirm}
+        count={selected.size}
+        entityLabel="recording project"
+        entityLabelPlural="recording projects"
+        isPending={deleteProjects.isPending}
+        onCancel={() => setShowDeleteConfirm(false)}
+        onConfirm={handleBulkDelete}
+      />
     </div>
   );
 }

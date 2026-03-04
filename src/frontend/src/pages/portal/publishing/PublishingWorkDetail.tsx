@@ -1,228 +1,347 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from '@tanstack/react-router';
-import { 
-  useGetPublishingWork,
-  useAddPublishingWorkNotes,
-  useLinkPublishingWorkToEntities
-} from '../../../hooks/useQueries';
-import { useLinkableEntityOptions } from '../../../hooks/useLinkableEntityOptions';
-import { useCurrentUser } from '../../../hooks/useCurrentUser';
-import { useInternetIdentity } from '../../../hooks/useInternetIdentity';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft } from 'lucide-react';
-import LoadingState from '../../../components/feedback/LoadingState';
-import ErrorBanner from '../../../components/feedback/ErrorBanner';
-import RelatedRecordsSection from '../../../components/related/RelatedRecordsSection';
-import EditRelatedDialog from '../../../components/related/EditRelatedDialog';
-import EditLinksButton from '../../../components/related/EditLinksButton';
-import { canEditPublishingWork } from '../../../components/related/relatedRecordsPermissions';
-import { normalizeToArray } from '../../../utils/arrays';
+import EditLinksButton from "@/components/related/EditLinksButton";
+import EditRelatedDialog from "@/components/related/EditRelatedDialog";
+import RelatedRecordsSection from "@/components/related/RelatedRecordsSection";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useLinkableEntityOptions } from "@/hooks/useLinkableEntityOptions";
+import { normalizeToArray } from "@/utils/arrays";
+import { useNavigate, useParams } from "@tanstack/react-router";
+import { ArrowLeft, Edit2, Loader2, Save, Trash2, X } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { useCurrentUser } from "../../../hooks/useCurrentUser";
+import { useInternetIdentity } from "../../../hooks/useInternetIdentity";
+import {
+  type PublishingWork,
+  useDeletePublishingWork,
+  useGetPublishingWorks,
+  useUpdatePublishingWork,
+} from "../../../hooks/useQueries";
 
 export default function PublishingWorkDetail() {
-  const { id } = useParams({ from: '/portal/publishing/$id' });
+  const { id } = useParams({ from: "/portal/publishing/$id" });
   const navigate = useNavigate();
   const { isAdmin } = useCurrentUser();
   const { identity } = useInternetIdentity();
-  const { data: work, isLoading, error } = useGetPublishingWork(id);
-  const notesMutation = useAddPublishingWorkNotes();
-  const linkMutation = useLinkPublishingWorkToEntities();
 
-  const [notes, setNotes] = useState('');
-  const [isEditingNotes, setIsEditingNotes] = useState(false);
-  const [isEditingRelated, setIsEditingRelated] = useState(false);
+  const { data: works = [] } = useGetPublishingWorks();
+  const updateMutation = useUpdatePublishingWork();
+  const deleteMutation = useDeletePublishingWork();
 
-  // Fetch linkable entity options using the role-aware hook
-  const { 
-    memberships,
-    artists, 
-    releases, 
-    projects, 
-    isLoading: optionsLoading, 
-    error: optionsError 
+  const work = works.find((w) => w.id === id);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editRegistrationStatus, setEditRegistrationStatus] = useState("");
+  const [editNotes, setEditNotes] = useState("");
+  const [editContributors, setEditContributors] = useState("");
+  const [showLinksDialog, setShowLinksDialog] = useState(false);
+
+  const {
+    memberOptions,
+    publishingOptions,
+    releaseOptions,
+    projectOptions,
+    artistOptions,
+    isLoading: optionsLoading,
+    error: optionsError,
   } = useLinkableEntityOptions();
 
-  if (isLoading) {
-    return <LoadingState />;
-  }
+  useEffect(() => {
+    if (work) {
+      setEditTitle(work.title);
+      setEditRegistrationStatus(work.registrationStatus);
+      setEditNotes(work.notes);
+      setEditContributors(
+        normalizeToArray<string>(work.contributors).join("\n"),
+      );
+    }
+  }, [work]);
 
-  if (error) {
-    return <ErrorBanner message={(error as Error).message} />;
-  }
+  // owner is stored as string in the local PublishingWork interface
+  const canEdit =
+    isAdmin ||
+    (identity &&
+      work?.owner &&
+      work.owner === identity.getPrincipal().toString());
+
+  const handleSave = async () => {
+    if (!work) return;
+    try {
+      await updateMutation.mutateAsync({
+        workId: work.id,
+        updates: {
+          title: editTitle,
+          registrationStatus: editRegistrationStatus,
+          notes: editNotes,
+          contributors: editContributors.split("\n").filter(Boolean),
+        },
+      });
+      toast.success("Publishing work updated");
+      setIsEditing(false);
+    } catch {
+      toast.error("Failed to update publishing work");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!work) return;
+    try {
+      await deleteMutation.mutateAsync([work.id]);
+      toast.success("Publishing work deleted");
+      navigate({ to: "/portal/publishing" });
+    } catch {
+      toast.error("Failed to delete publishing work");
+    }
+  };
+
+  const handleSaveLinks = async (selections: {
+    memberIds: string[];
+    artistIds: string[];
+    workIds: string[];
+    publishingIds: string[];
+    releaseIds: string[];
+    projectIds: string[];
+  }) => {
+    if (!work) return;
+    await updateMutation.mutateAsync({
+      workId: work.id,
+      updates: {
+        linkedMembers: selections.memberIds,
+        linkedArtists: selections.artistIds,
+        linkedReleases: selections.releaseIds,
+        linkedProjects: selections.projectIds,
+      },
+    });
+  };
 
   if (!work) {
-    return <ErrorBanner message="Publishing work not found" />;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
-  const canEdit = canEditPublishingWork(identity, isAdmin, work.owner);
-
-  // Normalize all array-valued fields to handle upgrade-time undefined/null values
-  const safeContributors = normalizeToArray<string>(work.contributors);
-  const safeOwnershipSplits = normalizeToArray<[string, bigint]>(work.ownershipSplits);
   const safeLinkedMembers = normalizeToArray<string>(work.linkedMembers);
   const safeLinkedArtists = normalizeToArray<string>(work.linkedArtists);
   const safeLinkedReleases = normalizeToArray<string>(work.linkedReleases);
   const safeLinkedProjects = normalizeToArray<string>(work.linkedProjects);
 
-  const handleSaveNotes = () => {
-    notesMutation.mutate(
-      { id, notes },
-      {
-        onSuccess: () => {
-          setIsEditingNotes(false);
-        }
-      }
-    );
-  };
-
-  const handleSaveRelated = (data: {
-    memberIds: string[];
-    artistIds: string[];
-    workIds: string[];
-    releaseIds: string[];
-    projectIds: string[];
-  }) => {
-    linkMutation.mutate(
-      {
-        workId: id,
-        memberIds: data.memberIds,
-        artistIds: data.artistIds,
-        releaseIds: data.releaseIds,
-        projectIds: data.projectIds
-      },
-      {
-        onSuccess: () => {
-          setIsEditingRelated(false);
-        }
-      }
-    );
-  };
-
   return (
     <div className="space-y-6 max-w-3xl">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/portal/publishing' })}>
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate({ to: "/portal/publishing" })}
+        >
           <ArrowLeft className="h-4 w-4" />
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold">{work.title}</h1>
-          <p className="text-muted-foreground">Work ID: {work.id}</p>
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold">
+            {work.title || "Publishing Work"}
+          </h1>
+          <p className="text-xs text-muted-foreground font-mono">{work.id}</p>
         </div>
-      </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Work Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label className="text-muted-foreground">Contributors</Label>
-            <p className="text-lg">{safeContributors.join(', ') || 'None'}</p>
-          </div>
-          {safeOwnershipSplits.length > 0 && (
-            <div>
-              <Label className="text-muted-foreground">Ownership Splits</Label>
-              <ul className="list-disc list-inside text-lg">
-                {safeOwnershipSplits.map(([name, share], idx) => (
-                  <li key={idx}>{name}: {share.toString()}%</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <div>
-            <Label className="text-muted-foreground">Registration Status</Label>
-            <p className="text-lg">{work.registrationStatus}</p>
-          </div>
-          {work.iswc && (
-            <div>
-              <Label className="text-muted-foreground">ISWC</Label>
-              <p className="text-lg">{work.iswc}</p>
-            </div>
-          )}
-          {work.isrc && (
-            <div>
-              <Label className="text-muted-foreground">ISRC</Label>
-              <p className="text-lg">{work.isrc}</p>
-            </div>
-          )}
-          <div>
-            <Label className="text-muted-foreground">Created</Label>
-            <p className="text-lg">
-              {new Date(Number(work.created_at) / 1000000).toLocaleDateString()}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Notes</span>
-            {canEdit && !isEditingNotes && (
-              <Button onClick={() => {
-                setNotes(work.notes);
-                setIsEditingNotes(true);
-              }}>
-                Edit Notes
-              </Button>
-            )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isEditingNotes ? (
-            <div className="space-y-4">
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={6}
-                placeholder="Add notes about this work..."
-              />
-              <div className="flex gap-2">
-                <Button onClick={handleSaveNotes} disabled={notesMutation.isPending}>
-                  {notesMutation.isPending ? 'Saving...' : 'Save Notes'}
+        {canEdit && (
+          <div className="flex gap-2">
+            {isEditing ? (
+              <>
+                <Button
+                  size="sm"
+                  onClick={handleSave}
+                  disabled={updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-1" />
+                  )}
+                  Save
                 </Button>
-                <Button variant="outline" onClick={() => setIsEditingNotes(false)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsEditing(false)}
+                >
+                  <X className="h-4 w-4 mr-1" />
                   Cancel
                 </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Edit2 className="h-4 w-4 mr-1" />
+                  Edit
+                </Button>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={deleteMutation.isPending}
+                >
+                  {deleteMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  ) : (
+                    <Trash2 className="h-4 w-4 mr-1" />
+                  )}
+                  Delete
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Main Info */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isEditing ? (
+            <>
+              <div>
+                <label htmlFor="pw-edit-title" className="text-sm font-medium">
+                  Title
+                </label>
+                <Input
+                  id="pw-edit-title"
+                  className="mt-1"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                />
               </div>
-            </div>
+              <div>
+                <label
+                  htmlFor="pw-edit-reg-status"
+                  className="text-sm font-medium"
+                >
+                  Registration Status
+                </label>
+                <Input
+                  id="pw-edit-reg-status"
+                  className="mt-1"
+                  value={editRegistrationStatus}
+                  onChange={(e) => setEditRegistrationStatus(e.target.value)}
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="pw-edit-contributors"
+                  className="text-sm font-medium"
+                >
+                  Contributors (one per line)
+                </label>
+                <Textarea
+                  id="pw-edit-contributors"
+                  className="mt-1"
+                  rows={3}
+                  value={editContributors}
+                  onChange={(e) => setEditContributors(e.target.value)}
+                />
+              </div>
+              <div>
+                <label htmlFor="pw-edit-notes" className="text-sm font-medium">
+                  Notes
+                </label>
+                <Textarea
+                  id="pw-edit-notes"
+                  className="mt-1"
+                  rows={4}
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                />
+              </div>
+            </>
           ) : (
-            <p className="text-lg whitespace-pre-wrap">{work.notes || 'No notes yet'}</p>
+            <>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
+                  Title
+                </p>
+                <p className="mt-1">{work.title || "—"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
+                  Registration Status
+                </p>
+                <Badge variant="outline" className="mt-1 capitalize">
+                  {work.registrationStatus}
+                </Badge>
+              </div>
+              {work.contributors.length > 0 && (
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
+                    Contributors
+                  </p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {work.contributors.map((c) => (
+                      <Badge key={c} variant="secondary">
+                        {c}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {work.notes && (
+                <div>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
+                    Notes
+                  </p>
+                  <p className="mt-1 text-sm whitespace-pre-wrap">
+                    {work.notes}
+                  </p>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
 
-      <div className="space-y-4">
-        {canEdit && (
-          <div className="flex justify-end">
-            <EditLinksButton onClick={() => setIsEditingRelated(true)} />
-          </div>
-        )}
-        
-        <RelatedRecordsSection
-          linkedMembers={safeLinkedMembers}
-          linkedArtists={safeLinkedArtists}
-          linkedReleases={safeLinkedReleases}
-          linkedProjects={safeLinkedProjects}
-        />
-      </div>
+      {/* Related Records */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base">Related Records</CardTitle>
+          {canEdit && (
+            <EditLinksButton onClick={() => setShowLinksDialog(true)} />
+          )}
+        </CardHeader>
+        <CardContent>
+          <RelatedRecordsSection
+            linkedMembers={safeLinkedMembers}
+            linkedArtists={safeLinkedArtists}
+            linkedReleases={safeLinkedReleases}
+            linkedProjects={safeLinkedProjects}
+          />
+        </CardContent>
+      </Card>
 
       <EditRelatedDialog
-        open={isEditingRelated}
-        onOpenChange={setIsEditingRelated}
-        title="Edit Links"
-        availableMemberships={memberships}
-        availableArtists={artists}
-        availableReleases={releases}
-        availableProjects={projects}
+        open={showLinksDialog}
+        onOpenChange={setShowLinksDialog}
+        title="Edit Related Records"
+        memberOptions={memberOptions}
         selectedMemberIds={safeLinkedMembers}
-        selectedArtistIds={safeLinkedArtists}
+        publishingOptions={publishingOptions}
+        selectedPublishingIds={[]}
+        releaseOptions={releaseOptions}
         selectedReleaseIds={safeLinkedReleases}
+        projectOptions={projectOptions}
         selectedProjectIds={safeLinkedProjects}
-        onSave={handleSaveRelated}
-        isSaving={linkMutation.isPending}
+        artistOptions={artistOptions}
+        selectedArtistIds={safeLinkedArtists}
+        onSave={handleSaveLinks}
+        isSaving={updateMutation.isPending}
         isLoadingOptions={optionsLoading}
         optionsError={optionsError}
       />

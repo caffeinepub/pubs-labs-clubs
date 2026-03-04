@@ -29,11 +29,89 @@ export interface ArtistDevelopment {
   'milestones' : Array<string>,
 }
 export type ArtistDevelopmentId = string;
-export interface ByGoals {
+export interface ChangeEvent {
+  'id' : bigint,
+  'operationType' : { 'link' : null } |
+    { 'create' : null } |
+    { 'update' : null },
+  'author' : Principal,
+  'changedFields' : Array<string>,
+  'timestamp' : bigint,
+  'recordId' : string,
+}
+export interface CreateArtistDevelopmentRequest {
+  'relatedRecordingProjects' : Array<RecodingId>,
+  'relatedLabelEntities' : Array<LabelEntityId>,
+  'artistId' : string,
+  'relatedArtistDevelopment' : Array<ArtistDevelopmentId>,
+  'relatedMemberships' : Array<MemberId>,
+  'goals' : Array<string>,
+  'plans' : Array<string>,
+  'internalNotes' : string,
+  'relatedPublishing' : Array<PublishingId>,
+  'milestones' : Array<string>,
+}
+export interface CreateArtistDevelopmentResponse {
   'id' : ArtistDevelopmentId,
+  'relatedRecordingProjects' : Array<RecodingId>,
+  'owner' : Principal,
+  'relatedLabelEntities' : Array<LabelEntityId>,
   'artistId' : string,
   'created_at' : Time,
-  'goals' : string,
+  'relatedArtistDevelopment' : Array<ArtistDevelopmentId>,
+  'relatedMemberships' : Array<MemberId>,
+  'goals' : Array<string>,
+  'plans' : Array<string>,
+  'internalNotes' : string,
+  'relatedPublishing' : Array<PublishingId>,
+  'milestones' : Array<string>,
+}
+export interface CreatePublishingWorkRequest {
+  'title' : string,
+  'ownershipSplits' : Array<[string, bigint]>,
+  'linkedProjects' : Array<RecodingId>,
+  'isrc' : [] | [string],
+  'iswc' : [] | [string],
+  'linkedReleases' : Array<LabelEntityId>,
+  'linkedMembers' : Array<MemberId>,
+  'notes' : string,
+  'registrationStatus' : string,
+  'contributors' : Array<string>,
+  'linkedArtists' : Array<ArtistDevelopmentId>,
+}
+export interface CreateRecordingProjectRequest {
+  'status' : ProjectStatus,
+  'title' : string,
+  'participants' : Array<string>,
+  'sessionDate' : Time,
+  'linkedReleases' : Array<LabelEntityId>,
+  'linkedWorks' : Array<PublishingId>,
+  'assetReferences' : Array<string>,
+  'linkedMembers' : Array<MemberId>,
+  'notes' : string,
+  'linkedArtists' : Array<ArtistDevelopmentId>,
+}
+export interface CreateReleaseRequest {
+  'title' : string,
+  'workflowChecklist' : Array<string>,
+  'keyDates' : Array<string>,
+  'owners' : Array<string>,
+  'linkedProjects' : Array<RecodingId>,
+  'tracklist' : Array<string>,
+  'linkedWorks' : Array<PublishingId>,
+  'linkedMembers' : Array<MemberId>,
+  'linkedArtists' : Array<ArtistDevelopmentId>,
+  'releaseType' : string,
+}
+export interface DashboardStats {
+  'totalMemberships' : bigint,
+  'membershipStatusCounts' : Array<[T, bigint]>,
+  'totalRecordingProjects' : bigint,
+  'projectStatusCounts' : Array<[ProjectStatus, bigint]>,
+  'totalPublishingWorks' : bigint,
+  'totalArtistDevelopment' : bigint,
+  'releaseTypeCounts' : Array<[string, bigint]>,
+  'totalReleases' : bigint,
 }
 export type LabelEntityId = string;
 export type MemberId = string;
@@ -137,42 +215,70 @@ export interface UserProfile {
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export interface _CaffeineStorageCreateCertificateResult {
+  'method' : string,
+  'blob_hash' : string,
+}
+export interface _CaffeineStorageRefillInformation {
+  'proposed_top_up_amount' : [] | [bigint],
+}
+export interface _CaffeineStorageRefillResult {
+  'success' : [] | [boolean],
+  'topped_up_amount' : [] | [bigint],
+}
 export interface _SERVICE {
-  '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'addPublishingWorkNotes' : ActorMethod<[string, string], undefined>,
-  'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'assignReleaseOwners' : ActorMethod<
-    [LabelEntityId, Array<string>],
+  '_caffeineStorageBlobIsLive' : ActorMethod<[Uint8Array], boolean>,
+  '_caffeineStorageBlobsToDelete' : ActorMethod<[], Array<Uint8Array>>,
+  '_caffeineStorageConfirmBlobDeletion' : ActorMethod<
+    [Array<Uint8Array>],
     undefined
   >,
+  '_caffeineStorageCreateCertificate' : ActorMethod<
+    [string],
+    _CaffeineStorageCreateCertificateResult
+  >,
+  '_caffeineStorageRefillCashier' : ActorMethod<
+    [[] | [_CaffeineStorageRefillInformation]],
+    _CaffeineStorageRefillResult
+  >,
+  '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
+  '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
+  'bulkDeleteMembershipProfiles' : ActorMethod<
+    [Array<MemberId>],
+    { 'deleted' : Array<MemberId>, 'failed' : Array<MemberId> }
+  >,
   'createArtistDevelopment' : ActorMethod<
-    [string, Array<string>, Array<string>, Array<string>, string],
-    ArtistDevelopment
+    [CreateArtistDevelopmentRequest],
+    CreateArtistDevelopmentResponse
   >,
   'createMembershipProfile' : ActorMethod<
     [MemberId, string, string],
     MembershipProfile
   >,
   'createPublishingWork' : ActorMethod<
-    [
-      string,
-      Array<string>,
-      Array<[string, bigint]>,
-      [] | [string],
-      [] | [string],
-      string,
-    ],
+    [CreatePublishingWorkRequest],
     PublishingWork
   >,
   'createRecordingProject' : ActorMethod<
-    [string, Array<string>, Time, ProjectStatus, string],
+    [CreateRecordingProjectRequest],
     RecordingProject
   >,
-  'createRelease' : ActorMethod<
-    [string, string, Array<string>, Array<string>, Array<string>],
-    Release
+  'createRelease' : ActorMethod<[CreateReleaseRequest], Release>,
+  'deleteArtistDevelopment' : ActorMethod<[ArtistDevelopmentId], undefined>,
+  'deleteMembership' : ActorMethod<[MemberId], undefined>,
+  'deletePublishingWork' : ActorMethod<[PublishingId], undefined>,
+  'deleteRecordingProject' : ActorMethod<[RecodingId], undefined>,
+  'deleteRelease' : ActorMethod<[LabelEntityId], undefined>,
+  'duplicateArtistDevelopment' : ActorMethod<
+    [ArtistDevelopmentId],
+    ArtistDevelopment
   >,
-  'getAllArtistDevelopment' : ActorMethod<[], Array<ArtistDevelopment>>,
+  'duplicateMembership' : ActorMethod<[MemberId], Membership>,
+  'duplicatePublishingWork' : ActorMethod<[PublishingId], PublishingWork>,
+  'duplicateRecordingProject' : ActorMethod<[RecodingId], RecordingProject>,
+  'duplicateRelease' : ActorMethod<[LabelEntityId], Release>,
+  'getAllArtistDevelopments' : ActorMethod<[], Array<ArtistDevelopment>>,
   'getAllKnownUsers' : ActorMethod<[], Array<SignedInUser>>,
   'getAllMembershipProfiles' : ActorMethod<[], Array<MembershipProfile>>,
   'getAllPublishingWorks' : ActorMethod<[], Array<PublishingWork>>,
@@ -182,85 +288,38 @@ export interface _SERVICE {
     [ArtistDevelopmentId],
     ArtistDevelopment
   >,
-  'getArtistDevelopmentByGoals' : ActorMethod<[], Array<ByGoals>>,
+  'getCallerArtistDevelopments' : ActorMethod<[], Array<ArtistDevelopment>>,
+  'getCallerMemberships' : ActorMethod<[], Array<Membership>>,
+  'getCallerPublishingWorks' : ActorMethod<[], Array<PublishingWork>>,
+  'getCallerRecordingProjects' : ActorMethod<[], Array<RecordingProject>>,
+  'getCallerReleases' : ActorMethod<[], Array<Release>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getEntitiesForCaller' : ActorMethod<
-    [],
-    {
-      'recordingProjects' : Array<RecordingProject>,
-      'artistDevelopment' : Array<ArtistDevelopment>,
-      'publishingWorks' : Array<PublishingWork>,
-      'releases' : Array<Release>,
-      'memberships' : Array<[MemberId, Membership]>,
-    }
-  >,
+  'getChangeHistory' : ActorMethod<[string], Array<ChangeEvent>>,
+  'getDashboardStats' : ActorMethod<[], DashboardStats>,
   'getMembershipDetails' : ActorMethod<[MemberId], Membership>,
   'getMembershipProfile' : ActorMethod<[MemberId], MembershipProfile>,
   'getMembershipProfilesByStatus' : ActorMethod<[T], Array<MembershipProfile>>,
-  'getPublishingWork' : ActorMethod<[string], PublishingWork>,
+  'getPublishingWork' : ActorMethod<[PublishingId], PublishingWork>,
   'getRecordingProject' : ActorMethod<[RecodingId], RecordingProject>,
   'getRelease' : ActorMethod<[LabelEntityId], Release>,
   'getRemainingRolloutSteps' : ActorMethod<[], Array<[string, string]>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isCallerApproved' : ActorMethod<[], boolean>,
-  'linkMembershipToEntities' : ActorMethod<
-    [
-      MemberId,
-      Array<ArtistDevelopmentId>,
-      Array<PublishingId>,
-      Array<LabelEntityId>,
-      Array<RecodingId>,
-    ],
-    undefined
-  >,
-  'linkProjectToEntities' : ActorMethod<
-    [
-      RecodingId,
-      Array<MemberId>,
-      Array<ArtistDevelopmentId>,
-      Array<PublishingId>,
-      Array<LabelEntityId>,
-    ],
-    undefined
-  >,
-  'linkPublishingWorkToEntities' : ActorMethod<
-    [
-      PublishingId,
-      Array<MemberId>,
-      Array<ArtistDevelopmentId>,
-      Array<LabelEntityId>,
-      Array<RecodingId>,
-    ],
-    undefined
-  >,
-  'linkReleaseToEntities' : ActorMethod<
-    [
-      LabelEntityId,
-      Array<MemberId>,
-      Array<ArtistDevelopmentId>,
-      Array<PublishingId>,
-      Array<RecodingId>,
-    ],
-    undefined
-  >,
   'listApprovals' : ActorMethod<[], Array<UserApprovalInfo>>,
   'requestApproval' : ActorMethod<[], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'setApproval' : ActorMethod<[Principal, ApprovalStatus], undefined>,
-  'updateArtistDevelopmentLinks' : ActorMethod<
-    [
-      ArtistDevelopmentId,
-      Array<MemberId>,
-      Array<PublishingId>,
-      Array<LabelEntityId>,
-      Array<RecodingId>,
-      Array<ArtistDevelopmentId>,
-    ],
-    undefined
+  'updateArtistDevelopment' : ActorMethod<
+    [ArtistDevelopmentId, CreateArtistDevelopmentRequest],
+    ArtistDevelopment
   >,
   'updateKnownUserRole' : ActorMethod<[], undefined>,
+  'updateMembership' : ActorMethod<
+    [MemberId, string, string, T],
+    MembershipProfile
+  >,
   'updateMembershipLinks' : ActorMethod<
     [
       MemberId,
@@ -271,10 +330,20 @@ export interface _SERVICE {
     ],
     undefined
   >,
-  'updateMembershipProfile' : ActorMethod<
-    [MemberId, string, string, T],
+  'updateMembershipProfileFields' : ActorMethod<
+    [MemberId, string, string],
     MembershipProfile
   >,
+  'updateMembershipStatus' : ActorMethod<[MemberId, T], MembershipProfile>,
+  'updatePublishingWork' : ActorMethod<
+    [PublishingId, CreatePublishingWorkRequest],
+    PublishingWork
+  >,
+  'updateRecordingProject' : ActorMethod<
+    [RecodingId, CreateRecordingProjectRequest],
+    RecordingProject
+  >,
+  'updateRelease' : ActorMethod<[LabelEntityId, CreateReleaseRequest], Release>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

@@ -1,167 +1,287 @@
-import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { useGetAllReleases, useCreateRelease } from '../../../hooks/useQueries';
-import { useCurrentUser } from '../../../hooks/useCurrentUser';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Disc, Plus } from 'lucide-react';
-import EmptyState from '../../../components/feedback/EmptyState';
-import LoadingState from '../../../components/feedback/LoadingState';
+import BulkDeleteConfirmDialog from "@/components/bulk/BulkDeleteConfirmDialog";
+import SortableTableHeader from "@/components/table/SortableTableHeader";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useTableSort } from "@/hooks/useTableSort";
+import { useNavigate } from "@tanstack/react-router";
+import { Copy, Loader2, Plus, Trash2 } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+  type Release,
+  useCreateRelease,
+  useDeleteRelease,
+  useDuplicateRelease,
+  useGetReleases,
+} from "../../../hooks/useQueries";
 
 export default function ReleasesPage() {
   const navigate = useNavigate();
-  const { isAdmin } = useCurrentUser();
-  const { data: releases = [], isLoading } = useGetAllReleases();
+  const { data: releases = [], isLoading } = useGetReleases();
   const createMutation = useCreateRelease();
+  const deleteMutation = useDeleteRelease();
+  const duplicateMutation = useDuplicateRelease();
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    title: '',
-    releaseType: 'single',
-    tracklist: '',
-    keyDates: '',
-    owners: ''
-  });
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showCreate, setShowCreate] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
 
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    createMutation.mutate({
-      title: formData.title,
-      releaseType: formData.releaseType,
-      tracklist: formData.tracklist.split(',').map(t => t.trim()).filter(Boolean),
-      keyDates: formData.keyDates.split(',').map(d => d.trim()).filter(Boolean),
-      owners: formData.owners.split(',').map(o => o.trim()).filter(Boolean)
-    }, {
-      onSuccess: () => {
-        setDialogOpen(false);
-        setFormData({
-          title: '',
-          releaseType: 'single',
-          tracklist: '',
-          keyDates: '',
-          owners: ''
-        });
-      }
+  const { sortedData, sortBy, sortDirection, handleSort } = useTableSort(
+    releases,
+    "title",
+  );
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
   };
 
+  const toggleSelectAll = () => {
+    if (selected.size === sortedData.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(sortedData.map((r) => r.id)));
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!newTitle.trim()) return;
+    try {
+      await createMutation.mutateAsync({
+        owner: "",
+        title: newTitle.trim(),
+        releaseType: "Single",
+        tracklist: [],
+        keyDates: [],
+        owners: [],
+        workflowChecklist: [],
+        linkedMembers: [],
+        linkedArtists: [],
+        linkedWorks: [],
+        linkedProjects: [],
+      });
+      toast.success("Release created");
+      setShowCreate(false);
+      setNewTitle("");
+    } catch {
+      toast.error("Failed to create release");
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await deleteMutation.mutateAsync(Array.from(selected));
+      toast.success(`Deleted ${selected.size} release(s)`);
+      setSelected(new Set());
+      setShowDeleteConfirm(false);
+    } catch {
+      toast.error("Failed to delete releases");
+    }
+  };
+
+  const handleDuplicate = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await duplicateMutation.mutateAsync(id);
+      toast.success("Release duplicated");
+    } catch {
+      toast.error("Failed to duplicate release");
+    }
+  };
+
   if (isLoading) {
-    return <LoadingState />;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Releases</h1>
-          <p className="text-muted-foreground">Manage label releases and workflows</p>
+          <h1 className="text-2xl font-bold">Releases</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Manage label releases and catalog.
+          </p>
         </div>
-        {isAdmin && (
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                New Release
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Create Release</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleCreate} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title *</Label>
-                  <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder="Release title"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="releaseType">Release Type *</Label>
-                  <Input
-                    id="releaseType"
-                    value={formData.releaseType}
-                    onChange={(e) => setFormData({ ...formData, releaseType: e.target.value })}
-                    placeholder="single, EP, album"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="tracklist">Tracklist (comma-separated)</Label>
-                  <Input
-                    id="tracklist"
-                    value={formData.tracklist}
-                    onChange={(e) => setFormData({ ...formData, tracklist: e.target.value })}
-                    placeholder="Track 1, Track 2, Track 3"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="keyDates">Key Dates (comma-separated)</Label>
-                  <Input
-                    id="keyDates"
-                    value={formData.keyDates}
-                    onChange={(e) => setFormData({ ...formData, keyDates: e.target.value })}
-                    placeholder="2024-03-15: Release, 2024-03-01: Pre-save"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="owners">Owners (comma-separated)</Label>
-                  <Input
-                    id="owners"
-                    value={formData.owners}
-                    onChange={(e) => setFormData({ ...formData, owners: e.target.value })}
-                    placeholder="Artist Name, Producer Name"
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? 'Creating...' : 'Create Release'}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        )}
+        <div className="flex gap-2">
+          {selected.size > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete ({selected.size})
+            </Button>
+          )}
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            New Release
+          </Button>
+        </div>
       </div>
 
-      {releases.length === 0 ? (
-        <EmptyState
-          icon={Disc}
-          title="No releases yet"
-          description="Create your first release to start managing label operations."
-          actionLabel={isAdmin ? "Create Release" : undefined}
-          onAction={isAdmin ? () => setDialogOpen(true) : undefined}
-        />
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {releases.map((release) => (
-            <Card 
-              key={release.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => navigate({ to: '/portal/releases/$id', params: { id: release.id } })}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-10">
+              <Checkbox
+                checked={
+                  selected.size === sortedData.length && sortedData.length > 0
+                }
+                onCheckedChange={toggleSelectAll}
+              />
+            </TableHead>
+            <SortableTableHeader
+              sortKey="title"
+              currentSortBy={sortBy}
+              currentDirection={sortDirection}
+              onSort={handleSort}
+              label="Title"
+            />
+            <SortableTableHeader
+              sortKey="releaseType"
+              currentSortBy={sortBy}
+              currentDirection={sortDirection}
+              onSort={handleSort}
+              label="Type"
+            />
+            <SortableTableHeader
+              sortKey="created_at"
+              currentSortBy={sortBy}
+              currentDirection={sortDirection}
+              onSort={handleSort}
+              label="Created"
+            />
+            <TableHead className="w-20">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sortedData.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={5}
+                className="text-center text-muted-foreground py-8"
+              >
+                No releases yet.
+              </TableCell>
+            </TableRow>
+          ) : (
+            sortedData.map((release) => (
+              <TableRow
+                key={release.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() =>
+                  navigate({ to: `/portal/releases/${release.id}` })
+                }
+              >
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={selected.has(release.id)}
+                    onCheckedChange={() => toggleSelect(release.id)}
+                  />
+                </TableCell>
+                <TableCell className="font-medium">
+                  {release.title || "—"}
+                </TableCell>
+                <TableCell>
+                  <Badge variant="outline">{release.releaseType}</Badge>
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {new Date(
+                    Number(release.created_at / BigInt(1_000_000)),
+                  ).toLocaleDateString()}
+                </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => handleDuplicate(release.id, e)}
+                    title="Duplicate"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+
+      {/* Create Dialog */}
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Release</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <label htmlFor="release-title" className="text-sm font-medium">
+                Release Title
+              </label>
+              <Input
+                id="release-title"
+                className="mt-1"
+                placeholder="Enter release title"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreate}
+              disabled={!newTitle.trim() || createMutation.isPending}
             >
-              <CardHeader>
-                <CardTitle className="truncate">{release.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1 text-sm">
-                  <p className="text-muted-foreground capitalize">{release.releaseType}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {release.tracklist.length} track{release.tracklist.length !== 1 ? 's' : ''}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {release.owners.length} owner{release.owners.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              {createMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : null}
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Confirm */}
+      <BulkDeleteConfirmDialog
+        open={showDeleteConfirm}
+        count={selected.size}
+        entityLabel="release"
+        entityLabelPlural="releases"
+        isPending={deleteMutation.isPending}
+        onCancel={() => setShowDeleteConfirm(false)}
+        onConfirm={handleBulkDelete}
+      />
     </div>
   );
 }

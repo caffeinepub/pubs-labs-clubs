@@ -1,10 +1,16 @@
-import { useNavigate } from '@tanstack/react-router';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { useCurrentUser } from '../../hooks/useCurrentUser';
-import { useGetEntitiesForCaller } from '../../hooks/useQueries';
-import { normalizeToArray } from '../../utils/arrays';
-import type { Membership, ArtistDevelopment, PublishingWork, Release, RecordingProject } from '../../backend';
+import type { Membership } from "@/backend";
+import { Badge } from "@/components/ui/badge";
+import { useGetEntitiesForCaller } from "@/hooks/useQueries";
+import type {
+  ArtistDevelopment,
+  CallerEntities,
+  PublishingWork,
+  RecordingProject,
+  Release,
+} from "@/hooks/useQueries";
+import { normalizeToArray } from "@/utils/arrays";
+import { useNavigate } from "@tanstack/react-router";
+import React from "react";
 
 interface RelatedRecordsSectionProps {
   linkedMembers?: string[];
@@ -12,190 +18,206 @@ interface RelatedRecordsSectionProps {
   linkedWorks?: string[];
   linkedReleases?: string[];
   linkedProjects?: string[];
+  // ArtistDevelopment uses different field names
+  relatedMemberships?: string[];
+  relatedPublishing?: string[];
+  relatedLabelEntities?: string[];
+  relatedRecordingProjects?: string[];
+  relatedArtistDevelopment?: string[];
 }
 
-export default function RelatedRecordsSection({
+export function RelatedRecordsSection({
   linkedMembers,
   linkedArtists,
   linkedWorks,
   linkedReleases,
-  linkedProjects
+  linkedProjects,
+  relatedMemberships,
+  relatedPublishing,
+  relatedLabelEntities,
+  relatedRecordingProjects,
+  relatedArtistDevelopment,
 }: RelatedRecordsSectionProps) {
   const navigate = useNavigate();
-  const { isAdmin } = useCurrentUser();
-  
-  // Non-admin users rely on getEntitiesForCaller for label resolution
-  const { data: callerEntities } = useGetEntitiesForCaller(!isAdmin);
+  const callerEntitiesResult = useGetEntitiesForCaller();
 
-  // Normalize all arrays to handle upgrade-time undefined/null values
-  const safeLinkedMembers = normalizeToArray<string>(linkedMembers);
-  const safeLinkedArtists = normalizeToArray<string>(linkedArtists);
-  const safeLinkedWorks = normalizeToArray<string>(linkedWorks);
-  const safeLinkedReleases = normalizeToArray<string>(linkedReleases);
-  const safeLinkedProjects = normalizeToArray<string>(linkedProjects);
-
-  const getLabelForMember = (id: string): string => {
-    if (!isAdmin && callerEntities) {
-      // Normalize caller entity collections to handle upgrade-time missing/partial data
-      const safeMemberships = normalizeToArray<[string, Membership]>(callerEntities.memberships);
-      const found = safeMemberships.find(([mId]) => mId === id);
-      if (found) return found[1]?.profile?.name || id;
-    }
-    return id;
+  const callerEntities: CallerEntities = callerEntitiesResult.data ?? {
+    memberships: [],
+    publishingWorks: [],
+    releases: [],
+    recordingProjects: [],
+    artistDevelopments: [],
   };
 
-  const getLabelForArtist = (id: string): string => {
-    if (!isAdmin && callerEntities) {
-      const safeArtistDevelopment = normalizeToArray<ArtistDevelopment>(callerEntities.artistDevelopment);
-      const found = safeArtistDevelopment.find(a => a?.id === id);
-      if (found) return found.artistId || id;
-    }
-    return id;
-  };
+  const safeMemberships = normalizeToArray<Membership>(
+    callerEntities.memberships,
+  );
+  const safePublishingWorks = normalizeToArray<PublishingWork>(
+    callerEntities.publishingWorks,
+  );
+  const safeReleases = normalizeToArray<Release>(callerEntities.releases);
+  const safeRecordingProjects = normalizeToArray<RecordingProject>(
+    callerEntities.recordingProjects,
+  );
+  const safeArtistDevelopment = normalizeToArray<ArtistDevelopment>(
+    callerEntities.artistDevelopments,
+  );
 
-  const getLabelForWork = (id: string): string => {
-    if (!isAdmin && callerEntities) {
-      const safePublishingWorks = normalizeToArray<PublishingWork>(callerEntities.publishingWorks);
-      const found = safePublishingWorks.find(w => w?.id === id);
-      if (found) return found.title || id;
-    }
-    return id;
-  };
+  const memberIds = normalizeToArray<string>(
+    linkedMembers ?? relatedMemberships,
+  );
+  const artistIds = normalizeToArray<string>(
+    linkedArtists ?? relatedArtistDevelopment,
+  );
+  const workIds = normalizeToArray<string>(linkedWorks ?? relatedPublishing);
+  const releaseIds = normalizeToArray<string>(
+    linkedReleases ?? relatedLabelEntities,
+  );
+  const projectIds = normalizeToArray<string>(
+    linkedProjects ?? relatedRecordingProjects,
+  );
 
-  const getLabelForRelease = (id: string): string => {
-    if (!isAdmin && callerEntities) {
-      const safeReleases = normalizeToArray<Release>(callerEntities.releases);
-      const found = safeReleases.find(r => r?.id === id);
-      if (found) return found.title || id;
-    }
-    return id;
-  };
+  function getMemberLabel(id: string): string {
+    const found = safeMemberships.find((m) => m.profile.id === id);
+    return found ? found.profile.name || id : id;
+  }
 
-  const getLabelForProject = (id: string): string => {
-    if (!isAdmin && callerEntities) {
-      const safeRecordingProjects = normalizeToArray<RecordingProject>(callerEntities.recordingProjects);
-      const found = safeRecordingProjects.find(p => p?.id === id);
-      if (found) return found.title || id;
-    }
-    return id;
-  };
+  function getArtistLabel(id: string): string {
+    const found = safeArtistDevelopment.find((a) => a.id === id);
+    return found ? found.artistId || id : id;
+  }
 
-  const hasAnyLinks = 
-    safeLinkedMembers.length > 0 ||
-    safeLinkedArtists.length > 0 ||
-    safeLinkedWorks.length > 0 ||
-    safeLinkedReleases.length > 0 ||
-    safeLinkedProjects.length > 0;
+  function getWorkLabel(id: string): string {
+    const found = safePublishingWorks.find((w) => w.id === id);
+    return found ? found.title || id : id;
+  }
 
-  if (!hasAnyLinks) {
+  function getReleaseLabel(id: string): string {
+    const found = safeReleases.find((r) => r.id === id);
+    return found ? found.title || id : id;
+  }
+
+  function getProjectLabel(id: string): string {
+    const found = safeRecordingProjects.find((p) => p.id === id);
+    return found ? found.title || id : id;
+  }
+
+  const hasAny =
+    memberIds.length > 0 ||
+    artistIds.length > 0 ||
+    workIds.length > 0 ||
+    releaseIds.length > 0 ||
+    projectIds.length > 0;
+
+  if (!hasAny) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Related Records</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">No related records</p>
-        </CardContent>
-      </Card>
+      <p className="text-sm text-muted-foreground italic">No linked records.</p>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Related Records</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {safeLinkedMembers.length > 0 && (
-          <div>
-            <h3 className="text-sm font-medium mb-2">Memberships</h3>
-            <div className="flex flex-wrap gap-2">
-              {safeLinkedMembers.map(id => (
-                <Badge
-                  key={id}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-secondary/80"
-                  onClick={() => navigate({ to: '/portal/memberships/$id', params: { id } })}
-                >
-                  {getLabelForMember(id)}
-                </Badge>
-              ))}
-            </div>
+    <div className="space-y-3">
+      {memberIds.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+            Members
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {memberIds.map((id) => (
+              <Badge
+                key={id}
+                variant="secondary"
+                className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                onClick={() => navigate({ to: `/portal/memberships/${id}` })}
+              >
+                {getMemberLabel(id)}
+              </Badge>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {safeLinkedArtists.length > 0 && (
-          <div>
-            <h3 className="text-sm font-medium mb-2">Artist Development</h3>
-            <div className="flex flex-wrap gap-2">
-              {safeLinkedArtists.map(id => (
-                <Badge
-                  key={id}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-secondary/80"
-                  onClick={() => navigate({ to: '/portal/artists/$id', params: { id } })}
-                >
-                  {getLabelForArtist(id)}
-                </Badge>
-              ))}
-            </div>
+      {artistIds.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+            Artist Development
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {artistIds.map((id) => (
+              <Badge
+                key={id}
+                variant="secondary"
+                className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                onClick={() => navigate({ to: `/portal/artists/${id}` })}
+              >
+                {getArtistLabel(id)}
+              </Badge>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {safeLinkedWorks.length > 0 && (
-          <div>
-            <h3 className="text-sm font-medium mb-2">Publishing Works</h3>
-            <div className="flex flex-wrap gap-2">
-              {safeLinkedWorks.map(id => (
-                <Badge
-                  key={id}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-secondary/80"
-                  onClick={() => navigate({ to: '/portal/publishing/$id', params: { id } })}
-                >
-                  {getLabelForWork(id)}
-                </Badge>
-              ))}
-            </div>
+      {workIds.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+            Publishing Works
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {workIds.map((id) => (
+              <Badge
+                key={id}
+                variant="secondary"
+                className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                onClick={() => navigate({ to: `/portal/publishing/${id}` })}
+              >
+                {getWorkLabel(id)}
+              </Badge>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {safeLinkedReleases.length > 0 && (
-          <div>
-            <h3 className="text-sm font-medium mb-2">Releases</h3>
-            <div className="flex flex-wrap gap-2">
-              {safeLinkedReleases.map(id => (
-                <Badge
-                  key={id}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-secondary/80"
-                  onClick={() => navigate({ to: '/portal/releases/$id', params: { id } })}
-                >
-                  {getLabelForRelease(id)}
-                </Badge>
-              ))}
-            </div>
+      {releaseIds.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+            Releases
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {releaseIds.map((id) => (
+              <Badge
+                key={id}
+                variant="secondary"
+                className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                onClick={() => navigate({ to: `/portal/releases/${id}` })}
+              >
+                {getReleaseLabel(id)}
+              </Badge>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {safeLinkedProjects.length > 0 && (
-          <div>
-            <h3 className="text-sm font-medium mb-2">Recording Projects</h3>
-            <div className="flex flex-wrap gap-2">
-              {safeLinkedProjects.map(id => (
-                <Badge
-                  key={id}
-                  variant="secondary"
-                  className="cursor-pointer hover:bg-secondary/80"
-                  onClick={() => navigate({ to: '/portal/recordings/$id', params: { id } })}
-                >
-                  {getLabelForProject(id)}
-                </Badge>
-              ))}
-            </div>
+      {projectIds.length > 0 && (
+        <div>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
+            Recording Projects
+          </p>
+          <div className="flex flex-wrap gap-1">
+            {projectIds.map((id) => (
+              <Badge
+                key={id}
+                variant="secondary"
+                className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
+                onClick={() => navigate({ to: `/portal/recordings/${id}` })}
+              >
+                {getProjectLabel(id)}
+              </Badge>
+            ))}
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      )}
+    </div>
   );
 }
+
+export default RelatedRecordsSection;

@@ -1,167 +1,278 @@
-import { useState } from 'react';
-import { useNavigate } from '@tanstack/react-router';
-import { useGetAllArtistDevelopment, useCreateArtistDevelopment } from '../../../hooks/useQueries';
-import { useCurrentUser } from '../../../hooks/useCurrentUser';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { TrendingUp, Plus } from 'lucide-react';
-import EmptyState from '../../../components/feedback/EmptyState';
-import LoadingState from '../../../components/feedback/LoadingState';
+import BulkDeleteConfirmDialog from "@/components/bulk/BulkDeleteConfirmDialog";
+import SortableTableHeader from "@/components/table/SortableTableHeader";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  type ArtistDevelopment,
+  useCreateArtistDevelopment,
+  useDeleteArtistDevelopment,
+  useDuplicateArtistDevelopment,
+  useGetArtistDevelopments,
+} from "@/hooks/useQueries";
+import { useTableSort } from "@/hooks/useTableSort";
+import { useNavigate } from "@tanstack/react-router";
+import { Copy, Loader2, Plus, Trash2 } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export default function ArtistDevelopmentPage() {
   const navigate = useNavigate();
-  const { isAdmin } = useCurrentUser();
-  const { data: artists = [], isLoading } = useGetAllArtistDevelopment();
-  const createMutation = useCreateArtistDevelopment();
+  const { data: entries = [], isLoading } = useGetArtistDevelopments();
+  const createEntry = useCreateArtistDevelopment();
+  const deleteEntries = useDeleteArtistDevelopment();
+  const duplicateEntry = useDuplicateArtistDevelopment();
 
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    artistId: '',
-    goals: '',
-    plans: '',
-    milestones: '',
-    internalNotes: ''
-  });
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showCreate, setShowCreate] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [formArtistId, setFormArtistId] = useState("");
 
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    createMutation.mutate({
-      artistId: formData.artistId,
-      goals: formData.goals.split(',').map(g => g.trim()).filter(Boolean),
-      plans: formData.plans.split(',').map(p => p.trim()).filter(Boolean),
-      milestones: formData.milestones.split(',').map(m => m.trim()).filter(Boolean),
-      internalNotes: formData.internalNotes
-    }, {
-      onSuccess: () => {
-        setDialogOpen(false);
-        setFormData({
-          artistId: '',
-          goals: '',
-          plans: '',
-          milestones: '',
-          internalNotes: ''
-        });
-      }
+  const { sortedData, sortBy, sortDirection, handleSort } = useTableSort(
+    entries,
+    "artistId",
+  );
+
+  const toggleSelect = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
   };
 
+  const toggleSelectAll = () => {
+    if (selected.size === sortedData.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(sortedData.map((e) => e.id)));
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!formArtistId.trim()) return;
+    try {
+      await createEntry.mutateAsync({ artistId: formArtistId.trim() });
+      toast.success("Artist development record created");
+      setShowCreate(false);
+      setFormArtistId("");
+    } catch {
+      toast.error("Failed to create record");
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await deleteEntries.mutateAsync(Array.from(selected));
+      toast.success(`Deleted ${selected.size} record(s)`);
+      setSelected(new Set());
+      setShowDeleteConfirm(false);
+    } catch {
+      toast.error("Failed to delete records");
+    }
+  };
+
+  const handleDuplicate = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await duplicateEntry.mutateAsync(id);
+      toast.success("Record duplicated");
+    } catch {
+      toast.error("Failed to duplicate record");
+    }
+  };
+
   if (isLoading) {
-    return <LoadingState />;
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Artist Development</h1>
-          <p className="text-muted-foreground">Manage artist/client profiles and development plans</p>
+          <h1 className="text-2xl font-bold">Artist Development</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Manage artist development and CRM records.
+          </p>
         </div>
-        {isAdmin && (
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                New Entry
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Create Artist Development Entry</DialogTitle>
-              </DialogHeader>
-              <form onSubmit={handleCreate} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="artistId">Artist/Client ID *</Label>
-                  <Input
-                    id="artistId"
-                    value={formData.artistId}
-                    onChange={(e) => setFormData({ ...formData, artistId: e.target.value })}
-                    placeholder="Artist name or ID"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="goals">Goals (comma-separated)</Label>
-                  <Input
-                    id="goals"
-                    value={formData.goals}
-                    onChange={(e) => setFormData({ ...formData, goals: e.target.value })}
-                    placeholder="Release album, Tour, Build fanbase"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="plans">Plans (comma-separated)</Label>
-                  <Input
-                    id="plans"
-                    value={formData.plans}
-                    onChange={(e) => setFormData({ ...formData, plans: e.target.value })}
-                    placeholder="Studio sessions, Marketing campaign"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="milestones">Milestones (comma-separated)</Label>
-                  <Input
-                    id="milestones"
-                    value={formData.milestones}
-                    onChange={(e) => setFormData({ ...formData, milestones: e.target.value })}
-                    placeholder="First single, 10k streams, First show"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="internalNotes">Internal Notes (Admin only)</Label>
-                  <Textarea
-                    id="internalNotes"
-                    value={formData.internalNotes}
-                    onChange={(e) => setFormData({ ...formData, internalNotes: e.target.value })}
-                    placeholder="Internal notes..."
-                    rows={3}
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={createMutation.isPending}>
-                  {createMutation.isPending ? 'Creating...' : 'Create Entry'}
-                </Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        )}
+        <div className="flex gap-2">
+          {selected.size > 0 && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setShowDeleteConfirm(true)}
+            >
+              <Trash2 className="h-4 w-4 mr-1" />
+              Delete ({selected.size})
+            </Button>
+          )}
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="h-4 w-4 mr-1" />
+            New Record
+          </Button>
+        </div>
       </div>
 
-      {artists.length === 0 ? (
-        <EmptyState
-          icon={TrendingUp}
-          title="No artist development entries yet"
-          description="Create your first entry to start managing artist/client development plans."
-          actionLabel={isAdmin ? "Create Entry" : undefined}
-          onAction={isAdmin ? () => setDialogOpen(true) : undefined}
-        />
-      ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {artists.map((artist) => (
-            <Card 
-              key={artist.id}
-              className="cursor-pointer hover:shadow-md transition-shadow"
-              onClick={() => navigate({ to: '/portal/artists/$id', params: { id: artist.id } })}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-10">
+              <Checkbox
+                checked={
+                  selected.size === sortedData.length && sortedData.length > 0
+                }
+                onCheckedChange={toggleSelectAll}
+              />
+            </TableHead>
+            <SortableTableHeader
+              sortKey="artistId"
+              currentSortBy={sortBy}
+              currentDirection={sortDirection}
+              onSort={handleSort}
+              label="Artist ID"
+            />
+            <SortableTableHeader
+              sortKey="created_at"
+              currentSortBy={sortBy}
+              currentDirection={sortDirection}
+              onSort={handleSort}
+              label="Created"
+            />
+            <TableHead>Goals</TableHead>
+            <TableHead className="w-20">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sortedData.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={5}
+                className="text-center text-muted-foreground py-8"
+              >
+                No artist development records yet.
+              </TableCell>
+            </TableRow>
+          ) : (
+            sortedData.map((entry) => (
+              <TableRow
+                key={entry.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => navigate({ to: `/portal/artists/${entry.id}` })}
+              >
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={selected.has(entry.id)}
+                    onCheckedChange={() => toggleSelect(entry.id)}
+                  />
+                </TableCell>
+                <TableCell className="font-medium">
+                  {entry.artistId || "—"}
+                </TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {new Date(
+                    Number(entry.created_at / BigInt(1_000_000)),
+                  ).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  <div className="flex flex-wrap gap-1">
+                    {(entry.goals ?? []).slice(0, 2).map((g) => (
+                      <Badge key={g} variant="outline" className="text-xs">
+                        {g}
+                      </Badge>
+                    ))}
+                    {(entry.goals ?? []).length > 2 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{entry.goals.length - 2}
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => handleDuplicate(entry.id, e)}
+                    title="Duplicate"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+
+      {/* Create Dialog */}
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Artist Development Record</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <label htmlFor="artist-id-input" className="text-sm font-medium">
+                Artist ID / Name
+              </label>
+              <Input
+                id="artist-id-input"
+                className="mt-1"
+                placeholder="Enter artist identifier"
+                value={formArtistId}
+                onChange={(e) => setFormArtistId(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreate}
+              disabled={!formArtistId.trim() || createEntry.isPending}
             >
-              <CardHeader>
-                <CardTitle className="truncate">{artist.artistId}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1 text-sm">
-                  <p className="text-muted-foreground">
-                    {artist.goals.length} goal{artist.goals.length !== 1 ? 's' : ''}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {artist.milestones.length} milestone{artist.milestones.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              {createEntry.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-1" />
+              ) : null}
+              Create
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Delete Confirm */}
+      <BulkDeleteConfirmDialog
+        open={showDeleteConfirm}
+        count={selected.size}
+        entityLabel="artist development record"
+        entityLabelPlural="artist development records"
+        isPending={deleteEntries.isPending}
+        onCancel={() => setShowDeleteConfirm(false)}
+        onConfirm={handleBulkDelete}
+      />
     </div>
   );
 }

@@ -1,47 +1,37 @@
-import { useInternetIdentity } from '../../hooks/useInternetIdentity';
-import { useNavigate } from '@tanstack/react-router';
-import { useEffect } from 'react';
-import LoadingState from '../feedback/LoadingState';
-import { Button } from '@/components/ui/button';
-import { LogIn } from 'lucide-react';
+import { useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useInternetIdentity } from "../../hooks/useInternetIdentity";
 
 interface AuthGateProps {
   children: React.ReactNode;
 }
 
 export default function AuthGate({ children }: AuthGateProps) {
-  const { identity, isInitializing, login, loginStatus } = useInternetIdentity();
+  const { identity, isInitializing, loginStatus } = useInternetIdentity();
   const navigate = useNavigate();
 
+  const isAuthenticated = !!identity;
+  const isLoggingIn = loginStatus === "logging-in";
+
   useEffect(() => {
-    // Defensive: only redirect if we're sure the user is not authenticated
-    // and not in the process of logging in
-    if (!isInitializing && !identity && loginStatus !== 'logging-in') {
-      try {
-        navigate({ to: '/' });
-      } catch (error) {
-        console.error('Navigation error in AuthGate:', error);
-      }
+    if (!isInitializing && !isLoggingIn && !isAuthenticated) {
+      navigate({ to: "/" });
     }
-  }, [identity, isInitializing, loginStatus, navigate]);
+  }, [isInitializing, isLoggingIn, isAuthenticated, navigate]);
 
-  if (isInitializing) {
-    return <LoadingState />;
-  }
-
-  if (!identity) {
+  if (isInitializing || isLoggingIn) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <h2 className="text-2xl font-semibold">Authentication Required</h2>
-          <p className="text-muted-foreground">Please sign in to access the portal.</p>
-          <Button onClick={login} disabled={loginStatus === 'logging-in'}>
-            <LogIn className="mr-2 h-4 w-4" />
-            {loginStatus === 'logging-in' ? 'Signing In...' : 'Sign In'}
-          </Button>
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-muted-foreground text-sm">Loading...</p>
         </div>
       </div>
     );
+  }
+
+  if (!isAuthenticated) {
+    return null;
   }
 
   return <>{children}</>;

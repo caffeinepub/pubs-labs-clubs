@@ -1,12 +1,18 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ShieldAlert } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { ShieldAlert } from "lucide-react";
 
 interface AccessDeniedScreenProps {
   message?: string;
 }
 
-export default function AccessDeniedScreen({ 
-  message = 'You do not have permission to access this area.' 
+export default function AccessDeniedScreen({
+  message = "You do not have permission to access this area.",
 }: AccessDeniedScreenProps) {
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-4">
@@ -20,7 +26,8 @@ export default function AccessDeniedScreen({
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            If you believe you should have access, please contact an administrator.
+            If you believe you should have access, please contact an
+            administrator.
           </p>
         </CardContent>
       </Card>

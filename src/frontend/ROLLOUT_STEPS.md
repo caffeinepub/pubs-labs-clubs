@@ -11,123 +11,159 @@ This document serves as the single source of truth for the remaining rollout ste
 
 ## Remaining Steps
 
-### Step 10 — Deployment and Launch
+---
 
-**Description**: Deploy the Higgins Music Hub system to the ICP mainnet, monitor performance and user adoption, perform additional system configuration as needed, and perform final quality assurance checks.
+### Step 10A — Pre-Deployment Checks and Canister Preparation
 
-**Deployment Tasks**:
-- Deploy backend canister to mainnet (if not already deployed)
-- Deploy frontend assets to mainnet
-- Configure production environment variables
-- Set up monitoring and logging
-- Perform final smoke tests on mainnet
-- Monitor initial user adoption and system performance
-
-**Mainnet Smoke Test**:
-- Follow the mainnet smoke test checklist in `frontend/SMOKE_TEST_STEP_10_MAINNET.md`
-- Test with both admin and non-admin approved member accounts
-- Verify AuthGate and ApprovalGate behavior on mainnet
-- Confirm all five portal detail routes load correctly
-- Ensure "Edit Links" dialogs function properly
-- Record exact principals and entity IDs used during testing
-- Document any console errors or backend traps
-
-**Evidence Capture**:
-- Record all deployment steps and outcomes
-- Capture mainnet URLs and canister IDs
-- Document test user principals and entity IDs
-- Save console output and error logs (if any)
-
-**Acceptance Criteria**:
-- System is live on mainnet with accessible URLs
-- All core features function correctly in production
-- No critical bugs or performance issues
-- Monitoring and logging are operational
-- Initial users can successfully access and use the system
-- AuthGate and ApprovalGate work correctly for both roles
-- All five portal detail routes load without errors
-- "Edit Links" dialogs open and function correctly
-- Mainnet smoke test results are documented in `SMOKE_TEST_STEP_10_MAINNET.md`
-
-**References**:
-- Mainnet smoke test checklist: `frontend/SMOKE_TEST_STEP_10_MAINNET.md`
-- Previous smoke test format: `frontend/SMOKE_TEST_21_7.md`
-- Results template format: `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md`
-- Execution log format: `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md`
+**Description**: Verify the local build is clean, confirm the correct dfx identity and cycles wallet are configured for mainnet, and prepare the backend canister for upgrade on the ICP mainnet.
 
 ---
 
-### Step 11 — Post-Launch Refinements
+#### ⚠️ Before You Begin — Confirmation Checklist
 
-**Description**: Incorporate user feedback to improve UX and performance, fix remaining bugs and issues, and integrate CI/CD pipeline.
+Complete every item below before executing any Step 10A actions. **Do not proceed if any item cannot be checked off.**
 
-**Refinement Tasks**:
-- Collect and analyze user feedback
-- Prioritize and implement UX improvements
-- Fix reported bugs and issues
-- Optimize performance based on real-world usage
-- Set up CI/CD pipeline for automated testing and deployment
+- [ ] Local TypeScript check passes (`pnpm typescript-check` exits with zero errors)
+- [ ] Local production build succeeds (`pnpm build` completes without errors)
+- [ ] You have confirmed the correct dfx identity is set for mainnet deployment (`dfx identity whoami` returns the expected deployer identity)
+- [ ] The mainnet cycles wallet is funded with sufficient cycles for canister upgrade and frontend asset upload
+- [ ] You have the mainnet backend canister ID recorded and confirmed
+- [ ] You have reviewed the previous smoke test results (`SMOKE_TEST_21_7_SESSION_LOG.md`) to understand the baseline state
+- [ ] No outstanding critical bugs or regressions are known in the current codebase
 
-**Acceptance Criteria**:
-- User feedback is collected and analyzed
-- High-priority improvements are implemented
-- Critical bugs are resolved
-- Performance is optimized
-- CI/CD pipeline is operational
+> **Stop here if any item above cannot be confirmed. Resolve all failures before continuing.**
 
 ---
 
-### Step 12 — Long-Term Maintenance
+#### Step 10A — Action Checklist
 
-**Description**: Plan and implement system maintenance procedures, add improvements as needed, train core team on system maintenance, and maintain documentation and change logs.
+1. [ ] Run `pnpm typescript-check` and confirm zero TypeScript errors
+2. [ ] Run `pnpm build` and confirm the production build completes successfully
+3. [ ] Run `dfx identity whoami` and confirm the correct mainnet deployer identity is active
+4. [ ] Run `dfx identity get-wallet --network ic` and confirm the cycles wallet address is correct
+5. [ ] Verify cycles balance is sufficient: `dfx wallet balance --network ic`
+6. [ ] Confirm the mainnet backend canister ID: `dfx canister id backend --network ic`
+7. [ ] Record the current canister status: `dfx canister status backend --network ic`
+8. [ ] Confirm the canister is in a `Running` state and not frozen
+9. [ ] Review `backend/main.mo` for any last-minute issues before upgrade
+10. [ ] Document the pre-deployment canister module hash for rollback reference
 
-**Maintenance Tasks**:
-- Establish regular maintenance schedule
-- Document maintenance procedures
-- Train team members on system administration
-- Keep documentation up to date
-- Plan and implement feature enhancements
-- Monitor system health and performance
+#### Step 10A — Acceptance Criteria
 
-**Acceptance Criteria**:
-- Maintenance procedures are documented and followed
-- Team is trained on system maintenance
-- Documentation is current and accurate
-- System remains stable and performant
-- Feature enhancements are planned and implemented as needed
+- Local TypeScript check passes with zero errors
+- Local production build succeeds without errors
+- Correct dfx identity is active for mainnet deployment
+- Cycles wallet is funded and confirmed
+- Mainnet backend canister ID is verified and recorded
+- Canister is in `Running` state
+- Pre-deployment module hash is documented
+
+#### Step 10A — Evidence Fields
+
+**TypeScript Check Result**: _____________  
+**Build Result**: _____________  
+**Active dfx Identity**: _____________  
+**Cycles Wallet Address**: _____________  
+**Cycles Balance**: _____________  
+**Mainnet Backend Canister ID**: _____________  
+**Pre-Deployment Module Hash**: _____________  
+**Canister Status**: _____________  
+**Timestamp**: _____________
 
 ---
 
-## Next Step to Execute
+> ✅ **Confirm all Step 10A checks pass before proceeding to Step 10B.**  
+> If any acceptance criterion is not met, stop and resolve the issue before continuing.
 
-**Current Step**: Step 10 — Deployment and Launch
+---
 
-**Action Required**: Deploy the Higgins Music Hub system to the ICP mainnet and perform comprehensive smoke testing to verify all features function correctly in production. Follow the mainnet smoke test checklist in `frontend/SMOKE_TEST_STEP_10_MAINNET.md` and document all results, including:
+### Step 10B — Backend Canister Upgrade on Mainnet
 
-1. **Deployment Execution**:
-   - Deploy backend canister to mainnet (or verify existing mainnet deployment)
-   - Deploy frontend assets to mainnet
-   - Record mainnet URLs and canister IDs
-   - Configure production environment variables
+**Description**: Upgrade the backend canister on the ICP mainnet, verify the upgrade completed successfully, and run a backend-focused smoke test to confirm stable memory and data integrity.
 
-2. **Mainnet Smoke Testing**:
-   - Test with both admin and non-admin approved member accounts
-   - Record exact principals and entity IDs used
-   - Verify landing page, AuthGate, and ApprovalGate behavior
-   - Test all five portal detail routes (`/portal/memberships/$id`, `/portal/publishing/$id`, `/portal/releases/$id`, `/portal/recordings/$id`, `/portal/artists/$id`)
-   - Open "Edit Links" dialog on each detail page for both roles
-   - Review browser console for errors
-   - Document any failures or issues
+---
 
-3. **Evidence Documentation**:
-   - Complete the smoke test checklist in `SMOKE_TEST_STEP_10_MAINNET.md`
-   - Record deployment evidence (URLs, canister IDs, timestamps)
-   - Capture console output and error logs
-   - Document test user principals and entity IDs
+#### 🔒 Gate: Confirm 10A Complete
 
-**References**:
-- Mainnet smoke test checklist: `frontend/SMOKE_TEST_STEP_10_MAINNET.md`
-- Previous smoke test examples: `frontend/SMOKE_TEST_21_7.md`, `frontend/SMOKE_TEST_21_7_SESSION_LOG.md`
-- Results template format: `frontend/UPGRADE_LINKING_VERIFICATION_RESULTS.md` (Rollout 21.7 section)
-- Execution log format: `frontend/ROLL_OUT_21_7_EXECUTION_LOG.md`
+Before executing Step 10B, confirm the following conditions from Step 10A are all true. **Do not proceed if any condition is not met.**
+
+- [ ] Local TypeScript check passed with zero errors (Step 10A ✓)
+- [ ] Local production build succeeded without errors (Step 10A ✓)
+- [ ] Correct dfx identity is active for mainnet deployment (Step 10A ✓)
+- [ ] Cycles wallet is funded and confirmed (Step 10A ✓)
+- [ ] Mainnet backend canister ID is verified and recorded (Step 10A ✓)
+- [ ] Canister was confirmed in `Running` state (Step 10A ✓)
+- [ ] Pre-deployment module hash is documented for rollback reference (Step 10A ✓)
+- [ ] Step 10A smoke test (see `SMOKE_TEST_STEP_10_MAINNET.md` — Section 10A) passed
+
+> **Stop here if any condition above is not confirmed. Do not upgrade the backend canister until all Step 10A criteria are met.**
+
+---
+
+#### Step 10B — Action Checklist
+
+1. [ ] Run the backend canister upgrade: `dfx deploy backend --network ic --mode upgrade`
+2. [ ] Confirm the upgrade command exits with a success status (no error output)
+3. [ ] Record the new post-upgrade module hash: `dfx canister status backend --network ic`
+4. [ ] Confirm the canister is still in `Running` state after upgrade
+5. [ ] Verify stable memory was preserved (no data loss) by querying a known entity from the backend
+6. [ ] Run a backend query smoke test: call `getEntitiesForCaller` via the admin principal and confirm data is returned
+7. [ ] Confirm `isCallerAdmin` returns `true` for the admin principal
+8. [ ] Confirm `isCallerApproved` returns `true` for a known approved non-admin member
+9. [ ] Check canister logs for any traps or unexpected errors: `dfx canister logs backend --network ic`
+10. [ ] Document the upgrade outcome and any warnings observed
+
+#### Step 10B — Acceptance Criteria
+
+- Backend canister upgrade completes without errors
+- Canister remains in `Running` state after upgrade
+- Post-upgrade module hash is recorded
+- Stable memory is preserved — existing entities are queryable
+- `isCallerAdmin` returns correct results for admin principal
+- `isCallerApproved` returns correct results for approved member
+- No traps or critical errors in canister logs
+
+#### Step 10B — Evidence Fields
+
+**Upgrade Command Output**: _____________  
+**Post-Upgrade Module Hash**: _____________  
+**Canister Status After Upgrade**: _____________  
+**Stable Memory Verification Query Result**: _____________  
+**`isCallerAdmin` Result (admin principal)**: _____________  
+**`isCallerApproved` Result (member principal)**: _____________  
+**Canister Log Summary**: _____________  
+**Timestamp**: _____________
+
+---
+
+> ✅ **Confirm all Step 10B checks pass before proceeding to Step 10C.**  
+> If the backend upgrade failed or data integrity cannot be confirmed, stop and assess rollback options before continuing.
+
+---
+
+### Step 10C — Frontend Canister Upgrade
+
+**Description**: Deploy the compiled frontend assets to the ICP mainnet frontend canister, verify the deployment completed successfully, and run a full post-deployment smoke test covering all five portal detail routes, Edit Links dialogs for both admin and non-admin roles, and AuthGate/ApprovalGate behavior.
+
+---
+
+#### 🔒 Gate: Confirm 10B Complete
+
+Before executing Step 10C, confirm the following conditions from Step 10B are all true. **Do not proceed if any condition is not met.**
+
+- [ ] Backend canister upgrade completed without errors (Step 10B ✓)
+- [ ] Canister is in `Running` state after upgrade (Step 10B ✓)
+- [ ] Post-upgrade module hash is recorded (Step 10B ✓)
+- [ ] Stable memory verified — existing entities are queryable (Step 10B ✓)
+- [ ] `isCallerAdmin` and `isCallerApproved` return correct results (Step 10B ✓)
+- [ ] No traps or critical errors found in canister logs (Step 10B ✓)
+- [ ] Step 10B smoke test (see `SMOKE_TEST_STEP_10_MAINNET.md` — Section 10B) passed
+
+> **Stop here if any condition above is not confirmed. Do not deploy frontend assets until the backend upgrade is verified stable.**
+
+---
+
+#### Step 10C — Deployment Command
+
+Run the following command to deploy the frontend canister to mainnet:
 

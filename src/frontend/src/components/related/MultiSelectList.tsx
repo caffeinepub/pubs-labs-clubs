@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search } from 'lucide-react';
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Search } from "lucide-react";
+import { useMemo, useState } from "react";
 
 interface EntityOption {
   id: string;
@@ -21,15 +21,15 @@ export default function MultiSelectList({
   label,
   options,
   selectedIds,
-  onChange
+  onChange,
 }: MultiSelectListProps) {
-  const [filter, setFilter] = useState('');
+  const [filter, setFilter] = useState("");
 
   const filteredOptions = useMemo(() => {
     if (!filter.trim()) return options;
     const lowerFilter = filter.toLowerCase();
-    return options.filter(option => 
-      option.label.toLowerCase().includes(lowerFilter)
+    return options.filter((option) =>
+      option.label.toLowerCase().includes(lowerFilter),
     );
   }, [options, filter]);
 
@@ -37,7 +37,7 @@ export default function MultiSelectList({
 
   const toggleId = (id: string) => {
     if (selectedIds.includes(id)) {
-      onChange(selectedIds.filter(i => i !== id));
+      onChange(selectedIds.filter((i) => i !== id));
     } else {
       onChange([...selectedIds, id]);
     }
@@ -70,7 +70,7 @@ export default function MultiSelectList({
           </div>
         ) : (
           <div className="space-y-2">
-            {filteredOptions.map(option => (
+            {filteredOptions.map((option) => (
               <div key={option.id} className="flex items-center space-x-2">
                 <Checkbox
                   id={`${label}-${option.id}`}

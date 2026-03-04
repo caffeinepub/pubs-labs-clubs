@@ -1,9 +1,9 @@
-import { useNavigate } from '@tanstack/react-router';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Music, Users, Disc, Mic, TrendingUp } from 'lucide-react';
-import BrandHeader from '../components/layout/BrandHeader';
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "@tanstack/react-router";
+import { Disc, Mic, Music, TrendingUp, Users } from "lucide-react";
+import { useEffect } from "react";
+import BrandHeader from "../components/layout/BrandHeader";
+import { useInternetIdentity } from "../hooks/useInternetIdentity";
 
 export default function LandingPage() {
   const { identity, login, loginStatus } = useInternetIdentity();
@@ -11,7 +11,7 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (identity) {
-      navigate({ to: '/portal' });
+      navigate({ to: "/portal" });
     }
   }, [identity, navigate]);
 
@@ -22,12 +22,15 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       <BrandHeader showAuth={true} />
-      
+
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center opacity-20"
-          style={{ backgroundImage: 'url(/assets/generated/higgins-music-hero.dim_1920x640.png)' }}
+          style={{
+            backgroundImage:
+              "url(/assets/generated/higgins-music-hero.dim_1920x640.png)",
+          }}
         />
         <div className="relative container mx-auto px-4 py-24 md:py-32">
           <div className="max-w-3xl mx-auto text-center">
@@ -35,15 +38,18 @@ export default function LandingPage() {
               Your Music, Your Future
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-              A co-operative music company supporting artists through publishing, label management, recordings, and development.
+              A co-operative music company supporting artists through
+              publishing, label management, recordings, and development.
             </p>
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               onClick={handleSignIn}
-              disabled={loginStatus === 'logging-in'}
+              disabled={loginStatus === "logging-in"}
               className="text-lg px-8 py-6"
             >
-              {loginStatus === 'logging-in' ? 'Signing In...' : 'Sign In to Portal'}
+              {loginStatus === "logging-in"
+                ? "Signing In..."
+                : "Sign In to Portal"}
             </Button>
           </div>
         </div>
@@ -52,7 +58,9 @@ export default function LandingPage() {
       {/* Services Section */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Our Services</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">
+            Our Services
+          </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             <ServiceCard
               icon={<Music className="w-10 h-10" />}
@@ -85,10 +93,13 @@ export default function LandingPage() {
             <div className="flex items-center justify-center mb-6">
               <Users className="w-12 h-12 text-primary" />
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">Co-operative Membership</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-center mb-6">
+              Co-operative Membership
+            </h2>
             <p className="text-lg text-muted-foreground text-center mb-8">
-              Higgins Music operates as a co-operative, putting artists first. Members benefit from shared resources, 
-              transparent operations, and collective decision-making that ensures the best outcomes for all.
+              Higgins Music operates as a co-operative, putting artists first.
+              Members benefit from shared resources, transparent operations, and
+              collective decision-making that ensures the best outcomes for all.
             </p>
             <div className="grid md:grid-cols-3 gap-6">
               <BenefitCard
@@ -112,8 +123,8 @@ export default function LandingPage() {
       <footer className="bg-muted/50 py-8 border-t">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
           <p>
-            © {new Date().getFullYear()} Higgins Music. Built with love using{' '}
-            <a 
+            © {new Date().getFullYear()} Higgins Music. Built with love using{" "}
+            <a
               href={`https://caffeine.ai/?utm_source=Caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -128,7 +139,11 @@ export default function LandingPage() {
   );
 }
 
-function ServiceCard({ icon, title, description }: { icon: React.ReactNode; title: string; description: string }) {
+function ServiceCard({
+  icon,
+  title,
+  description,
+}: { icon: React.ReactNode; title: string; description: string }) {
   return (
     <div className="bg-card p-6 rounded-lg border shadow-sm hover:shadow-md transition-shadow">
       <div className="text-primary mb-4">{icon}</div>
@@ -138,7 +153,10 @@ function ServiceCard({ icon, title, description }: { icon: React.ReactNode; titl
   );
 }
 
-function BenefitCard({ title, description }: { title: string; description: string }) {
+function BenefitCard({
+  title,
+  description,
+}: { title: string; description: string }) {
   return (
     <div className="text-center">
       <h3 className="text-lg font-semibold mb-2">{title}</h3>

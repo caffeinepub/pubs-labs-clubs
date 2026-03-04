@@ -1,269 +1,345 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from '@tanstack/react-router';
-import { 
-  useGetMembershipDetails, 
-  useUpdateMembershipProfile,
-  useLinkMembershipToEntities
-} from '../../../hooks/useQueries';
-import { useLinkableEntityOptions } from '../../../hooks/useLinkableEntityOptions';
-import { useCurrentUser } from '../../../hooks/useCurrentUser';
-import { useInternetIdentity } from '../../../hooks/useInternetIdentity';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft } from 'lucide-react';
-import LoadingState from '../../../components/feedback/LoadingState';
-import ErrorBanner from '../../../components/feedback/ErrorBanner';
-import RelatedRecordsSection from '../../../components/related/RelatedRecordsSection';
-import EditRelatedDialog from '../../../components/related/EditRelatedDialog';
-import EditLinksButton from '../../../components/related/EditLinksButton';
-import { canEditMembership } from '../../../components/related/relatedRecordsPermissions';
-import { T as MemberStatus } from '../../../backend';
-import { normalizeToArray } from '../../../utils/arrays';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useNavigate, useParams } from "@tanstack/react-router";
+import { AlertCircle, ArrowLeft, Loader2, Save } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import type { T as MemberStatus } from "../../../backend";
+import EditLinksButton from "../../../components/related/EditLinksButton";
+import EditRelatedDialog from "../../../components/related/EditRelatedDialog";
+import RelatedRecordsSection from "../../../components/related/RelatedRecordsSection";
+import { canEditMembership } from "../../../components/related/relatedRecordsPermissions";
+import { useActor } from "../../../hooks/useActor";
+import { useCurrentUser } from "../../../hooks/useCurrentUser";
+import { useInternetIdentity } from "../../../hooks/useInternetIdentity";
+import { useLinkableEntityOptions } from "../../../hooks/useLinkableEntityOptions";
+import {
+  useGetMembershipDetails,
+  useUpdateMembership,
+  useUpdateMembershipLinks,
+  useUpdateMembershipStatus,
+} from "../../../hooks/useQueries";
+import { normalizeToArray } from "../../../utils/arrays";
 
 export default function MembershipDetail() {
-  const { id } = useParams({ from: '/portal/memberships/$id' });
+  const { id } = useParams({ from: "/portal/memberships/$id" });
   const navigate = useNavigate();
-  const { isAdmin } = useCurrentUser();
   const { identity } = useInternetIdentity();
-  const { data: membership, isLoading, error } = useGetMembershipDetails(id);
-  const updateMutation = useUpdateMembershipProfile();
-  const linkMutation = useLinkMembershipToEntities();
+  const { isAdmin } = useCurrentUser();
+  const { isFetching: actorFetching } = useActor();
 
-  const [formData, setFormData] = useState({
-    name: membership?.profile.name || '',
-    email: membership?.profile.email || '',
-    status: membership?.profile.status || MemberStatus.applicant
-  });
+  const { data: membership, isLoading } = useGetMembershipDetails(id);
+  const updateMutation = useUpdateMembership();
+  const updateStatusMutation = useUpdateMembershipStatus();
+  const updateLinksMutation = useUpdateMembershipLinks();
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [isEditingRelated, setIsEditingRelated] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [linksDialogOpen, setLinksDialogOpen] = useState(false);
 
-  // Fetch linkable entity options using the role-aware hook
-  const { 
-    artists, 
-    works, 
-    releases, 
-    projects, 
-    isLoading: optionsLoading, 
-    error: optionsError 
+  const {
+    memberOptions,
+    publishingOptions,
+    releaseOptions,
+    projectOptions,
+    artistOptions,
+    isLoading: optionsLoading,
+    error: optionsError,
   } = useLinkableEntityOptions();
 
-  if (isLoading) {
-    return <LoadingState />;
-  }
+  useEffect(() => {
+    if (membership) {
+      setName(membership.profile.name);
+      setEmail(membership.profile.email);
+    }
+  }, [membership]);
 
-  if (error) {
-    return <ErrorBanner message={(error as Error).message} />;
-  }
+  const canEdit = canEditMembership(
+    identity,
+    isAdmin,
+    membership?.profile.principal,
+  );
 
-  if (!membership) {
-    return <ErrorBanner message="Membership not found" />;
-  }
-
-  const canEdit = canEditMembership(identity, isAdmin, membership.profile.principal);
-
-  // Normalize all array-valued fields to handle upgrade-time undefined/null values
-  const safeAgreements = normalizeToArray<string>(membership.profile.agreements);
-  const safeTierBenefits = normalizeToArray<string>(membership.tier?.benefits);
-  const safeLinkedArtists = normalizeToArray<string>(membership.linkedArtists);
-  const safeLinkedWorks = normalizeToArray<string>(membership.linkedWorks);
-  const safeLinkedReleases = normalizeToArray<string>(membership.linkedReleases);
-  const safeLinkedProjects = normalizeToArray<string>(membership.linkedProjects);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateMutation.mutate(
-      { id, ...formData },
-      {
-        onSuccess: () => {
-          setIsEditing(false);
-        }
-      }
-    );
+  const handleSave = async () => {
+    if (!membership) return;
+    if (actorFetching) {
+      setSaveError(
+        "The system is still initializing. Please wait a moment and try again.",
+      );
+      return;
+    }
+    setSaveError(null);
+    try {
+      await updateMutation.mutateAsync({
+        id,
+        name,
+        email,
+        status: membership.profile.status,
+      });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to save changes.";
+      setSaveError(
+        message.includes("Actor not available")
+          ? "The system is still initializing. Please wait a moment and try again."
+          : message,
+      );
+    }
   };
 
-  const handleSaveRelated = (data: {
+  const handleStatusChange = async (status: string) => {
+    if (!membership) return;
+    if (actorFetching) {
+      setSaveError(
+        "The system is still initializing. Please wait a moment and try again.",
+      );
+      return;
+    }
+    setSaveError(null);
+    try {
+      await updateStatusMutation.mutateAsync({
+        id,
+        status: status as MemberStatus,
+      });
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to update status.";
+      setSaveError(
+        message.includes("Actor not available")
+          ? "The system is still initializing. Please wait a moment and try again."
+          : message,
+      );
+    }
+  };
+
+  const handleSaveLinks = async (selections: {
     memberIds: string[];
     artistIds: string[];
     workIds: string[];
+    publishingIds: string[];
     releaseIds: string[];
     projectIds: string[];
   }) => {
-    linkMutation.mutate(
-      {
-        memberId: id,
-        artistIds: data.artistIds,
-        workIds: data.workIds,
-        releaseIds: data.releaseIds,
-        projectIds: data.projectIds
-      },
-      {
-        onSuccess: () => {
-          setIsEditingRelated(false);
-        }
-      }
-    );
+    if (actorFetching)
+      throw new Error(
+        "Actor not available. Please wait a moment and try again.",
+      );
+    await updateLinksMutation.mutateAsync({
+      id,
+      artistIds: selections.artistIds,
+      workIds: selections.publishingIds,
+      releaseIds: selections.releaseIds,
+      projectIds: selections.projectIds,
+    });
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (!membership) {
+    return (
+      <div className="p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>Membership not found.</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  const safeLinkedArtists = normalizeToArray<string>(membership.linkedArtists);
+  const safeLinkedWorks = normalizeToArray<string>(membership.linkedWorks);
+  const safeLinkedReleases = normalizeToArray<string>(
+    membership.linkedReleases,
+  );
+  const safeLinkedProjects = normalizeToArray<string>(
+    membership.linkedProjects,
+  );
+
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="p-6 space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate({ to: '/portal/memberships' })}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate({ to: "/portal/memberships" })}
+        >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold">{membership.profile.name}</h1>
-          <p className="text-muted-foreground">Membership ID: {membership.profile.id}</p>
+          <h1 className="text-2xl font-bold">{membership.profile.name}</h1>
+          <p className="text-muted-foreground text-sm">Membership ID: {id}</p>
+        </div>
+        <div className="ml-auto flex gap-2">
+          {canEdit && (
+            <EditLinksButton onClick={() => setLinksDialogOpen(true)} />
+          )}
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Profile Details</span>
-            {isAdmin && !isEditing && (
-              <Button onClick={() => {
-                setFormData({
-                  name: membership.profile.name,
-                  email: membership.profile.email,
-                  status: membership.profile.status
-                });
-                setIsEditing(true);
-              }}>
-                Edit
-              </Button>
+      {saveError && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{saveError}</AlertDescription>
+        </Alert>
+      )}
+
+      {actorFetching && (
+        <Alert>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <AlertDescription>
+            Initializing connection… save will be available shortly.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Profile Details</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {canEdit ? (
+              <>
+                <div className="space-y-1">
+                  <Label htmlFor="member-name">Name</Label>
+                  <Input
+                    id="member-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="member-email">Email</Label>
+                  <Input
+                    id="member-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <Button
+                  onClick={handleSave}
+                  disabled={updateMutation.isPending || actorFetching}
+                  className="w-full"
+                >
+                  {updateMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving…
+                    </>
+                  ) : actorFetching ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Initializing…
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
+                </Button>
+              </>
+            ) : (
+              <>
+                <div>
+                  <p className="text-sm text-muted-foreground">Name</p>
+                  <p className="font-medium">{membership.profile.name}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="font-medium">{membership.profile.email}</p>
+                </div>
+              </>
             )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isEditing ? (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Status &amp; Tier</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground mb-1">
+                Current Status
+              </p>
+              {isAdmin ? (
                 <Select
-                  value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value as MemberStatus })}
+                  value={membership.profile.status as string}
+                  onValueChange={handleStatusChange}
+                  disabled={updateStatusMutation.isPending || actorFetching}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value={MemberStatus.applicant}>Applicant</SelectItem>
-                    <SelectItem value={MemberStatus.active}>Active</SelectItem>
-                    <SelectItem value={MemberStatus.paused}>Paused</SelectItem>
-                    <SelectItem value={MemberStatus.inactive}>Inactive</SelectItem>
+                    <SelectItem value="applicant">Applicant</SelectItem>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                    <SelectItem value="inactive">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit" disabled={updateMutation.isPending}>
-                  {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <div className="space-y-4">
-              <div>
-                <Label className="text-muted-foreground">Name</Label>
-                <p className="text-lg">{membership.profile.name}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Email</Label>
-                <p className="text-lg">{membership.profile.email}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Status</Label>
-                <p className="text-lg capitalize">{membership.profile.status}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Tier</Label>
-                <p className="text-lg">{membership.profile.tier}</p>
-              </div>
-              {safeTierBenefits.length > 0 && (
-                <div>
-                  <Label className="text-muted-foreground">Benefits</Label>
-                  <ul className="list-disc list-inside text-lg">
-                    {safeTierBenefits.map((benefit, idx) => (
-                      <li key={idx}>{benefit}</li>
-                    ))}
-                  </ul>
-                </div>
+              ) : (
+                <Badge>{membership.profile.status as string}</Badge>
               )}
-              {safeAgreements.length > 0 && (
-                <div>
-                  <Label className="text-muted-foreground">Agreements</Label>
-                  <ul className="list-disc list-inside text-lg">
-                    {safeAgreements.map((agreement, idx) => (
-                      <li key={idx}>{agreement}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <div>
-                <Label className="text-muted-foreground">Created</Label>
-                <p className="text-lg">
-                  {new Date(Number(membership.profile.created_at) / 1000000).toLocaleDateString()}
-                </p>
-              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <div className="space-y-4">
-        {canEdit && (
-          <div className="flex justify-end">
-            <EditLinksButton onClick={() => setIsEditingRelated(true)} />
-          </div>
-        )}
-        
-        <RelatedRecordsSection
-          linkedArtists={safeLinkedArtists}
-          linkedWorks={safeLinkedWorks}
-          linkedReleases={safeLinkedReleases}
-          linkedProjects={safeLinkedProjects}
-        />
+            <div>
+              <p className="text-sm text-muted-foreground">Tier</p>
+              <p className="font-medium">{membership.profile.tier}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Member Since</p>
+              <p className="font-medium">
+                {new Date(
+                  Number(membership.profile.created_at) / 1_000_000,
+                ).toLocaleDateString()}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
+      <RelatedRecordsSection
+        linkedArtists={safeLinkedArtists}
+        linkedWorks={safeLinkedWorks}
+        linkedReleases={safeLinkedReleases}
+        linkedProjects={safeLinkedProjects}
+      />
+
       <EditRelatedDialog
-        open={isEditingRelated}
-        onOpenChange={setIsEditingRelated}
-        title="Edit Links"
-        availableArtists={artists}
-        availableWorks={works}
-        availableReleases={releases}
-        availableProjects={projects}
-        selectedArtistIds={safeLinkedArtists}
-        selectedWorkIds={safeLinkedWorks}
+        open={linksDialogOpen}
+        onOpenChange={setLinksDialogOpen}
+        title="Edit Membership Links"
+        memberOptions={memberOptions}
+        selectedMemberIds={[]}
+        publishingOptions={publishingOptions}
+        selectedPublishingIds={safeLinkedWorks}
+        releaseOptions={releaseOptions}
         selectedReleaseIds={safeLinkedReleases}
+        projectOptions={projectOptions}
         selectedProjectIds={safeLinkedProjects}
-        onSave={handleSaveRelated}
-        isSaving={linkMutation.isPending}
+        artistOptions={artistOptions}
+        selectedArtistIds={safeLinkedArtists}
+        onSave={handleSaveLinks}
+        isSaving={updateLinksMutation.isPending}
         isLoadingOptions={optionsLoading}
         optionsError={optionsError}
       />

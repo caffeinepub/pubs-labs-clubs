@@ -1,27 +1,43 @@
-import { useMemo } from 'react';
-import { useCurrentUser } from './useCurrentUser';
-import { 
-  useGetAllMembershipProfiles,
-  useGetAllArtistDevelopment,
-  useGetAllPublishingWorks,
-  useGetAllReleases,
-  useGetAllRecordingProjects,
-  useGetEntitiesForCaller
-} from './useQueries';
-import { normalizeToArray } from '../utils/arrays';
-import type { MembershipProfile, ArtistDevelopment, PublishingWork, Release, RecordingProject, Membership } from '../backend';
+import { useMemo } from "react";
+import type { Membership } from "../backend";
+import { normalizeToArray } from "../utils/arrays";
+import { useCurrentUser } from "./useCurrentUser";
+import { useGetCallerMemberships, useGetEntitiesForCaller } from "./useQueries";
+import type {
+  ArtistDevelopment,
+  CallerEntities,
+  PublishingWork,
+  RecordingProject,
+  Release,
+} from "./useQueries";
 
-interface EntityOption {
+export interface EntityOption {
   id: string;
   label: string;
 }
 
-interface LinkableEntityOptions {
+export interface LinkableEntityOptions {
   memberships: EntityOption[];
   artists: EntityOption[];
   works: EntityOption[];
   releases: EntityOption[];
   projects: EntityOption[];
+  // Aliased names for convenience
+  memberOptions: EntityOption[];
+  publishingOptions: EntityOption[];
+  releaseOptions: EntityOption[];
+  projectOptions: EntityOption[];
+  artistOptions: EntityOption[];
+  allOptions: Array<
+    EntityOption & {
+      entityType:
+        | "membership"
+        | "publishing"
+        | "release"
+        | "recordingProject"
+        | "artistDevelopment";
+    }
+  >;
   isLoading: boolean;
   error: Error | null;
 }
@@ -29,103 +45,100 @@ interface LinkableEntityOptions {
 export function useLinkableEntityOptions(): LinkableEntityOptions {
   const { isAdmin } = useCurrentUser();
 
-  // Admin queries - only enabled for admins
-  const adminMemberships = useGetAllMembershipProfiles(isAdmin);
-  const adminArtists = useGetAllArtistDevelopment(isAdmin);
-  const adminWorks = useGetAllPublishingWorks(isAdmin);
-  const adminReleases = useGetAllReleases(isAdmin);
-  const adminProjects = useGetAllRecordingProjects(isAdmin);
+  const callerEntitiesResult = useGetEntitiesForCaller();
+  const callerMemberships = useGetCallerMemberships();
 
-  // Non-admin query - only enabled for non-admins
-  const callerEntities = useGetEntitiesForCaller(!isAdmin);
+  const entities: CallerEntities = callerEntitiesResult.data ?? {
+    memberships: [],
+    publishingWorks: [],
+    releases: [],
+    recordingProjects: [],
+    artistDevelopments: [],
+  };
 
-  const isLoading = isAdmin
-    ? adminMemberships.isLoading || adminArtists.isLoading || adminWorks.isLoading || adminReleases.isLoading || adminProjects.isLoading
-    : callerEntities.isLoading;
-
-  const error = isAdmin
-    ? (adminMemberships.error || adminArtists.error || adminWorks.error || adminReleases.error || adminProjects.error) as Error | null
-    : callerEntities.error as Error | null;
+  const isLoading =
+    callerEntitiesResult.isLoading || callerMemberships.isLoading;
+  const error = callerEntitiesResult.isError
+    ? (callerEntitiesResult.error as Error | null)
+    : null;
 
   const options = useMemo(() => {
-    if (isAdmin) {
-      // Defensively normalize admin data to handle upgrade-time missing/partial shapes
-      const safeMemberships = normalizeToArray<MembershipProfile>(adminMemberships.data);
-      const safeArtists = normalizeToArray<ArtistDevelopment>(adminArtists.data);
-      const safeWorks = normalizeToArray<PublishingWork>(adminWorks.data);
-      const safeReleases = normalizeToArray<Release>(adminReleases.data);
-      const safeProjects = normalizeToArray<RecordingProject>(adminProjects.data);
+    const safeMemberships = normalizeToArray<Membership>(
+      isAdmin ? entities.memberships : (callerMemberships.data ?? []),
+    );
+    const safePublishingWorks = normalizeToArray<PublishingWork>(
+      entities.publishingWorks,
+    );
+    const safeReleases = normalizeToArray<Release>(entities.releases);
+    const safeRecordingProjects = normalizeToArray<RecordingProject>(
+      entities.recordingProjects,
+    );
+    const safeArtistDevelopment = normalizeToArray<ArtistDevelopment>(
+      entities.artistDevelopments,
+    );
 
-      return {
-        memberships: safeMemberships.map(m => ({
-          id: m?.id || '',
-          label: `${m?.name || 'Unknown'} (${m?.id || ''})`
-        })),
-        artists: safeArtists.map(a => ({
-          id: a?.id || '',
-          label: `${a?.artistId || 'Unknown'} (${a?.id || ''})`
-        })),
-        works: safeWorks.map(w => ({
-          id: w?.id || '',
-          label: `${w?.title || 'Unknown'} (${w?.id || ''})`
-        })),
-        releases: safeReleases.map(r => ({
-          id: r?.id || '',
-          label: `${r?.title || 'Unknown'} (${r?.id || ''})`
-        })),
-        projects: safeProjects.map(p => ({
-          id: p?.id || '',
-          label: `${p?.title || 'Unknown'} (${p?.id || ''})`
-        }))
-      };
-    } else {
-      const entities = callerEntities.data;
-      if (!entities) {
-        return {
-          memberships: [],
-          artists: [],
-          works: [],
-          releases: [],
-          projects: []
-        };
-      }
+    const memberships: EntityOption[] = safeMemberships.map((m) => ({
+      id: m.profile.id,
+      label: m.profile.name || m.profile.id,
+    }));
 
-      // Defensively normalize each collection to handle upgrade-time missing/partial shapes
-      // Treat undefined/null collections as empty arrays to prevent runtime errors
-      const safeMemberships = normalizeToArray<[string, Membership]>(entities.memberships);
-      const safeArtistDevelopment = normalizeToArray<ArtistDevelopment>(entities.artistDevelopment);
-      const safePublishingWorks = normalizeToArray<PublishingWork>(entities.publishingWorks);
-      const safeReleases = normalizeToArray<Release>(entities.releases);
-      const safeRecordingProjects = normalizeToArray<RecordingProject>(entities.recordingProjects);
+    const works: EntityOption[] = safePublishingWorks.map((w) => ({
+      id: w.id,
+      label: w.title || w.id,
+    }));
 
-      return {
-        memberships: safeMemberships.map(([id, m]) => ({
-          id: id || '',
-          label: `${m?.profile?.name || id || 'Unknown'} (${id || ''})`
-        })),
-        artists: safeArtistDevelopment.map(a => ({
-          id: a?.id || '',
-          label: `${a?.artistId || a?.id || 'Unknown'} (${a?.id || ''})`
-        })),
-        works: safePublishingWorks.map(w => ({
-          id: w?.id || '',
-          label: `${w?.title || w?.id || 'Unknown'} (${w?.id || ''})`
-        })),
-        releases: safeReleases.map(r => ({
-          id: r?.id || '',
-          label: `${r?.title || r?.id || 'Unknown'} (${r?.id || ''})`
-        })),
-        projects: safeRecordingProjects.map(p => ({
-          id: p?.id || '',
-          label: `${p?.title || p?.id || 'Unknown'} (${p?.id || ''})`
-        }))
-      };
-    }
-  }, [isAdmin, adminMemberships.data, adminArtists.data, adminWorks.data, adminReleases.data, adminProjects.data, callerEntities.data]);
+    const releases: EntityOption[] = safeReleases.map((r) => ({
+      id: r.id,
+      label: r.title || r.id,
+    }));
+
+    const projects: EntityOption[] = safeRecordingProjects.map((p) => ({
+      id: p.id,
+      label: p.title || p.id,
+    }));
+
+    const artists: EntityOption[] = safeArtistDevelopment.map((a) => ({
+      id: a.id,
+      label: a.artistId || a.id,
+    }));
+
+    return { memberships, works, releases, projects, artists };
+  }, [
+    isAdmin,
+    entities.memberships,
+    entities.publishingWorks,
+    entities.releases,
+    entities.recordingProjects,
+    entities.artistDevelopments,
+    callerMemberships.data,
+  ]);
+
+  const allOptions = [
+    ...options.memberships.map((o) => ({
+      ...o,
+      entityType: "membership" as const,
+    })),
+    ...options.works.map((o) => ({ ...o, entityType: "publishing" as const })),
+    ...options.releases.map((o) => ({ ...o, entityType: "release" as const })),
+    ...options.projects.map((o) => ({
+      ...o,
+      entityType: "recordingProject" as const,
+    })),
+    ...options.artists.map((o) => ({
+      ...o,
+      entityType: "artistDevelopment" as const,
+    })),
+  ];
 
   return {
     ...options,
+    memberOptions: options.memberships,
+    publishingOptions: options.works,
+    releaseOptions: options.releases,
+    projectOptions: options.projects,
+    artistOptions: options.artists,
+    allOptions,
     isLoading,
-    error
+    error,
   };
 }

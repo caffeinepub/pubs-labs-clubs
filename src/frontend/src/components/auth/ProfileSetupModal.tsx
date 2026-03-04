@@ -1,29 +1,37 @@
-import { useState } from 'react';
-import { useGetCallerUserProfile, useSaveCallerUserProfile } from '../../hooks/useQueries';
-import { useInternetIdentity } from '../../hooks/useInternetIdentity';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { useInternetIdentity } from "../../hooks/useInternetIdentity";
+import {
+  useGetCallerUserProfile,
+  useSaveCallerUserProfile,
+} from "../../hooks/useQueries";
 
 export default function ProfileSetupModal() {
   const { identity } = useInternetIdentity();
-  const { data: userProfile, isLoading: profileLoading, isFetched } = useGetCallerUserProfile();
+  const {
+    data: userProfile,
+    isLoading: profileLoading,
+    isFetched,
+  } = useGetCallerUserProfile();
   const saveProfileMutation = useSaveCallerUserProfile();
-  
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [bio, setBio] = useState('');
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [bio, setBio] = useState("");
 
   const isAuthenticated = !!identity;
-  const showProfileSetup = isAuthenticated && !profileLoading && isFetched && userProfile === null;
+  const showProfileSetup =
+    isAuthenticated && !profileLoading && isFetched && userProfile === null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,14 +39,17 @@ export default function ProfileSetupModal() {
       saveProfileMutation.mutate({
         name: name.trim(),
         email: email.trim(),
-        bio: bio.trim()
+        bio: bio.trim(),
       });
     }
   };
 
   return (
     <Dialog open={showProfileSetup} onOpenChange={() => {}}>
-      <DialogContent className="sm:max-w-md" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent
+        className="sm:max-w-md"
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Welcome to Higgins Music</DialogTitle>
           <DialogDescription>
@@ -76,12 +87,12 @@ export default function ProfileSetupModal() {
               rows={3}
             />
           </div>
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full"
             disabled={!name.trim() || saveProfileMutation.isPending}
           >
-            {saveProfileMutation.isPending ? 'Saving...' : 'Complete Profile'}
+            {saveProfileMutation.isPending ? "Saving..." : "Complete Profile"}
           </Button>
         </form>
       </DialogContent>
