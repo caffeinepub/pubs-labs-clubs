@@ -1,4 +1,5 @@
 import BulkDeleteConfirmDialog from "@/components/bulk/BulkDeleteConfirmDialog";
+import CustomFieldsSection from "@/components/custom-fields/CustomFieldsSection";
 import SortableTableHeader from "@/components/table/SortableTableHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,9 @@ export default function ArtistDevelopmentPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formArtistId, setFormArtistId] = useState("");
+  const [customFieldValues, setCustomFieldValues] = useState<
+    Record<string, string>
+  >({});
 
   const { sortedData, sortBy, sortDirection, handleSort } = useTableSort(
     entries,
@@ -245,6 +249,13 @@ export default function ArtistDevelopmentPage() {
                 onKeyDown={(e) => e.key === "Enter" && handleCreate()}
               />
             </div>
+            <CustomFieldsSection
+              sectionId="artists"
+              values={customFieldValues}
+              onChange={(fieldId, value) =>
+                setCustomFieldValues((prev) => ({ ...prev, [fieldId]: value }))
+              }
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)}>

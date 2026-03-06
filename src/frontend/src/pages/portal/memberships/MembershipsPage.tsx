@@ -12,6 +12,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import {
   Table,
   TableBody,
   TableCell,
@@ -19,15 +27,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "@tanstack/react-router";
 import { AlertCircle, Copy, Loader2, Plus, Trash2 } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import type { Membership, MembershipProfile } from "../../../backend";
 import BulkDeleteConfirmDialog from "../../../components/bulk/BulkDeleteConfirmDialog";
+import CustomFieldsSection from "../../../components/custom-fields/CustomFieldsSection";
 import SortableTableHeader from "../../../components/table/SortableTableHeader";
 import { useActor } from "../../../hooks/useActor";
 import { useCurrentUser } from "../../../hooks/useCurrentUser";
+import {
+  getSupplemental,
+  setSupplemental,
+} from "../../../hooks/useMembershipSupplementalData";
 import {
   useBulkDeleteMembershipProfiles,
   useCreateMembership,
@@ -54,7 +68,15 @@ export default function MembershipsPage() {
   const [createOpen, setCreateOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [newEmail, setNewEmail] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [newTier, setNewTier] = useState("");
+  const [newRole, setNewRole] = useState("");
+  const [newGenre, setNewGenre] = useState("");
+  const [newBio, setNewBio] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
+  const [customFieldValues, setCustomFieldValues] = useState<
+    Record<string, string>
+  >({});
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
@@ -72,6 +94,18 @@ export default function MembershipsPage() {
 
   const isLoading = loadingCaller || loadingAll;
 
+  const resetCreateForm = () => {
+    setNewName("");
+    setNewEmail("");
+    setNewPhone("");
+    setNewTier("");
+    setNewRole("");
+    setNewGenre("");
+    setNewBio("");
+    setCreateError(null);
+    setCustomFieldValues({});
+  };
+
   const handleCreate = async () => {
     if (!newName.trim()) return;
     if (actorFetching) {
@@ -88,9 +122,18 @@ export default function MembershipsPage() {
         name: newName.trim(),
         email: newEmail.trim(),
       });
+      // Persist supplemental profile data to localStorage
+      if (newPhone || newTier || newRole || newGenre || newBio) {
+        setSupplemental(id, {
+          phone: newPhone.trim() || undefined,
+          tier: newTier || undefined,
+          role: newRole || undefined,
+          genre: newGenre.trim() || undefined,
+          bio: newBio.trim() || undefined,
+        });
+      }
       setCreateOpen(false);
-      setNewName("");
-      setNewEmail("");
+      resetCreateForm();
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to create membership.";
@@ -198,7 +241,7 @@ export default function MembershipsPage() {
           )}
           <Button
             onClick={() => {
-              setCreateError(null);
+              resetCreateForm();
               setCreateOpen(true);
             }}
             disabled={actorFetching}
@@ -323,7 +366,9 @@ export default function MembershipsPage() {
                         {profile.status as string}
                       </Badge>
                     </TableCell>
-                    <TableCell>{profile.tier}</TableCell>
+                    <TableCell>
+                      {getSupplemental(profile.id).tier ?? profile.tier}
+                    </TableCell>
                     <TableCell className="text-muted-foreground text-sm">
                       {new Date(
                         Number(profile.created_at) / 1_000_000,
@@ -353,7 +398,13 @@ export default function MembershipsPage() {
       )}
 
       {/* Create Dialog */}
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <Dialog
+        open={createOpen}
+        onOpenChange={(open) => {
+          if (!open) resetCreateForm();
+          setCreateOpen(open);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>New Membership</DialogTitle>
@@ -373,6 +424,7 @@ export default function MembershipsPage() {
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder="Member name"
                 onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                data-ocid="membership.name.input"
               />
             </div>
             <div className="space-y-1">
@@ -384,11 +436,106 @@ export default function MembershipsPage() {
                 onChange={(e) => setNewEmail(e.target.value)}
                 placeholder="member@example.com"
                 onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                data-ocid="membership.input"
               />
             </div>
+
+            {/* Additional Details */}
+            <div className="pt-1">
+              <Separator className="mb-3" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                Additional Details
+              </p>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <Label htmlFor="member-phone">Phone</Label>
+                  <Input
+                    id="member-phone"
+                    type="tel"
+                    value={newPhone}
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    placeholder="e.g. +1 (555) 000-0000"
+                    data-ocid="membership.phone.input"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="member-tier">Member Tier</Label>
+                  <Select value={newTier} onValueChange={setNewTier}>
+                    <SelectTrigger
+                      id="member-tier"
+                      data-ocid="membership.tier.select"
+                    >
+                      <SelectValue placeholder="Select tier…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Standard">Standard</SelectItem>
+                      <SelectItem value="Artist">Artist</SelectItem>
+                      <SelectItem value="Publishing">Publishing</SelectItem>
+                      <SelectItem value="Label">Label</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="member-role">Primary Role</Label>
+                  <Select value={newRole} onValueChange={setNewRole}>
+                    <SelectTrigger
+                      id="member-role"
+                      data-ocid="membership.role.select"
+                    >
+                      <SelectValue placeholder="Select role…" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Artist">Artist</SelectItem>
+                      <SelectItem value="Producer">Producer</SelectItem>
+                      <SelectItem value="Songwriter">Songwriter</SelectItem>
+                      <SelectItem value="Manager">Manager</SelectItem>
+                      <SelectItem value="Executive">Executive</SelectItem>
+                      <SelectItem value="A&R">A&R</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="member-genre">Genre / Discipline</Label>
+                  <Input
+                    id="member-genre"
+                    value={newGenre}
+                    onChange={(e) => setNewGenre(e.target.value)}
+                    placeholder="e.g. Hip-Hop, R&B, Classical"
+                    data-ocid="membership.genre.input"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="member-bio">Bio</Label>
+                  <Textarea
+                    id="member-bio"
+                    value={newBio}
+                    onChange={(e) => setNewBio(e.target.value.slice(0, 500))}
+                    placeholder="Short bio for this member"
+                    rows={3}
+                    data-ocid="membership.bio.textarea"
+                  />
+                  <p className="text-xs text-muted-foreground text-right">
+                    {newBio.length} / 500
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <CustomFieldsSection
+              sectionId="memberships"
+              values={customFieldValues}
+              onChange={(fieldId, value) =>
+                setCustomFieldValues((prev) => ({ ...prev, [fieldId]: value }))
+              }
+            />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setCreateOpen(false)}
+              data-ocid="membership.cancel_button"
+            >
               Cancel
             </Button>
             <Button
@@ -396,6 +543,7 @@ export default function MembershipsPage() {
               disabled={
                 !newName.trim() || createMutation.isPending || actorFetching
               }
+              data-ocid="membership.submit_button"
             >
               {createMutation.isPending ? (
                 <>

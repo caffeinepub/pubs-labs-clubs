@@ -11,10 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { AlertCircle, ArrowLeft, Loader2, Save } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import type { T as MemberStatus } from "../../../backend";
+import ChangeHistoryPanel from "../../../components/history/ChangeHistoryPanel";
 import EditLinksButton from "../../../components/related/EditLinksButton";
 import EditRelatedDialog from "../../../components/related/EditRelatedDialog";
 import RelatedRecordsSection from "../../../components/related/RelatedRecordsSection";
@@ -23,6 +26,7 @@ import { useActor } from "../../../hooks/useActor";
 import { useCurrentUser } from "../../../hooks/useCurrentUser";
 import { useInternetIdentity } from "../../../hooks/useInternetIdentity";
 import { useLinkableEntityOptions } from "../../../hooks/useLinkableEntityOptions";
+import { useMembershipSupplementalData } from "../../../hooks/useMembershipSupplementalData";
 import {
   useGetMembershipDetails,
   useUpdateMembership,
@@ -45,8 +49,16 @@ export default function MembershipDetail() {
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [suppTier, setSuppTier] = useState("");
+  const [role, setRole] = useState("");
+  const [genre, setGenre] = useState("");
+  const [bio, setBio] = useState("");
   const [saveError, setSaveError] = useState<string | null>(null);
   const [linksDialogOpen, setLinksDialogOpen] = useState(false);
+
+  const { supplemental, update: updateSupplemental } =
+    useMembershipSupplementalData(id);
 
   const {
     memberOptions,
@@ -64,6 +76,21 @@ export default function MembershipDetail() {
       setEmail(membership.profile.email);
     }
   }, [membership]);
+
+  // Load supplemental data once it's available
+  useEffect(() => {
+    setPhone(supplemental.phone ?? "");
+    setSuppTier(supplemental.tier ?? "");
+    setRole(supplemental.role ?? "");
+    setGenre(supplemental.genre ?? "");
+    setBio(supplemental.bio ?? "");
+  }, [
+    supplemental.phone,
+    supplemental.tier,
+    supplemental.role,
+    supplemental.genre,
+    supplemental.bio,
+  ]);
 
   const canEdit = canEditMembership(
     identity,
@@ -86,6 +113,14 @@ export default function MembershipDetail() {
         name,
         email,
         status: membership.profile.status,
+      });
+      // Persist supplemental fields to localStorage
+      updateSupplemental({
+        phone: phone.trim() || undefined,
+        tier: suppTier || undefined,
+        role: role || undefined,
+        genre: genre.trim() || undefined,
+        bio: bio.trim() || undefined,
       });
     } catch (err: unknown) {
       const message =
@@ -223,6 +258,7 @@ export default function MembershipDetail() {
                     id="member-name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    data-ocid="membership.name.input"
                   />
                 </div>
                 <div className="space-y-1">
@@ -232,12 +268,101 @@ export default function MembershipDetail() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    data-ocid="membership.input"
                   />
                 </div>
+
+                {/* Additional Details section */}
+                <div className="pt-1">
+                  <Separator className="mb-3" />
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                    Additional Details
+                  </p>
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="detail-phone">Phone</Label>
+                      <Input
+                        id="detail-phone"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="e.g. +1 (555) 000-0000"
+                        data-ocid="membership.phone.input"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="detail-tier">Member Tier</Label>
+                      <Select value={suppTier} onValueChange={setSuppTier}>
+                        <SelectTrigger
+                          id="detail-tier"
+                          data-ocid="membership.tier.select"
+                        >
+                          <SelectValue
+                            placeholder={
+                              membership.profile.tier || "Select tier…"
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Standard">Standard</SelectItem>
+                          <SelectItem value="Artist">Artist</SelectItem>
+                          <SelectItem value="Publishing">Publishing</SelectItem>
+                          <SelectItem value="Label">Label</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="detail-role">Primary Role</Label>
+                      <Select value={role} onValueChange={setRole}>
+                        <SelectTrigger
+                          id="detail-role"
+                          data-ocid="membership.role.select"
+                        >
+                          <SelectValue placeholder="Select role…" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Artist">Artist</SelectItem>
+                          <SelectItem value="Producer">Producer</SelectItem>
+                          <SelectItem value="Songwriter">Songwriter</SelectItem>
+                          <SelectItem value="Manager">Manager</SelectItem>
+                          <SelectItem value="Executive">Executive</SelectItem>
+                          <SelectItem value="A&R">A&R</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="detail-genre">Genre / Discipline</Label>
+                      <Input
+                        id="detail-genre"
+                        value={genre}
+                        onChange={(e) => setGenre(e.target.value)}
+                        placeholder="e.g. Hip-Hop, R&B, Classical"
+                        data-ocid="membership.genre.input"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label htmlFor="detail-bio">Bio</Label>
+                      <Textarea
+                        id="detail-bio"
+                        value={bio}
+                        onChange={(e) => setBio(e.target.value.slice(0, 500))}
+                        placeholder="Short bio for this member"
+                        rows={3}
+                        data-ocid="membership.bio.textarea"
+                      />
+                      <p className="text-xs text-muted-foreground text-right">
+                        {bio.length} / 500
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 <Button
                   onClick={handleSave}
                   disabled={updateMutation.isPending || actorFetching}
                   className="w-full"
+                  data-ocid="membership.save_button"
                 >
                   {updateMutation.isPending ? (
                     <>
@@ -267,6 +392,58 @@ export default function MembershipDetail() {
                   <p className="text-sm text-muted-foreground">Email</p>
                   <p className="font-medium">{membership.profile.email}</p>
                 </div>
+
+                {/* Read-only supplemental fields */}
+                {(supplemental.phone ||
+                  supplemental.tier ||
+                  supplemental.role ||
+                  supplemental.genre ||
+                  supplemental.bio) && (
+                  <>
+                    <Separator />
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Additional Details
+                    </p>
+                    {supplemental.phone && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Phone</p>
+                        <p className="font-medium">{supplemental.phone}</p>
+                      </div>
+                    )}
+                    {supplemental.tier && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Member Tier
+                        </p>
+                        <p className="font-medium">{supplemental.tier}</p>
+                      </div>
+                    )}
+                    {supplemental.role && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Primary Role
+                        </p>
+                        <p className="font-medium">{supplemental.role}</p>
+                      </div>
+                    )}
+                    {supplemental.genre && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">
+                          Genre / Discipline
+                        </p>
+                        <p className="font-medium">{supplemental.genre}</p>
+                      </div>
+                    )}
+                    {supplemental.bio && (
+                      <div>
+                        <p className="text-sm text-muted-foreground">Bio</p>
+                        <p className="font-medium text-sm leading-relaxed">
+                          {supplemental.bio}
+                        </p>
+                      </div>
+                    )}
+                  </>
+                )}
               </>
             )}
           </CardContent>
@@ -303,7 +480,9 @@ export default function MembershipDetail() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Tier</p>
-              <p className="font-medium">{membership.profile.tier}</p>
+              <p className="font-medium">
+                {supplemental.tier ?? membership.profile.tier}
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Member Since</p>
@@ -323,6 +502,8 @@ export default function MembershipDetail() {
         linkedReleases={safeLinkedReleases}
         linkedProjects={safeLinkedProjects}
       />
+
+      <ChangeHistoryPanel recordId={id} />
 
       <EditRelatedDialog
         open={linksDialogOpen}

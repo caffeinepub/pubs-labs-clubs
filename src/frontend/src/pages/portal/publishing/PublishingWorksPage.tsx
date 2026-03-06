@@ -25,6 +25,7 @@ import { Copy, Loader2, Plus, Trash2 } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { toast } from "sonner";
+import CustomFieldsSection from "../../../components/custom-fields/CustomFieldsSection";
 import {
   type PublishingWork,
   useCreatePublishingWork,
@@ -44,6 +45,9 @@ export default function PublishingWorksPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [customFieldValues, setCustomFieldValues] = useState<
+    Record<string, string>
+  >({});
 
   const { sortedData, sortBy, sortDirection, handleSort } = useTableSort(
     works,
@@ -257,6 +261,13 @@ export default function PublishingWorksPage() {
                 onKeyDown={(e) => e.key === "Enter" && handleCreate()}
               />
             </div>
+            <CustomFieldsSection
+              sectionId="publishing"
+              values={customFieldValues}
+              onChange={(fieldId, value) =>
+                setCustomFieldValues((prev) => ({ ...prev, [fieldId]: value }))
+              }
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)}>

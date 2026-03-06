@@ -1,3 +1,4 @@
+import ChangeHistoryPanel from "@/components/history/ChangeHistoryPanel";
 import EditLinksButton from "@/components/related/EditLinksButton";
 import EditRelatedDialog from "@/components/related/EditRelatedDialog";
 import RelatedRecordsSection from "@/components/related/RelatedRecordsSection";
@@ -338,6 +339,8 @@ export default function RecordingProjectDetail() {
           />
         </CardContent>
       </Card>
+
+      <ChangeHistoryPanel recordId={id} />
 
       <EditRelatedDialog
         open={showLinksDialog}

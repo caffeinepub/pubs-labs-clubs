@@ -1,4 +1,5 @@
 import BulkDeleteConfirmDialog from "@/components/bulk/BulkDeleteConfirmDialog";
+import CustomFieldsSection from "@/components/custom-fields/CustomFieldsSection";
 import SortableTableHeader from "@/components/table/SortableTableHeader";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,9 @@ export default function RecordingProjectsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formTitle, setFormTitle] = useState("");
+  const [customFieldValues, setCustomFieldValues] = useState<
+    Record<string, string>
+  >({});
 
   const { sortedData, sortBy, sortDirection, handleSort } = useTableSort(
     projects,
@@ -256,6 +260,13 @@ export default function RecordingProjectsPage() {
                 onKeyDown={(e) => e.key === "Enter" && handleCreate()}
               />
             </div>
+            <CustomFieldsSection
+              sectionId="recordings"
+              values={customFieldValues}
+              onChange={(fieldId, value) =>
+                setCustomFieldValues((prev) => ({ ...prev, [fieldId]: value }))
+              }
+            />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)}>

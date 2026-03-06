@@ -15,6 +15,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import AccessDeniedScreen from "../../../components/auth/AccessDeniedScreen";
 import BrandingPanel from "../../../components/branding/BrandingPanel";
+import CustomFieldsPanel from "../../../components/custom-fields/CustomFieldsPanel";
 import {
   type PortalSectionConfig,
   usePortalSettings,
@@ -134,7 +135,7 @@ export default function AdminSettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Card 3: Custom Fields — Coming soon */}
+          {/* Card 3: Custom Fields — LIVE */}
           <Card
             className="relative overflow-hidden border-border transition-shadow hover:shadow-md"
             data-ocid="admin_settings.card"
@@ -148,21 +149,18 @@ export default function AdminSettingsPage() {
                   <CardTitle className="text-base font-semibold text-foreground">
                     Custom Fields
                   </CardTitle>
-                  <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                    Coming soon
+                  <span className="inline-flex items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-medium text-primary">
+                    Active
                   </span>
                 </div>
                 <CardDescription className="mt-1 text-sm text-muted-foreground">
-                  Add or remove custom fields per portal section. (Coming soon)
+                  Add or remove custom fields per portal section. Fields appear
+                  in create forms across the portal.
                 </CardDescription>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="h-12 w-full rounded-md bg-muted/40 border border-dashed border-border flex items-center justify-center">
-                <span className="text-xs text-muted-foreground/60 select-none">
-                  Configuration options will appear here
-                </span>
-              </div>
+              <CustomFieldsPanel />
             </CardContent>
           </Card>
 

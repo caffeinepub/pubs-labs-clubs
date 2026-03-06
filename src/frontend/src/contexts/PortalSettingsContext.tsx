@@ -34,6 +34,27 @@ export const DEFAULT_BRANDING: BrandingSettings = {
   portalName: "Higgins Music",
 };
 
+// ─── Custom Fields ────────────────────────────────────────────────────────────
+
+export type CustomFieldType = "text" | "number" | "date" | "dropdown";
+
+export interface CustomFieldDef {
+  id: string; // e.g. "cf_<timestamp>_<random>"
+  label: string;
+  type: CustomFieldType;
+  options: string[]; // only used when type === 'dropdown'
+  required: boolean;
+}
+
+export type SectionId =
+  | "memberships"
+  | "publishing"
+  | "releases"
+  | "recordings"
+  | "artists";
+
+export type CustomFieldsMap = Record<SectionId, CustomFieldDef[]>;
+
 export interface PortalSettingsContextValue {
   sectionSettings: Record<string, SectionSetting>;
   defaultSections: PortalSectionConfig[];
@@ -45,6 +66,18 @@ export interface PortalSettingsContextValue {
   updateBranding: (patch: Partial<BrandingSettings>) => void;
   saveBranding: () => void;
   resetBranding: () => void;
+  // Custom Fields
+  customFields: CustomFieldsMap;
+  addCustomField: (
+    sectionId: SectionId,
+    def: Omit<CustomFieldDef, "id">,
+  ) => void;
+  removeCustomField: (sectionId: SectionId, fieldId: string) => void;
+  updateCustomField: (
+    sectionId: SectionId,
+    fieldId: string,
+    patch: Partial<Omit<CustomFieldDef, "id">>,
+  ) => void;
 }
 
 export const defaultSections: PortalSectionConfig[] = [
@@ -113,6 +146,7 @@ export const defaultSections: PortalSectionConfig[] = [
 
 const STORAGE_KEY = "higgins_portal_settings";
 const BRANDING_STORAGE_KEY = "higgins_portal_branding";
+const CUSTOM_FIELDS_STORAGE_KEY = "higgins_portal_custom_fields";
 
 function buildDefaultSettings(): Record<string, SectionSetting> {
   return Object.fromEntries(
@@ -147,6 +181,32 @@ function loadBrandingFromStorage(): BrandingSettings {
   }
 }
 
+function buildDefaultCustomFields(): CustomFieldsMap {
+  return {
+    memberships: [],
+    publishing: [],
+    releases: [],
+    recordings: [],
+    artists: [],
+  };
+}
+
+function loadCustomFieldsFromStorage(): CustomFieldsMap {
+  try {
+    const raw = localStorage.getItem(CUSTOM_FIELDS_STORAGE_KEY);
+    if (!raw) return buildDefaultCustomFields();
+    const parsed = JSON.parse(raw) as Partial<CustomFieldsMap>;
+    const defaults = buildDefaultCustomFields();
+    return { ...defaults, ...parsed };
+  } catch {
+    return buildDefaultCustomFields();
+  }
+}
+
+function generateFieldId(): string {
+  return `cf_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+}
+
 const PortalSettingsContext = createContext<PortalSettingsContextValue | null>(
   null,
 );
@@ -161,6 +221,10 @@ export function PortalSettingsProvider({
 
   const [brandingSettings, setBrandingSettings] = useState<BrandingSettings>(
     loadBrandingFromStorage,
+  );
+
+  const [customFields, setCustomFields] = useState<CustomFieldsMap>(
+    loadCustomFieldsFromStorage,
   );
 
   const updateSection = useCallback(
@@ -208,6 +272,54 @@ export function PortalSettingsProvider({
     localStorage.setItem(BRANDING_STORAGE_KEY, JSON.stringify(defaults));
   }, []);
 
+  const addCustomField = useCallback(
+    (sectionId: SectionId, def: Omit<CustomFieldDef, "id">) => {
+      setCustomFields((prev) => {
+        const next: CustomFieldsMap = {
+          ...prev,
+          [sectionId]: [...prev[sectionId], { ...def, id: generateFieldId() }],
+        };
+        localStorage.setItem(CUSTOM_FIELDS_STORAGE_KEY, JSON.stringify(next));
+        return next;
+      });
+    },
+    [],
+  );
+
+  const removeCustomField = useCallback(
+    (sectionId: SectionId, fieldId: string) => {
+      setCustomFields((prev) => {
+        const next: CustomFieldsMap = {
+          ...prev,
+          [sectionId]: prev[sectionId].filter((f) => f.id !== fieldId),
+        };
+        localStorage.setItem(CUSTOM_FIELDS_STORAGE_KEY, JSON.stringify(next));
+        return next;
+      });
+    },
+    [],
+  );
+
+  const updateCustomField = useCallback(
+    (
+      sectionId: SectionId,
+      fieldId: string,
+      patch: Partial<Omit<CustomFieldDef, "id">>,
+    ) => {
+      setCustomFields((prev) => {
+        const next: CustomFieldsMap = {
+          ...prev,
+          [sectionId]: prev[sectionId].map((f) =>
+            f.id === fieldId ? { ...f, ...patch } : f,
+          ),
+        };
+        localStorage.setItem(CUSTOM_FIELDS_STORAGE_KEY, JSON.stringify(next));
+        return next;
+      });
+    },
+    [],
+  );
+
   const value = useMemo<PortalSettingsContextValue>(
     () => ({
       sectionSettings,
@@ -219,6 +331,10 @@ export function PortalSettingsProvider({
       updateBranding,
       saveBranding,
       resetBranding,
+      customFields,
+      addCustomField,
+      removeCustomField,
+      updateCustomField,
     }),
     [
       sectionSettings,
@@ -229,6 +345,10 @@ export function PortalSettingsProvider({
       updateBranding,
       saveBranding,
       resetBranding,
+      customFields,
+      addCustomField,
+      removeCustomField,
+      updateCustomField,
     ],
   );
 
