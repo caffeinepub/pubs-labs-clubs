@@ -17,6 +17,7 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { AlertCircle, ArrowLeft, Loader2, Save } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import type { T as MemberStatus } from "../../../backend";
+import CommentsSection from "../../../components/comments/CommentsSection";
 import ChangeHistoryPanel from "../../../components/history/ChangeHistoryPanel";
 import EditLinksButton from "../../../components/related/EditLinksButton";
 import EditRelatedDialog from "../../../components/related/EditRelatedDialog";
@@ -504,6 +505,8 @@ export default function MembershipDetail() {
       />
 
       <ChangeHistoryPanel recordId={id} />
+
+      <CommentsSection recordId={id} />
 
       <EditRelatedDialog
         open={linksDialogOpen}

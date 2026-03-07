@@ -12,6 +12,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -20,6 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import {
   type RecordingProject,
   useCreateRecordingProject,
@@ -45,6 +54,10 @@ export default function RecordingProjectsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formTitle, setFormTitle] = useState("");
+  const [formStatus, setFormStatus] = useState("planned");
+  const [formSessionDate, setFormSessionDate] = useState("");
+  const [formParticipants, setFormParticipants] = useState("");
+  const [formNotes, setFormNotes] = useState("");
   const [customFieldValues, setCustomFieldValues] = useState<
     Record<string, string>
   >({});
@@ -77,10 +90,15 @@ export default function RecordingProjectsPage() {
       await createProject.mutateAsync({
         owner: "",
         title: formTitle.trim(),
-        participants: [],
-        sessionDate: BigInt(0),
-        status: "planned",
-        notes: "",
+        participants: formParticipants
+          .split(",")
+          .map((p) => p.trim())
+          .filter(Boolean),
+        sessionDate: formSessionDate
+          ? BigInt(new Date(formSessionDate).getTime()) * BigInt(1_000_000)
+          : BigInt(0),
+        status: formStatus,
+        notes: formNotes.trim(),
         assetReferences: [],
         linkedMembers: [],
         linkedArtists: [],
@@ -90,6 +108,10 @@ export default function RecordingProjectsPage() {
       toast.success("Recording project created");
       setShowCreate(false);
       setFormTitle("");
+      setFormStatus("planned");
+      setFormSessionDate("");
+      setFormParticipants("");
+      setFormNotes("");
     } catch {
       toast.error("Failed to create project");
     }
@@ -242,39 +264,115 @@ export default function RecordingProjectsPage() {
 
       {/* Create Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>New Recording Project</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div>
-              <label htmlFor="rp-create-title" className="text-sm font-medium">
-                Project Title
-              </label>
-              <Input
-                id="rp-create-title"
-                className="mt-1"
-                placeholder="Enter project title"
-                value={formTitle}
-                onChange={(e) => setFormTitle(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+          <div className="max-h-[70vh] overflow-y-auto pr-1">
+            <div className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="rp-create-title">
+                  Project Title <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="rp-create-title"
+                  data-ocid="recording.create.input"
+                  placeholder="Enter project title"
+                  value={formTitle}
+                  onChange={(e) => setFormTitle(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="rp-create-status">Status</Label>
+                <Select value={formStatus} onValueChange={setFormStatus}>
+                  <SelectTrigger
+                    id="rp-create-status"
+                    data-ocid="recording.create.select"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="planned">Planned</SelectItem>
+                    <SelectItem value="in_progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="archived">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="rp-create-session-date">
+                  Session Date{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  id="rp-create-session-date"
+                  type="date"
+                  data-ocid="recording.create.session_date_input"
+                  value={formSessionDate}
+                  onChange={(e) => setFormSessionDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="rp-create-participants">
+                  Participants{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  id="rp-create-participants"
+                  data-ocid="recording.create.participants_input"
+                  placeholder="e.g. Producer, Engineer"
+                  value={formParticipants}
+                  onChange={(e) => setFormParticipants(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Separate names or roles with commas
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="rp-create-notes">
+                  Notes{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Textarea
+                  id="rp-create-notes"
+                  data-ocid="recording.create.textarea"
+                  placeholder="Additional notes..."
+                  value={formNotes}
+                  onChange={(e) => setFormNotes(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              <CustomFieldsSection
+                sectionId="recordings"
+                values={customFieldValues}
+                onChange={(fieldId, value) =>
+                  setCustomFieldValues((prev) => ({
+                    ...prev,
+                    [fieldId]: value,
+                  }))
+                }
               />
             </div>
-            <CustomFieldsSection
-              sectionId="recordings"
-              values={customFieldValues}
-              onChange={(fieldId, value) =>
-                setCustomFieldValues((prev) => ({ ...prev, [fieldId]: value }))
-              }
-            />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowCreate(false)}
+              data-ocid="recording.create.cancel_button"
+            >
               Cancel
             </Button>
             <Button
               onClick={handleCreate}
               disabled={!formTitle.trim() || createProject.isPending}
+              data-ocid="recording.create.submit_button"
             >
               {createProject.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-1" />

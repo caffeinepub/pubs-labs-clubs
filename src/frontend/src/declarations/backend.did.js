@@ -19,6 +19,14 @@ export const _CaffeineStorageRefillResult = IDL.Record({
   'success' : IDL.Opt(IDL.Bool),
   'topped_up_amount' : IDL.Opt(IDL.Nat),
 });
+export const Time = IDL.Int;
+export const Comment = IDL.Record({
+  'id' : IDL.Nat,
+  'createdAt' : Time,
+  'text' : IDL.Text,
+  'author' : IDL.Principal,
+  'recordId' : IDL.Text,
+});
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
@@ -41,7 +49,6 @@ export const CreateArtistDevelopmentRequest = IDL.Record({
   'relatedPublishing' : IDL.Vec(PublishingId),
   'milestones' : IDL.Vec(IDL.Text),
 });
-export const Time = IDL.Int;
 export const CreateArtistDevelopmentResponse = IDL.Record({
   'id' : ArtistDevelopmentId,
   'relatedRecordingProjects' : IDL.Vec(RecodingId),
@@ -263,6 +270,7 @@ export const idlService = IDL.Service({
     ),
   '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+  'addComment' : IDL.Func([IDL.Text, IDL.Text], [Comment], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
   'bulkDeleteMembershipProfiles' : IDL.Func(
       [IDL.Vec(MemberId)],
@@ -296,6 +304,7 @@ export const idlService = IDL.Service({
     ),
   'createRelease' : IDL.Func([CreateReleaseRequest], [Release], []),
   'deleteArtistDevelopment' : IDL.Func([ArtistDevelopmentId], [], []),
+  'deleteComment' : IDL.Func([IDL.Text, IDL.Nat], [], []),
   'deleteMembership' : IDL.Func([MemberId], [], []),
   'deletePublishingWork' : IDL.Func([PublishingId], [], []),
   'deleteRecordingProject' : IDL.Func([RecodingId], [], []),
@@ -352,6 +361,7 @@ export const idlService = IDL.Service({
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getChangeHistory' : IDL.Func([IDL.Text], [IDL.Vec(ChangeEvent)], ['query']),
+  'getComments' : IDL.Func([IDL.Text], [IDL.Vec(Comment)], ['query']),
   'getDashboardStats' : IDL.Func([], [DashboardStats], ['query']),
   'getMembershipDetails' : IDL.Func([MemberId], [Membership], ['query']),
   'getMembershipProfile' : IDL.Func([MemberId], [MembershipProfile], ['query']),
@@ -438,6 +448,14 @@ export const idlFactory = ({ IDL }) => {
     'success' : IDL.Opt(IDL.Bool),
     'topped_up_amount' : IDL.Opt(IDL.Nat),
   });
+  const Time = IDL.Int;
+  const Comment = IDL.Record({
+    'id' : IDL.Nat,
+    'createdAt' : Time,
+    'text' : IDL.Text,
+    'author' : IDL.Principal,
+    'recordId' : IDL.Text,
+  });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
@@ -460,7 +478,6 @@ export const idlFactory = ({ IDL }) => {
     'relatedPublishing' : IDL.Vec(PublishingId),
     'milestones' : IDL.Vec(IDL.Text),
   });
-  const Time = IDL.Int;
   const CreateArtistDevelopmentResponse = IDL.Record({
     'id' : ArtistDevelopmentId,
     'relatedRecordingProjects' : IDL.Vec(RecodingId),
@@ -682,6 +699,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     '_caffeineStorageUpdateGatewayPrincipals' : IDL.Func([], [], []),
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
+    'addComment' : IDL.Func([IDL.Text, IDL.Text], [Comment], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
     'bulkDeleteMembershipProfiles' : IDL.Func(
         [IDL.Vec(MemberId)],
@@ -715,6 +733,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'createRelease' : IDL.Func([CreateReleaseRequest], [Release], []),
     'deleteArtistDevelopment' : IDL.Func([ArtistDevelopmentId], [], []),
+    'deleteComment' : IDL.Func([IDL.Text, IDL.Nat], [], []),
     'deleteMembership' : IDL.Func([MemberId], [], []),
     'deletePublishingWork' : IDL.Func([PublishingId], [], []),
     'deleteRecordingProject' : IDL.Func([RecodingId], [], []),
@@ -783,6 +802,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ChangeEvent)],
         ['query'],
       ),
+    'getComments' : IDL.Func([IDL.Text], [IDL.Vec(Comment)], ['query']),
     'getDashboardStats' : IDL.Func([], [DashboardStats], ['query']),
     'getMembershipDetails' : IDL.Func([MemberId], [Membership], ['query']),
     'getMembershipProfile' : IDL.Func(

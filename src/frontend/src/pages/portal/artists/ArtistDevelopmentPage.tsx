@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -20,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import {
   type ArtistDevelopment,
   useCreateArtistDevelopment,
@@ -45,6 +47,9 @@ export default function ArtistDevelopmentPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [formArtistId, setFormArtistId] = useState("");
+  const [formGenre, setFormGenre] = useState("");
+  const [formGoals, setFormGoals] = useState("");
+  const [formNotes, setFormNotes] = useState("");
   const [customFieldValues, setCustomFieldValues] = useState<
     Record<string, string>
   >({});
@@ -74,10 +79,21 @@ export default function ArtistDevelopmentPage() {
   const handleCreate = async () => {
     if (!formArtistId.trim()) return;
     try {
-      await createEntry.mutateAsync({ artistId: formArtistId.trim() });
+      await createEntry.mutateAsync({
+        artistId: formArtistId.trim(),
+        genre: formGenre.trim() || undefined,
+        goals: formGoals
+          .split(",")
+          .map((g) => g.trim())
+          .filter(Boolean),
+        internalNotes: formNotes.trim() || undefined,
+      });
       toast.success("Artist development record created");
       setShowCreate(false);
       setFormArtistId("");
+      setFormGenre("");
+      setFormGoals("");
+      setFormNotes("");
     } catch {
       toast.error("Failed to create record");
     }
@@ -155,7 +171,7 @@ export default function ArtistDevelopmentPage() {
               currentSortBy={sortBy}
               currentDirection={sortDirection}
               onSort={handleSort}
-              label="Artist ID"
+              label="Artist / Name"
             />
             <SortableTableHeader
               sortKey="created_at"
@@ -231,39 +247,98 @@ export default function ArtistDevelopmentPage() {
 
       {/* Create Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>New Artist Development Record</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div>
-              <label htmlFor="artist-id-input" className="text-sm font-medium">
-                Artist ID / Name
-              </label>
-              <Input
-                id="artist-id-input"
-                className="mt-1"
-                placeholder="Enter artist identifier"
-                value={formArtistId}
-                onChange={(e) => setFormArtistId(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+          <div className="max-h-[70vh] overflow-y-auto pr-1">
+            <div className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="artist-id-input">
+                  Artist ID / Name <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="artist-id-input"
+                  data-ocid="artist.create.input"
+                  placeholder="Enter artist identifier"
+                  value={formArtistId}
+                  onChange={(e) => setFormArtistId(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="artist-genre">
+                  Genre / Discipline{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  id="artist-genre"
+                  data-ocid="artist.create.genre_input"
+                  placeholder="e.g. Hip-Hop, R&B, Producer"
+                  value={formGenre}
+                  onChange={(e) => setFormGenre(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="artist-goals">
+                  Initial Goals{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  id="artist-goals"
+                  data-ocid="artist.create.goals_input"
+                  placeholder="e.g. Sign 2 artists, Release EP"
+                  value={formGoals}
+                  onChange={(e) => setFormGoals(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Separate goals with commas
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="artist-notes">
+                  Internal Notes{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Textarea
+                  id="artist-notes"
+                  data-ocid="artist.create.textarea"
+                  placeholder="Internal notes about this artist..."
+                  value={formNotes}
+                  onChange={(e) => setFormNotes(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              <CustomFieldsSection
+                sectionId="artists"
+                values={customFieldValues}
+                onChange={(fieldId, value) =>
+                  setCustomFieldValues((prev) => ({
+                    ...prev,
+                    [fieldId]: value,
+                  }))
+                }
               />
             </div>
-            <CustomFieldsSection
-              sectionId="artists"
-              values={customFieldValues}
-              onChange={(fieldId, value) =>
-                setCustomFieldValues((prev) => ({ ...prev, [fieldId]: value }))
-              }
-            />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowCreate(false)}
+              data-ocid="artist.create.cancel_button"
+            >
               Cancel
             </Button>
             <Button
               onClick={handleCreate}
               disabled={!formArtistId.trim() || createEntry.isPending}
+              data-ocid="artist.create.submit_button"
             >
               {createEntry.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-1" />

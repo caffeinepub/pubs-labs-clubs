@@ -1,3 +1,4 @@
+import CommentsSection from "@/components/comments/CommentsSection";
 import ChangeHistoryPanel from "@/components/history/ChangeHistoryPanel";
 import EditLinksButton from "@/components/related/EditLinksButton";
 import EditRelatedDialog from "@/components/related/EditRelatedDialog";
@@ -318,6 +319,8 @@ export default function ReleaseDetail() {
       </Card>
 
       <ChangeHistoryPanel recordId={id} />
+
+      <CommentsSection recordId={id} />
 
       <EditRelatedDialog
         open={showLinksDialog}

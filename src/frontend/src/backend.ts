@@ -224,6 +224,13 @@ export interface MembershipProfile {
     email: string;
     notes: string;
 }
+export interface Comment {
+    id: bigint;
+    createdAt: Time;
+    text: string;
+    author: Principal;
+    recordId: string;
+}
 export type MemberId = string;
 export interface DashboardStats {
     totalMemberships: bigint;
@@ -324,6 +331,7 @@ export interface backendInterface {
     _caffeineStorageRefillCashier(refillInformation: _CaffeineStorageRefillInformation | null): Promise<_CaffeineStorageRefillResult>;
     _caffeineStorageUpdateGatewayPrincipals(): Promise<void>;
     _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
+    addComment(recordId: string, text: string): Promise<Comment>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     bulkDeleteMembershipProfiles(ids: Array<MemberId>): Promise<{
         deleted: Array<MemberId>;
@@ -335,6 +343,7 @@ export interface backendInterface {
     createRecordingProject(request: CreateRecordingProjectRequest): Promise<RecordingProject>;
     createRelease(request: CreateReleaseRequest): Promise<Release>;
     deleteArtistDevelopment(id: ArtistDevelopmentId): Promise<void>;
+    deleteComment(recordId: string, commentId: bigint): Promise<void>;
     deleteMembership(id: MemberId): Promise<void>;
     deletePublishingWork(id: PublishingId): Promise<void>;
     deleteRecordingProject(id: RecodingId): Promise<void>;
@@ -359,6 +368,7 @@ export interface backendInterface {
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getChangeHistory(recordId: string): Promise<Array<ChangeEvent>>;
+    getComments(recordId: string): Promise<Array<Comment>>;
     getDashboardStats(): Promise<DashboardStats>;
     getMembershipDetails(id: MemberId): Promise<Membership>;
     getMembershipProfile(id: MemberId): Promise<MembershipProfile>;
@@ -485,6 +495,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async addComment(arg0: string, arg1: string): Promise<Comment> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addComment(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addComment(arg0, arg1);
+            return result;
+        }
+    }
     async assignCallerUserRole(arg0: Principal, arg1: UserRole): Promise<void> {
         if (this.processError) {
             try {
@@ -597,6 +621,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.deleteArtistDevelopment(arg0);
+            return result;
+        }
+    }
+    async deleteComment(arg0: string, arg1: bigint): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteComment(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteComment(arg0, arg1);
             return result;
         }
     }
@@ -934,6 +972,20 @@ export class Backend implements backendInterface {
         } else {
             const result = await this.actor.getChangeHistory(arg0);
             return from_candid_vec_n39(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getComments(arg0: string): Promise<Array<Comment>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getComments(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getComments(arg0);
+            return result;
         }
     }
     async getDashboardStats(): Promise<DashboardStats> {

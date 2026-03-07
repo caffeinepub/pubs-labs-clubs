@@ -135,6 +135,13 @@ export interface MembershipProfile {
     email: string;
     notes: string;
 }
+export interface Comment {
+    id: bigint;
+    createdAt: Time;
+    text: string;
+    author: Principal;
+    recordId: string;
+}
 export type MemberId = string;
 export interface DashboardStats {
     totalMemberships: bigint;
@@ -224,6 +231,7 @@ export enum Variant_link_create_update {
     update = "update"
 }
 export interface backendInterface {
+    addComment(recordId: string, text: string): Promise<Comment>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     bulkDeleteMembershipProfiles(ids: Array<MemberId>): Promise<{
         deleted: Array<MemberId>;
@@ -235,6 +243,7 @@ export interface backendInterface {
     createRecordingProject(request: CreateRecordingProjectRequest): Promise<RecordingProject>;
     createRelease(request: CreateReleaseRequest): Promise<Release>;
     deleteArtistDevelopment(id: ArtistDevelopmentId): Promise<void>;
+    deleteComment(recordId: string, commentId: bigint): Promise<void>;
     deleteMembership(id: MemberId): Promise<void>;
     deletePublishingWork(id: PublishingId): Promise<void>;
     deleteRecordingProject(id: RecodingId): Promise<void>;
@@ -259,6 +268,7 @@ export interface backendInterface {
     getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getChangeHistory(recordId: string): Promise<Array<ChangeEvent>>;
+    getComments(recordId: string): Promise<Array<Comment>>;
     getDashboardStats(): Promise<DashboardStats>;
     getMembershipDetails(id: MemberId): Promise<Membership>;
     getMembershipProfile(id: MemberId): Promise<MembershipProfile>;

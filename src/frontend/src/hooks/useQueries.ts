@@ -693,16 +693,21 @@ export function useCreateArtistDevelopment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { artistId: string }) => {
+    mutationFn: async (data: {
+      artistId: string;
+      genre?: string;
+      goals?: string[];
+      internalNotes?: string;
+    }) => {
       const items = loadFromStorage<ArtistDevelopment>(ARTIST_DEVELOPMENT_KEY);
       const newItem: ArtistDevelopment = {
         id: generateId(),
         owner: "",
         artistId: data.artistId,
-        goals: [],
+        goals: data.goals ?? [],
         plans: [],
         milestones: [],
-        internalNotes: "",
+        internalNotes: data.internalNotes ?? "",
         relatedMemberships: [],
         relatedPublishing: [],
         relatedLabelEntities: [],

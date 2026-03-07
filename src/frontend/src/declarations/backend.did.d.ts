@@ -39,6 +39,13 @@ export interface ChangeEvent {
   'timestamp' : bigint,
   'recordId' : string,
 }
+export interface Comment {
+  'id' : bigint,
+  'createdAt' : Time,
+  'text' : string,
+  'author' : Principal,
+  'recordId' : string,
+}
 export interface CreateArtistDevelopmentRequest {
   'relatedRecordingProjects' : Array<RecodingId>,
   'relatedLabelEntities' : Array<LabelEntityId>,
@@ -243,6 +250,7 @@ export interface _SERVICE {
   >,
   '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  'addComment' : ActorMethod<[string, string], Comment>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'bulkDeleteMembershipProfiles' : ActorMethod<
     [Array<MemberId>],
@@ -266,6 +274,7 @@ export interface _SERVICE {
   >,
   'createRelease' : ActorMethod<[CreateReleaseRequest], Release>,
   'deleteArtistDevelopment' : ActorMethod<[ArtistDevelopmentId], undefined>,
+  'deleteComment' : ActorMethod<[string, bigint], undefined>,
   'deleteMembership' : ActorMethod<[MemberId], undefined>,
   'deletePublishingWork' : ActorMethod<[PublishingId], undefined>,
   'deleteRecordingProject' : ActorMethod<[RecodingId], undefined>,
@@ -296,6 +305,7 @@ export interface _SERVICE {
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getChangeHistory' : ActorMethod<[string], Array<ChangeEvent>>,
+  'getComments' : ActorMethod<[string], Array<Comment>>,
   'getDashboardStats' : ActorMethod<[], DashboardStats>,
   'getMembershipDetails' : ActorMethod<[MemberId], Membership>,
   'getMembershipProfile' : ActorMethod<[MemberId], MembershipProfile>,

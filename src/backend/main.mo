@@ -12,8 +12,6 @@ import AccessControl "authorization/access-control";
 import UserApproval "user-approval/approval";
 import MixinStorage "blob-storage/Mixin";
 
-
-
 actor {
   include MixinStorage();
 
@@ -283,6 +281,79 @@ actor {
   let artistDevelopment = Map.empty<ArtistDevelopmentId, ArtistDevelopment>();
   let knownUsers = Map.empty<Principal, SignedInUser>();
   let changeHistory = Map.empty<Text, [ChangeEvent]>();
+
+  // COMMENTS & NOTES SYSTEM
+  public type Comment = {
+    id : Nat;
+    recordId : Text;
+    author : Principal;
+    text : Text;
+    createdAt : Time.Time;
+  };
+
+  let comments = Map.empty<Text, [Comment]>();
+
+  public shared ({ caller }) func addComment(recordId : Text, text : Text) : async Comment {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can add comments");
+    };
+
+    let existingComments = switch (comments.get(recordId)) {
+      case (null) { [] };
+      case (?c) { c };
+    };
+    let newCommentId = existingComments.size();
+
+    let newComment : Comment = {
+      id = newCommentId;
+      recordId;
+      author = caller;
+      text;
+      createdAt = Time.now();
+    };
+
+    let updatedComments = existingComments.concat([newComment]);
+    comments.add(recordId, updatedComments);
+    newComment;
+  };
+
+  public query ({ caller }) func getComments(recordId : Text) : async [Comment] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view comments");
+    };
+
+    switch (comments.get(recordId)) {
+      case (null) { [] };
+      case (?c) { c };
+    };
+  };
+
+  public shared ({ caller }) func deleteComment(recordId : Text, commentId : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete comments");
+    };
+
+    switch (comments.get(recordId)) {
+      case (null) { Runtime.trap("Record not found") };
+      case (?existingComments) {
+        // Find the comment with the specified ID
+        let commentToDelete = existingComments.filter(func(c) { c.id == commentId });
+        
+        if (commentToDelete.size() == 0) {
+          Runtime.trap("Comment not found");
+        };
+
+        // Check authorization: only the comment author or admin can delete
+        if (commentToDelete[0].author != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: Only the comment author or admin can delete this comment");
+        };
+
+        // Remove the comment
+        let filteredComments = existingComments.filter(func(c) { c.id != commentId });
+        comments.add(recordId, filteredComments);
+      };
+    };
+  };
 
   // HISTORY TRACKING FUNCTIONS
   func addChangeEvent(recordId : Text, changedFields : [Text], operationType : { #create; #update; #link }, author : Principal) {
@@ -682,7 +753,7 @@ actor {
     switch (memberships.get(id)) {
       case (null) { Runtime.trap("Membership not found") };
       case (?membership) {
-        if (caller != membership.profile.principal and not AccessControl.isAdmin(accessControlState, caller)) {
+        if (membership.profile.principal != caller and not AccessControl.isAdmin(accessControlState, caller)) {
           Runtime.trap("Unauthorized: You can only delete your own memberships");
         };
         memberships.remove(id);

@@ -11,6 +11,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -45,6 +53,9 @@ export default function ReleasesPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [newReleaseType, setNewReleaseType] = useState("Single");
+  const [newTracklist, setNewTracklist] = useState("");
+  const [newKeyDates, setNewKeyDates] = useState("");
   const [customFieldValues, setCustomFieldValues] = useState<
     Record<string, string>
   >({});
@@ -77,9 +88,15 @@ export default function ReleasesPage() {
       await createMutation.mutateAsync({
         owner: "",
         title: newTitle.trim(),
-        releaseType: "Single",
-        tracklist: [],
-        keyDates: [],
+        releaseType: newReleaseType,
+        tracklist: newTracklist
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean),
+        keyDates: newKeyDates
+          .split(",")
+          .map((d) => d.trim())
+          .filter(Boolean),
         owners: [],
         workflowChecklist: [],
         linkedMembers: [],
@@ -90,6 +107,9 @@ export default function ReleasesPage() {
       toast.success("Release created");
       setShowCreate(false);
       setNewTitle("");
+      setNewReleaseType("Single");
+      setNewTracklist("");
+      setNewKeyDates("");
     } catch {
       toast.error("Failed to create release");
     }
@@ -240,39 +260,105 @@ export default function ReleasesPage() {
 
       {/* Create Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>New Release</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div>
-              <label htmlFor="release-title" className="text-sm font-medium">
-                Release Title
-              </label>
-              <Input
-                id="release-title"
-                className="mt-1"
-                placeholder="Enter release title"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+          <div className="max-h-[70vh] overflow-y-auto pr-1">
+            <div className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="release-title">
+                  Release Title <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="release-title"
+                  data-ocid="release.create.input"
+                  placeholder="Enter release title"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="release-type">Release Type</Label>
+                <Select
+                  value={newReleaseType}
+                  onValueChange={setNewReleaseType}
+                >
+                  <SelectTrigger
+                    id="release-type"
+                    data-ocid="release.create.type_select"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Single">Single</SelectItem>
+                    <SelectItem value="EP">EP</SelectItem>
+                    <SelectItem value="Album">Album</SelectItem>
+                    <SelectItem value="Compilation">Compilation</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="release-tracklist">
+                  Tracklist{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  id="release-tracklist"
+                  data-ocid="release.create.tracklist_input"
+                  placeholder="e.g. Track 1, Track 2"
+                  value={newTracklist}
+                  onChange={(e) => setNewTracklist(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Separate track names with commas
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="release-keydates">
+                  Key Dates{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  id="release-keydates"
+                  data-ocid="release.create.keydates_input"
+                  placeholder="e.g. 2026-06-01 Release Date"
+                  value={newKeyDates}
+                  onChange={(e) => setNewKeyDates(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Separate dates with commas
+                </p>
+              </div>
+              <CustomFieldsSection
+                sectionId="releases"
+                values={customFieldValues}
+                onChange={(fieldId, value) =>
+                  setCustomFieldValues((prev) => ({
+                    ...prev,
+                    [fieldId]: value,
+                  }))
+                }
               />
             </div>
-            <CustomFieldsSection
-              sectionId="releases"
-              values={customFieldValues}
-              onChange={(fieldId, value) =>
-                setCustomFieldValues((prev) => ({ ...prev, [fieldId]: value }))
-              }
-            />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowCreate(false)}
+              data-ocid="release.create.cancel_button"
+            >
               Cancel
             </Button>
             <Button
               onClick={handleCreate}
               disabled={!newTitle.trim() || createMutation.isPending}
+              data-ocid="release.create.submit_button"
             >
               {createMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-1" />

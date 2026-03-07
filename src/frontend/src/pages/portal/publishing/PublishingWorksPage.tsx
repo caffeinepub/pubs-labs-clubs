@@ -11,6 +11,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -19,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
 import { useTableSort } from "@/hooks/useTableSort";
 import { useNavigate } from "@tanstack/react-router";
 import { Copy, Loader2, Plus, Trash2 } from "lucide-react";
@@ -45,6 +54,11 @@ export default function PublishingWorksPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
+  const [newContributors, setNewContributors] = useState("");
+  const [newIswc, setNewIswc] = useState("");
+  const [newIsrc, setNewIsrc] = useState("");
+  const [newRegStatus, setNewRegStatus] = useState("pending");
+  const [newNotes, setNewNotes] = useState("");
   const [customFieldValues, setCustomFieldValues] = useState<
     Record<string, string>
   >({});
@@ -77,12 +91,15 @@ export default function PublishingWorksPage() {
       await createMutation.mutateAsync({
         owner: "",
         title: newTitle.trim(),
-        contributors: [],
+        contributors: newContributors
+          .split(",")
+          .map((c) => c.trim())
+          .filter(Boolean),
         ownershipSplits: [],
-        iswc: null,
-        isrc: null,
-        registrationStatus: "pending",
-        notes: "",
+        iswc: newIswc.trim() || null,
+        isrc: newIsrc.trim() || null,
+        registrationStatus: newRegStatus,
+        notes: newNotes.trim(),
         linkedMembers: [],
         linkedArtists: [],
         linkedReleases: [],
@@ -91,6 +108,11 @@ export default function PublishingWorksPage() {
       toast.success("Publishing work created");
       setShowCreate(false);
       setNewTitle("");
+      setNewContributors("");
+      setNewIswc("");
+      setNewIsrc("");
+      setNewRegStatus("pending");
+      setNewNotes("");
     } catch {
       toast.error("Failed to create publishing work");
     }
@@ -243,39 +265,124 @@ export default function PublishingWorksPage() {
 
       {/* Create Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>New Publishing Work</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div>
-              <label htmlFor="pw-create-title" className="text-sm font-medium">
-                Work Title
-              </label>
-              <Input
-                id="pw-create-title"
-                className="mt-1"
-                placeholder="Enter work title"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+          <div className="max-h-[70vh] overflow-y-auto pr-1">
+            <div className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="pw-create-title">
+                  Work Title <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="pw-create-title"
+                  data-ocid="publishing.create.input"
+                  placeholder="Enter work title"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="pw-create-contributors">Contributors</Label>
+                <Input
+                  id="pw-create-contributors"
+                  data-ocid="publishing.create.contributors_input"
+                  placeholder="e.g. Jane Doe, John Smith"
+                  value={newContributors}
+                  onChange={(e) => setNewContributors(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Separate multiple contributors with commas
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="pw-create-iswc">
+                  ISWC{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  id="pw-create-iswc"
+                  data-ocid="publishing.create.iswc_input"
+                  placeholder="e.g. T-034.524.680-1"
+                  value={newIswc}
+                  onChange={(e) => setNewIswc(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="pw-create-isrc">
+                  ISRC{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Input
+                  id="pw-create-isrc"
+                  data-ocid="publishing.create.isrc_input"
+                  placeholder="e.g. US-ABC-12-00001"
+                  value={newIsrc}
+                  onChange={(e) => setNewIsrc(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="pw-create-status">Registration Status</Label>
+                <Select value={newRegStatus} onValueChange={setNewRegStatus}>
+                  <SelectTrigger
+                    id="pw-create-status"
+                    data-ocid="publishing.create.select"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="registered">Registered</SelectItem>
+                    <SelectItem value="disputed">Disputed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="pw-create-notes">
+                  Notes{" "}
+                  <span className="text-muted-foreground text-xs">
+                    (optional)
+                  </span>
+                </Label>
+                <Textarea
+                  id="pw-create-notes"
+                  data-ocid="publishing.create.textarea"
+                  placeholder="Additional notes..."
+                  value={newNotes}
+                  onChange={(e) => setNewNotes(e.target.value)}
+                  rows={3}
+                />
+              </div>
+              <CustomFieldsSection
+                sectionId="publishing"
+                values={customFieldValues}
+                onChange={(fieldId, value) =>
+                  setCustomFieldValues((prev) => ({
+                    ...prev,
+                    [fieldId]: value,
+                  }))
+                }
               />
             </div>
-            <CustomFieldsSection
-              sectionId="publishing"
-              values={customFieldValues}
-              onChange={(fieldId, value) =>
-                setCustomFieldValues((prev) => ({ ...prev, [fieldId]: value }))
-              }
-            />
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowCreate(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowCreate(false)}
+              data-ocid="publishing.create.cancel_button"
+            >
               Cancel
             </Button>
             <Button
               onClick={handleCreate}
               disabled={!newTitle.trim() || createMutation.isPending}
+              data-ocid="publishing.create.submit_button"
             >
               {createMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-1" />
