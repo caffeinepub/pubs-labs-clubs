@@ -12,6 +12,7 @@ import type {
 } from "../backend";
 import type { T as MemberStatusEnum } from "../backend";
 import { useActor } from "./useActor";
+import { useNotifications } from "./useNotifications";
 
 // ─── Local entity interfaces ──────────────────────────────────────────────────
 
@@ -206,6 +207,7 @@ export function useGetMembershipDetails(id: string) {
 export function useCreateMembership() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async ({
@@ -216,9 +218,15 @@ export function useCreateMembership() {
       if (!actor) throw new Error("Actor not available");
       return actor.createMembershipProfile(id, name, email);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["callerMemberships"] });
       queryClient.invalidateQueries({ queryKey: ["allMembershipProfiles"] });
+      const title = (data as { name?: string } | null)?.name ?? "New Member";
+      addNotification({
+        type: "created",
+        section: "memberships",
+        recordTitle: title,
+      });
     },
   });
 }
@@ -226,6 +234,7 @@ export function useCreateMembership() {
 export function useUpdateMembership() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async ({
@@ -247,6 +256,11 @@ export function useUpdateMembership() {
       queryClient.invalidateQueries({ queryKey: ["allMembershipProfiles"] });
       queryClient.invalidateQueries({
         queryKey: ["membershipDetails", variables.id],
+      });
+      addNotification({
+        type: "updated",
+        section: "memberships",
+        recordTitle: variables.name,
       });
     },
   });
@@ -313,15 +327,21 @@ export function useUpdateMembershipLinks() {
 export function useDeleteMembership() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async (ids: string[]) => {
       if (!actor) throw new Error("Actor not available");
       return actor.bulkDeleteMembershipProfiles(ids);
     },
-    onSuccess: () => {
+    onSuccess: (_data, ids) => {
       queryClient.invalidateQueries({ queryKey: ["callerMemberships"] });
       queryClient.invalidateQueries({ queryKey: ["allMembershipProfiles"] });
+      addNotification({
+        type: "deleted",
+        section: "memberships",
+        recordTitle: `${ids.length} membership(s)`,
+      });
     },
   });
 }
@@ -385,6 +405,7 @@ export const useGetAllPublishingWorks = useGetPublishingWorks;
 
 export function useCreatePublishingWork() {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async (data: Omit<PublishingWork, "id" | "created_at">) => {
@@ -397,14 +418,20 @@ export function useCreatePublishingWork() {
       saveToStorage(PUBLISHING_KEY, [...items, newItem]);
       return newItem;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["publishingWorks"] });
+      addNotification({
+        type: "created",
+        section: "publishing",
+        recordTitle: data.title,
+      });
     },
   });
 }
 
 export function useUpdatePublishingWork() {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async ({
@@ -418,8 +445,13 @@ export function useUpdatePublishingWork() {
       saveToStorage(PUBLISHING_KEY, updated);
       return updated.find((i) => i.id === workId);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["publishingWorks"] });
+      addNotification({
+        type: "updated",
+        section: "publishing",
+        recordTitle: data?.title ?? "Publishing Work",
+      });
     },
   });
 }
@@ -429,6 +461,7 @@ export const useUpdatePublishingWorkLinks = useUpdatePublishingWork;
 
 export function useDeletePublishingWork() {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async (ids: string[]) => {
@@ -437,9 +470,15 @@ export function useDeletePublishingWork() {
         PUBLISHING_KEY,
         items.filter((i) => !ids.includes(i.id)),
       );
+      return ids;
     },
-    onSuccess: () => {
+    onSuccess: (_data, ids) => {
       queryClient.invalidateQueries({ queryKey: ["publishingWorks"] });
+      addNotification({
+        type: "deleted",
+        section: "publishing",
+        recordTitle: `${ids.length} work(s)`,
+      });
     },
   });
 }
@@ -486,6 +525,7 @@ export const useGetRelease = useGetReleases;
 
 export function useCreateRelease() {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async (data: Omit<Release, "id" | "created_at">) => {
@@ -498,14 +538,20 @@ export function useCreateRelease() {
       saveToStorage(RELEASES_KEY, [...items, newItem]);
       return newItem;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["releases"] });
+      addNotification({
+        type: "created",
+        section: "releases",
+        recordTitle: data.title,
+      });
     },
   });
 }
 
 export function useUpdateRelease() {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async ({
@@ -519,8 +565,13 @@ export function useUpdateRelease() {
       saveToStorage(RELEASES_KEY, updated);
       return updated.find((i) => i.id === releaseId);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["releases"] });
+      addNotification({
+        type: "updated",
+        section: "releases",
+        recordTitle: data?.title ?? "Release",
+      });
     },
   });
 }
@@ -530,6 +581,7 @@ export const useUpdateReleaseLinks = useUpdateRelease;
 
 export function useDeleteRelease() {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async (ids: string[]) => {
@@ -538,9 +590,15 @@ export function useDeleteRelease() {
         RELEASES_KEY,
         items.filter((i) => !ids.includes(i.id)),
       );
+      return ids;
     },
-    onSuccess: () => {
+    onSuccess: (_data, ids) => {
       queryClient.invalidateQueries({ queryKey: ["releases"] });
+      addNotification({
+        type: "deleted",
+        section: "releases",
+        recordTitle: `${ids.length} release(s)`,
+      });
     },
   });
 }
@@ -587,6 +645,7 @@ export const useGetRecordingProject = useGetRecordingProjects;
 
 export function useCreateRecordingProject() {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async (data: Omit<RecordingProject, "id" | "created_at">) => {
@@ -599,14 +658,20 @@ export function useCreateRecordingProject() {
       saveToStorage(RECORDING_PROJECTS_KEY, [...items, newItem]);
       return newItem;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["recordingProjects"] });
+      addNotification({
+        type: "created",
+        section: "recordings",
+        recordTitle: data.title,
+      });
     },
   });
 }
 
 export function useUpdateRecordingProject() {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async ({
@@ -623,8 +688,13 @@ export function useUpdateRecordingProject() {
       saveToStorage(RECORDING_PROJECTS_KEY, updated);
       return updated.find((i) => i.id === projectId);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["recordingProjects"] });
+      addNotification({
+        type: "updated",
+        section: "recordings",
+        recordTitle: data?.title ?? "Recording Project",
+      });
     },
   });
 }
@@ -634,6 +704,7 @@ export const useLinkProjectToEntities = useUpdateRecordingProject;
 
 export function useDeleteRecordingProject() {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async (ids: string[]) => {
@@ -642,9 +713,15 @@ export function useDeleteRecordingProject() {
         RECORDING_PROJECTS_KEY,
         items.filter((i) => !ids.includes(i.id)),
       );
+      return ids;
     },
-    onSuccess: () => {
+    onSuccess: (_data, ids) => {
       queryClient.invalidateQueries({ queryKey: ["recordingProjects"] });
+      addNotification({
+        type: "deleted",
+        section: "recordings",
+        recordTitle: `${ids.length} project(s)`,
+      });
     },
   });
 }
@@ -691,6 +768,7 @@ export const useGetArtistDevelopment = useGetArtistDevelopments;
 
 export function useCreateArtistDevelopment() {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async (data: {
@@ -718,14 +796,20 @@ export function useCreateArtistDevelopment() {
       saveToStorage(ARTIST_DEVELOPMENT_KEY, [...items, newItem]);
       return newItem;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["artistDevelopments"] });
+      addNotification({
+        type: "created",
+        section: "artists",
+        recordTitle: data.artistId,
+      });
     },
   });
 }
 
 export function useUpdateArtistDevelopment() {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async ({
@@ -742,8 +826,13 @@ export function useUpdateArtistDevelopment() {
       saveToStorage(ARTIST_DEVELOPMENT_KEY, updated);
       return updated.find((i) => i.id === entryId);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["artistDevelopments"] });
+      addNotification({
+        type: "updated",
+        section: "artists",
+        recordTitle: data?.artistId ?? "Artist",
+      });
     },
   });
 }
@@ -753,6 +842,7 @@ export const useUpdateArtistDevelopmentLinks = useUpdateArtistDevelopment;
 
 export function useDeleteArtistDevelopment() {
   const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
 
   return useMutation({
     mutationFn: async (ids: string[]) => {
@@ -761,9 +851,15 @@ export function useDeleteArtistDevelopment() {
         ARTIST_DEVELOPMENT_KEY,
         items.filter((i) => !ids.includes(i.id)),
       );
+      return ids;
     },
-    onSuccess: () => {
+    onSuccess: (_data, ids) => {
       queryClient.invalidateQueries({ queryKey: ["artistDevelopments"] });
+      addNotification({
+        type: "deleted",
+        section: "artists",
+        recordTitle: `${ids.length} artist(s)`,
+      });
     },
   });
 }

@@ -23,6 +23,8 @@ import { usePortalSettings } from "../../contexts/PortalSettingsContext";
 import { useBrandingStyles } from "../../hooks/useBrandingStyles";
 import { useInternetIdentity } from "../../hooks/useInternetIdentity";
 import { useGetCallerUserRole } from "../../hooks/useQueries";
+import ApprovalGate from "../auth/ApprovalGate";
+import NotificationsBell from "../notifications/NotificationsBell";
 
 interface NavItem {
   label: string;
@@ -174,15 +176,18 @@ export default function PortalLayout() {
             )}
           </div>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleLogout}
-          className="w-full justify-start gap-2 text-sidebar-foreground/70 hover:text-destructive hover:bg-destructive/10"
-        >
-          <LogOut size={16} />
-          Sign Out
-        </Button>
+        <div className="flex items-center gap-1 mb-1">
+          <NotificationsBell />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="flex-1 justify-start gap-2 text-sidebar-foreground/70 hover:text-destructive hover:bg-destructive/10"
+          >
+            <LogOut size={16} />
+            Sign Out
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -235,14 +240,21 @@ export default function PortalLayout() {
             alt={brandingSettings.portalName ?? "Higgins Music"}
             className="w-7 h-7 rounded-full object-cover"
           />
-          <span className="font-semibold text-sm">
+          <span className="font-semibold text-sm flex-1">
             {brandingSettings.portalName ?? "Higgins Music"} Portal
           </span>
+          <NotificationsBell />
         </header>
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto">
-          <Outlet />
+          {currentPath.startsWith("/portal/admin") ? (
+            <Outlet />
+          ) : (
+            <ApprovalGate>
+              <Outlet />
+            </ApprovalGate>
+          )}
         </main>
       </div>
     </div>

@@ -12,6 +12,7 @@ import { ThemeProvider } from "next-themes";
 
 import AuthGate from "./components/auth/AuthGate";
 import PortalLayout from "./components/layout/PortalLayout";
+import { NotificationsProvider } from "./contexts/NotificationsContext";
 import { PortalSettingsProvider } from "./contexts/PortalSettingsContext";
 // Pages
 import LandingPage from "./pages/LandingPage";
@@ -210,12 +211,14 @@ declare module "@tanstack/react-router" {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-        <PortalSettingsProvider>
-          <RouterProvider router={router} />
-          <Toaster />
-        </PortalSettingsProvider>
-      </ThemeProvider>
+      <NotificationsProvider>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+          <PortalSettingsProvider>
+            <RouterProvider router={router} />
+            <Toaster />
+          </PortalSettingsProvider>
+        </ThemeProvider>
+      </NotificationsProvider>
     </QueryClientProvider>
   );
 }
