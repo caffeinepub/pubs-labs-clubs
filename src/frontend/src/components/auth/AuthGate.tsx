@@ -1,3 +1,4 @@
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useInternetIdentity } from "../../hooks/useInternetIdentity";
@@ -8,9 +9,10 @@ interface AuthGateProps {
 
 export default function AuthGate({ children }: AuthGateProps) {
   const { identity, isInitializing, loginStatus } = useInternetIdentity();
+  const { isDemoMode } = useDemoMode();
   const navigate = useNavigate();
 
-  const isAuthenticated = !!identity;
+  const isAuthenticated = !!identity || isDemoMode;
   const isLoggingIn = loginStatus === "logging-in";
 
   useEffect(() => {

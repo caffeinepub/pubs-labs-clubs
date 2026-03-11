@@ -1,12 +1,21 @@
 import { Button } from "@/components/ui/button";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import { useNavigate } from "@tanstack/react-router";
-import { Disc, Mic, Music, TrendingUp, Users } from "lucide-react";
+import {
+  Disc,
+  FlaskConical,
+  Mic,
+  Music,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import { useEffect } from "react";
 import BrandHeader from "../components/layout/BrandHeader";
 import { useInternetIdentity } from "../hooks/useInternetIdentity";
 
 export default function LandingPage() {
   const { identity, login, loginStatus } = useInternetIdentity();
+  const { setPersona } = useDemoMode();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,6 +26,13 @@ export default function LandingPage() {
 
   const handleSignIn = () => {
     login();
+  };
+
+  const handleDemoMode = (
+    persona: "admin" | "approved_user" | "pending_user",
+  ) => {
+    setPersona(persona);
+    navigate({ to: "/portal" });
   };
 
   return (
@@ -42,6 +58,7 @@ export default function LandingPage() {
               publishing, label management, recordings, and development.
             </p>
             <Button
+              data-ocid="landing.signin_button"
               size="lg"
               onClick={handleSignIn}
               disabled={loginStatus === "logging-in"}
@@ -51,6 +68,47 @@ export default function LandingPage() {
                 ? "Signing In..."
                 : "Sign In to Portal"}
             </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Demo Mode Section */}
+      <section className="py-12 border-t border-dashed border-border/60">
+        <div className="container mx-auto px-4">
+          <div className="max-w-2xl mx-auto text-center">
+            <div className="flex items-center justify-center gap-2 mb-3">
+              <FlaskConical className="h-5 w-5 text-muted-foreground" />
+              <h3 className="text-base font-semibold text-muted-foreground uppercase tracking-wide">
+                Try Demo Mode
+              </h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-6">
+              Explore the portal as different user types — no Internet Identity
+              needed.
+            </p>
+            <div className="grid sm:grid-cols-3 gap-3">
+              <DemoCard
+                label="Admin"
+                description="Full access: settings, roles, all modules"
+                color="violet"
+                onClick={() => handleDemoMode("admin")}
+                ocid="landing.demo_admin_button"
+              />
+              <DemoCard
+                label="Approved User"
+                description="Standard member with full portal access"
+                color="blue"
+                onClick={() => handleDemoMode("approved_user")}
+                ocid="landing.demo_user_button"
+              />
+              <DemoCard
+                label="Pending User"
+                description="Awaiting approval — sees restricted view"
+                color="amber"
+                onClick={() => handleDemoMode("pending_user")}
+                ocid="landing.demo_pending_button"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -136,6 +194,47 @@ export default function LandingPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function DemoCard({
+  label,
+  description,
+  color,
+  onClick,
+  ocid,
+}: {
+  label: string;
+  description: string;
+  color: "violet" | "blue" | "amber";
+  onClick: () => void;
+  ocid: string;
+}) {
+  const colorClasses = {
+    violet:
+      "border-violet-200 hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 dark:border-violet-800",
+    blue: "border-blue-200 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 dark:border-blue-800",
+    amber:
+      "border-amber-200 hover:border-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 dark:border-amber-800",
+  };
+  const dotClasses = {
+    violet: "bg-violet-500",
+    blue: "bg-blue-500",
+    amber: "bg-amber-500",
+  };
+  return (
+    <button
+      type="button"
+      data-ocid={ocid}
+      onClick={onClick}
+      className={`text-left p-4 rounded-lg border-2 transition-all cursor-pointer ${colorClasses[color]}`}
+    >
+      <div className="flex items-center gap-2 mb-1">
+        <span className={`w-2.5 h-2.5 rounded-full ${dotClasses[color]}`} />
+        <span className="font-semibold text-sm">{label}</span>
+      </div>
+      <p className="text-xs text-muted-foreground">{description}</p>
+    </button>
   );
 }
 

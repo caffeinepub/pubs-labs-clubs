@@ -376,14 +376,23 @@ function loadFromStorage<T>(key: string): T[] {
   try {
     const raw = localStorage.getItem(key);
     if (!raw) return [];
-    return JSON.parse(raw) as T[];
+    return JSON.parse(raw, (_k, v) =>
+      v && typeof v === "object" && "__bigint__" in v
+        ? BigInt(v.__bigint__ as string)
+        : v,
+    ) as T[];
   } catch {
     return [];
   }
 }
 
 function saveToStorage<T>(key: string, items: T[]): void {
-  localStorage.setItem(key, JSON.stringify(items));
+  localStorage.setItem(
+    key,
+    JSON.stringify(items, (_k, v) =>
+      typeof v === "bigint" ? { __bigint__: v.toString() } : v,
+    ),
+  );
 }
 
 function generateId(): string {

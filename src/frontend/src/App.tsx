@@ -11,7 +11,9 @@ import {
 import { ThemeProvider } from "next-themes";
 
 import AuthGate from "./components/auth/AuthGate";
+import DemoModeSwitcher from "./components/demo/DemoModeSwitcher";
 import PortalLayout from "./components/layout/PortalLayout";
+import { DemoModeProvider } from "./contexts/DemoModeContext";
 import { NotificationsProvider } from "./contexts/NotificationsContext";
 import { PortalSettingsProvider } from "./contexts/PortalSettingsContext";
 // Pages
@@ -211,14 +213,17 @@ declare module "@tanstack/react-router" {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <NotificationsProvider>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <PortalSettingsProvider>
-            <RouterProvider router={router} />
-            <Toaster />
-          </PortalSettingsProvider>
-        </ThemeProvider>
-      </NotificationsProvider>
+      <DemoModeProvider>
+        <NotificationsProvider>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+            <PortalSettingsProvider>
+              <RouterProvider router={router} />
+              <DemoModeSwitcher />
+              <Toaster />
+            </PortalSettingsProvider>
+          </ThemeProvider>
+        </NotificationsProvider>
+      </DemoModeProvider>
     </QueryClientProvider>
   );
 }

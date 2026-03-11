@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { useDemoMode } from "@/contexts/DemoModeContext";
 import { useQueryClient } from "@tanstack/react-query";
 import { Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   ChevronRight,
   Disc,
+  FlaskConical,
   Home,
   LayoutDashboard,
   LogOut,
@@ -34,7 +36,7 @@ interface NavItem {
   exact?: boolean;
 }
 
-// Map section id -> icon (preserving original icons exactly)
+// Map section id -> icon
 const SECTION_ICONS: Record<string, React.ReactNode> = {
   home: <Home size={18} />,
   memberships: <Users size={18} />,
@@ -55,17 +57,25 @@ export default function PortalLayout() {
   const routerState = useRouterState();
   const { identity, clear } = useInternetIdentity();
   const queryClient = useQueryClient();
-  const { data: userRole } = useGetCallerUserRole();
+  const { data: userRoleFromBackend } = useGetCallerUserRole();
   const { defaultSections, sectionSettings, brandingSettings } =
     usePortalSettings();
+  const { isDemoMode, activeConfig, setPersona } = useDemoMode();
 
   // Apply CSS variable overrides for branding colors
   useBrandingStyles();
 
+  // In demo mode, use the demo persona's role; otherwise use the real backend role
+  const userRole = isDemoMode ? activeConfig?.role : userRoleFromBackend;
   const isAdmin = userRole === UserRole.admin;
   const currentPath = routerState.location.pathname;
 
   const handleLogout = async () => {
+    if (isDemoMode) {
+      setPersona("off");
+      navigate({ to: "/" });
+      return;
+    }
     await clear();
     queryClient.clear();
     navigate({ to: "/" });
@@ -81,9 +91,7 @@ export default function PortalLayout() {
     .filter((section) => {
       const setting = sectionSettings[section.id];
       if (!setting) return false;
-      // Filter hidden sections
       if (!setting.visible) return false;
-      // Filter admin-only sections for non-admins
       if (section.adminOnly && !isAdmin) return false;
       return true;
     })
@@ -101,6 +109,11 @@ export default function PortalLayout() {
     }
     return currentPath === item.path || currentPath.startsWith(`${item.path}/`);
   };
+
+  // Determine display name/label for sidebar user section
+  const principalDisplay = isDemoMode
+    ? activeConfig?.label
+    : `${identity?.getPrincipal().toString().slice(0, 20)}...`;
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -161,13 +174,21 @@ export default function PortalLayout() {
 
       {/* User section */}
       <div className="p-4 border-t border-sidebar-border">
-        {identity && (
+        {(identity || isDemoMode) && (
           <div className="mb-3 px-3 py-2 rounded-lg bg-sidebar-accent/30">
+            {isDemoMode && (
+              <div className="flex items-center gap-1 mb-1">
+                <FlaskConical className="h-3 w-3 text-primary" />
+                <span className="text-xs text-primary font-medium">
+                  Demo Mode
+                </span>
+              </div>
+            )}
             <div className="text-xs text-sidebar-foreground/50 mb-0.5">
-              Signed in as
+              {isDemoMode ? "Viewing as" : "Signed in as"}
             </div>
             <div className="text-xs font-medium text-sidebar-foreground truncate">
-              {identity.getPrincipal().toString().slice(0, 20)}...
+              {principalDisplay}
             </div>
             {isAdmin && (
               <span className="inline-block mt-1 text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded font-medium">
@@ -177,7 +198,7 @@ export default function PortalLayout() {
           </div>
         )}
         <div className="flex items-center gap-1 mb-1">
-          <NotificationsBell />
+          {!isDemoMode && <NotificationsBell />}
           <Button
             variant="ghost"
             size="sm"
@@ -185,7 +206,7 @@ export default function PortalLayout() {
             className="flex-1 justify-start gap-2 text-sidebar-foreground/70 hover:text-destructive hover:bg-destructive/10"
           >
             <LogOut size={16} />
-            Sign Out
+            {isDemoMode ? "Exit Demo" : "Sign Out"}
           </Button>
         </div>
       </div>
@@ -243,7 +264,7 @@ export default function PortalLayout() {
           <span className="font-semibold text-sm flex-1">
             {brandingSettings.portalName ?? "Higgins Music"} Portal
           </span>
-          <NotificationsBell />
+          {!isDemoMode && <NotificationsBell />}
         </header>
 
         {/* Page content */}
