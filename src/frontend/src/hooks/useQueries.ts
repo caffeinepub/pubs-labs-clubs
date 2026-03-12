@@ -11,8 +11,72 @@ import type {
   UserRole,
 } from "../backend";
 import type { T as MemberStatusEnum } from "../backend";
+import { T as MemberStatusEnumVal } from "../backend";
+import { useDemoMode } from "../contexts/DemoModeContext";
 import { useActor } from "./useActor";
 import { useNotifications } from "./useNotifications";
+
+// ─── Demo Mode Membership Storage ────────────────────────────────────────────
+
+const DEMO_MEMBERSHIPS_KEY = "demo_higgins_memberships";
+
+interface DemoMemberRecord {
+  id: string;
+  name: string;
+  email: string;
+  status: MemberStatusEnum;
+  tier: string;
+  notes: string;
+  agreements: string[];
+  created_at: number;
+}
+
+function loadDemoMembers(): DemoMemberRecord[] {
+  try {
+    const raw = localStorage.getItem(DEMO_MEMBERSHIPS_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw) as DemoMemberRecord[];
+  } catch {
+    return [];
+  }
+}
+
+function saveDemoMembers(items: DemoMemberRecord[]): void {
+  localStorage.setItem(DEMO_MEMBERSHIPS_KEY, JSON.stringify(items));
+}
+
+function demoMemberToProfile(item: DemoMemberRecord): MembershipProfile {
+  const now = BigInt(item.created_at) * BigInt(1_000_000);
+  return {
+    id: item.id,
+    name: item.name,
+    email: item.email,
+    status: item.status,
+    tier: item.tier,
+    notes: item.notes,
+    agreements: item.agreements,
+    created_at: now,
+    updated_at: now,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    principal: { _arr: new Uint8Array(0), _isPrincipal: true } as any,
+  };
+}
+
+function demoMemberToMembership(item: DemoMemberRecord): Membership {
+  return {
+    profile: demoMemberToProfile(item),
+    tier: {
+      name: item.tier || "Basic",
+      fee: BigInt(0),
+      description: "Demo tier",
+      benefits: [],
+    },
+    linkedProjects: [],
+    linkedReleases: [],
+    linkedWorks: [],
+    linkedArtists: [],
+  };
+}
 
 // ─── Local entity interfaces ──────────────────────────────────────────────────
 
@@ -167,40 +231,55 @@ export function useIsCallerAdmin() {
 
 export function useGetCallerMemberships() {
   const { actor, isFetching } = useActor();
+  const { isDemoMode } = useDemoMode();
 
   return useQuery<Membership[]>({
-    queryKey: ["callerMemberships"],
+    queryKey: ["callerMemberships", isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) {
+        return loadDemoMembers().map(demoMemberToMembership);
+      }
       if (!actor) return [];
       return actor.getCallerMemberships();
     },
-    enabled: !!actor && !isFetching,
+    enabled: isDemoMode || (!!actor && !isFetching),
   });
 }
 
 export function useGetAllMembershipProfiles() {
   const { actor, isFetching } = useActor();
+  const { isDemoMode } = useDemoMode();
 
   return useQuery<MembershipProfile[]>({
-    queryKey: ["allMembershipProfiles"],
+    queryKey: ["allMembershipProfiles", isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) {
+        return loadDemoMembers().map(demoMemberToProfile);
+      }
       if (!actor) return [];
       return actor.getAllMembershipProfiles();
     },
-    enabled: !!actor && !isFetching,
+    enabled: isDemoMode || (!!actor && !isFetching),
   });
 }
 
 export function useGetMembershipDetails(id: string) {
   const { actor, isFetching } = useActor();
+  const { isDemoMode } = useDemoMode();
 
   return useQuery<Membership>({
-    queryKey: ["membershipDetails", id],
+    queryKey: ["membershipDetails", id, isDemoMode],
     queryFn: async () => {
+      if (isDemoMode) {
+        const members = loadDemoMembers();
+        const found = members.find((m) => m.id === id);
+        if (!found) throw new Error("Member not found");
+        return demoMemberToMembership(found);
+      }
       if (!actor) throw new Error("Actor not available");
       return actor.getMembershipDetails(id);
     },
-    enabled: !!actor && !isFetching && !!id,
+    enabled: isDemoMode ? !!id : !!actor && !isFetching && !!id,
   });
 }
 
@@ -208,6 +287,7 @@ export function useCreateMembership() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
+  const { isDemoMode } = useDemoMode();
 
   return useMutation({
     mutationFn: async ({
@@ -215,6 +295,21 @@ export function useCreateMembership() {
       name,
       email,
     }: { id: string; name: string; email: string }) => {
+      if (isDemoMode) {
+        const members = loadDemoMembers();
+        const newMember: DemoMemberRecord = {
+          id,
+          name,
+          email,
+          status: MemberStatusEnumVal.applicant,
+          tier: "Basic",
+          notes: "",
+          agreements: [],
+          created_at: Date.now(),
+        };
+        saveDemoMembers([...members, newMember]);
+        return demoMemberToProfile(newMember);
+      }
       if (!actor) throw new Error("Actor not available");
       return actor.createMembershipProfile(id, name, email);
     },
@@ -235,6 +330,7 @@ export function useUpdateMembership() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
+  const { isDemoMode } = useDemoMode();
 
   return useMutation({
     mutationFn: async ({
@@ -248,6 +344,15 @@ export function useUpdateMembership() {
       email: string;
       status: MemberStatusEnum;
     }) => {
+      if (isDemoMode) {
+        const members = loadDemoMembers();
+        const updated = members.map((m) =>
+          m.id === id ? { ...m, name, email, status } : m,
+        );
+        saveDemoMembers(updated);
+        const found = updated.find((m) => m.id === id);
+        return found ? demoMemberToProfile(found) : null;
+      }
       if (!actor) throw new Error("Actor not available");
       return actor.updateMembership(id, name, email, status);
     },
@@ -328,9 +433,15 @@ export function useDeleteMembership() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
   const { addNotification } = useNotifications();
+  const { isDemoMode } = useDemoMode();
 
   return useMutation({
     mutationFn: async (ids: string[]) => {
+      if (isDemoMode) {
+        const members = loadDemoMembers();
+        saveDemoMembers(members.filter((m) => !ids.includes(m.id)));
+        return;
+      }
       if (!actor) throw new Error("Actor not available");
       return actor.bulkDeleteMembershipProfiles(ids);
     },
@@ -352,9 +463,23 @@ export const useBulkDeleteMembershipProfiles = useDeleteMembership;
 export function useDuplicateMembership() {
   const { actor } = useActor();
   const queryClient = useQueryClient();
+  const { isDemoMode } = useDemoMode();
 
   return useMutation({
     mutationFn: async (id: string) => {
+      if (isDemoMode) {
+        const members = loadDemoMembers();
+        const original = members.find((m) => m.id === id);
+        if (!original) throw new Error("Member not found");
+        const copy: DemoMemberRecord = {
+          ...original,
+          id: `mem-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          name: `Copy of ${original.name}`,
+          created_at: Date.now(),
+        };
+        saveDemoMembers([...members, copy]);
+        return demoMemberToProfile(copy);
+      }
       if (!actor) throw new Error("Actor not available");
       return actor.duplicateMembership(id);
     },
