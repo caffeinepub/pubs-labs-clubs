@@ -88,6 +88,28 @@ export interface ArtistDevelopment {
   created_at: Time;
 }
 
+// ─── Deal ─────────────────────────────────────────────────────────────────────
+export interface Deal {
+  id: string;
+  title: string;
+  dealType: string;
+  parties: string;
+  advanceAmount: number;
+  royaltyRate: string;
+  territory: string;
+  termLength: string;
+  startDate: string;
+  endDate: string;
+  optionPeriods: string;
+  status: string;
+  notes: string;
+  contractDocUrl: string;
+  linkedMembers: string[];
+  linkedArtists: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
 // ─── CallerEntities ───────────────────────────────────────────────────────────
 // Shape returned by getEntitiesForCaller
 export interface CallerEntities {

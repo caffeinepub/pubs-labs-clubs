@@ -50,6 +50,7 @@ const SECTION_LABELS: Record<NotificationSection, string> = {
   releases: "Release",
   recordings: "Recording",
   artists: "Artist Dev",
+  deals: "Deal",
 };
 
 const SECTION_BADGE_COLORS: Record<NotificationSection, string> = {
@@ -58,6 +59,7 @@ const SECTION_BADGE_COLORS: Record<NotificationSection, string> = {
   releases: "bg-pink-500/15 text-pink-400",
   recordings: "bg-cyan-500/15 text-cyan-400",
   artists: "bg-emerald-500/15 text-emerald-400",
+  deals: "bg-violet-500/15 text-violet-400",
 };
 
 function getActionText(

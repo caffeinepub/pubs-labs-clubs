@@ -51,7 +51,8 @@ export type SectionId =
   | "publishing"
   | "releases"
   | "recordings"
-  | "artists";
+  | "artists"
+  | "deals";
 
 export type CustomFieldsMap = Record<SectionId, CustomFieldDef[]>;
 
@@ -111,6 +112,11 @@ export const defaultSections: PortalSectionConfig[] = [
     id: "artists",
     defaultLabel: "Artist Development",
     path: "/portal/artists",
+  },
+  {
+    id: "deals",
+    defaultLabel: "Deals",
+    path: "/portal/deals",
   },
   {
     id: "admin",
@@ -188,6 +194,7 @@ function buildDefaultCustomFields(): CustomFieldsMap {
     releases: [],
     recordings: [],
     artists: [],
+    deals: [],
   };
 }
 

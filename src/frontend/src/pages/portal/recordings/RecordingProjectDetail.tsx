@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { useInternetIdentity } from "@/hooks/useInternetIdentity";
 import { useLinkableEntityOptions } from "@/hooks/useLinkableEntityOptions";
 import {
   type RecordingProject,
@@ -25,6 +24,7 @@ import {
   useUpdateRecordingProject,
 } from "@/hooks/useQueries";
 import { normalizeToArray } from "@/utils/arrays";
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Edit2, Loader2, Save, Trash2, X } from "lucide-react";
 import React, { useState, useEffect } from "react";

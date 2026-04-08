@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useDemoMode } from "@/contexts/DemoModeContext";
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Disc,
@@ -11,7 +12,6 @@ import {
 } from "lucide-react";
 import { useEffect } from "react";
 import BrandHeader from "../components/layout/BrandHeader";
-import { useInternetIdentity } from "../hooks/useInternetIdentity";
 
 export default function LandingPage() {
   const { identity, login, loginStatus } = useInternetIdentity();

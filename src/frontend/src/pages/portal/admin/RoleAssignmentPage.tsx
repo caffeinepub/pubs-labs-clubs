@@ -17,8 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useInternetIdentity } from "@/hooks/useInternetIdentity";
 import { useAssignRole, useGetAllKnownUsers } from "@/hooks/useQueries";
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import { CheckCircle2, Copy, Loader2, Search, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

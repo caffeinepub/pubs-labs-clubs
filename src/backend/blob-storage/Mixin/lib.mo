@@ -1,0 +1,6 @@
+module {
+  public func Mixin() : {
+  } {
+    { };
+  };
+};

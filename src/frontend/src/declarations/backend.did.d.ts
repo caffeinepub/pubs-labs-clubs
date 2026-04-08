@@ -119,7 +119,30 @@ export interface DashboardStats {
   'totalArtistDevelopment' : bigint,
   'releaseTypeCounts' : Array<[string, bigint]>,
   'totalReleases' : bigint,
+  'totalDeals' : bigint,
 }
+export interface Deal {
+  'id' : DealId,
+  'territory' : string,
+  'status' : string,
+  'contractDocUrl' : string,
+  'title' : string,
+  'endDate' : string,
+  'createdAt' : bigint,
+  'createdBy' : Principal,
+  'termLength' : string,
+  'updatedAt' : bigint,
+  'advanceAmount' : bigint,
+  'optionPeriods' : string,
+  'linkedMembers' : Array<MemberId>,
+  'notes' : string,
+  'linkedArtists' : Array<ArtistDevelopmentId>,
+  'parties' : string,
+  'dealType' : string,
+  'royaltyRate' : string,
+  'startDate' : string,
+}
+export type DealId = string;
 export type LabelEntityId = string;
 export type MemberId = string;
 export interface Membership {
@@ -222,34 +245,37 @@ export interface UserProfile {
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
-export interface _CaffeineStorageCreateCertificateResult {
+export interface _ImmutableObjectStorageCreateCertificateResult {
   'method' : string,
   'blob_hash' : string,
 }
-export interface _CaffeineStorageRefillInformation {
+export interface _ImmutableObjectStorageRefillInformation {
   'proposed_top_up_amount' : [] | [bigint],
 }
-export interface _CaffeineStorageRefillResult {
+export interface _ImmutableObjectStorageRefillResult {
   'success' : [] | [boolean],
   'topped_up_amount' : [] | [bigint],
 }
 export interface _SERVICE {
-  '_caffeineStorageBlobIsLive' : ActorMethod<[Uint8Array], boolean>,
-  '_caffeineStorageBlobsToDelete' : ActorMethod<[], Array<Uint8Array>>,
-  '_caffeineStorageConfirmBlobDeletion' : ActorMethod<
+  '_immutableObjectStorageBlobsAreLive' : ActorMethod<
+    [Array<Uint8Array>],
+    Array<boolean>
+  >,
+  '_immutableObjectStorageBlobsToDelete' : ActorMethod<[], Array<Uint8Array>>,
+  '_immutableObjectStorageConfirmBlobDeletion' : ActorMethod<
     [Array<Uint8Array>],
     undefined
   >,
-  '_caffeineStorageCreateCertificate' : ActorMethod<
+  '_immutableObjectStorageCreateCertificate' : ActorMethod<
     [string],
-    _CaffeineStorageCreateCertificateResult
+    _ImmutableObjectStorageCreateCertificateResult
   >,
-  '_caffeineStorageRefillCashier' : ActorMethod<
-    [[] | [_CaffeineStorageRefillInformation]],
-    _CaffeineStorageRefillResult
+  '_immutableObjectStorageRefillCashier' : ActorMethod<
+    [[] | [_ImmutableObjectStorageRefillInformation]],
+    _ImmutableObjectStorageRefillResult
   >,
-  '_caffeineStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
-  '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
+  '_immutableObjectStorageUpdateGatewayPrincipals' : ActorMethod<[], undefined>,
+  '_initializeAccessControl' : ActorMethod<[], undefined>,
   'addComment' : ActorMethod<[string, string], Comment>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'bulkDeleteMembershipProfiles' : ActorMethod<
@@ -259,6 +285,26 @@ export interface _SERVICE {
   'createArtistDevelopment' : ActorMethod<
     [CreateArtistDevelopmentRequest],
     CreateArtistDevelopmentResponse
+  >,
+  'createDeal' : ActorMethod<
+    [
+      string,
+      string,
+      string,
+      bigint,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      Array<MemberId>,
+      Array<ArtistDevelopmentId>,
+    ],
+    Deal
   >,
   'createMembershipProfile' : ActorMethod<
     [MemberId, string, string],
@@ -275,6 +321,7 @@ export interface _SERVICE {
   'createRelease' : ActorMethod<[CreateReleaseRequest], Release>,
   'deleteArtistDevelopment' : ActorMethod<[ArtistDevelopmentId], undefined>,
   'deleteComment' : ActorMethod<[string, bigint], undefined>,
+  'deleteDeal' : ActorMethod<[DealId], undefined>,
   'deleteMembership' : ActorMethod<[MemberId], undefined>,
   'deletePublishingWork' : ActorMethod<[PublishingId], undefined>,
   'deleteRecordingProject' : ActorMethod<[RecodingId], undefined>,
@@ -307,6 +354,8 @@ export interface _SERVICE {
   'getChangeHistory' : ActorMethod<[string], Array<ChangeEvent>>,
   'getComments' : ActorMethod<[string], Array<Comment>>,
   'getDashboardStats' : ActorMethod<[], DashboardStats>,
+  'getDealDetails' : ActorMethod<[DealId], Deal>,
+  'getDeals' : ActorMethod<[], Array<Deal>>,
   'getMembershipDetails' : ActorMethod<[MemberId], Membership>,
   'getMembershipProfile' : ActorMethod<[MemberId], MembershipProfile>,
   'getMembershipProfilesByStatus' : ActorMethod<[T], Array<MembershipProfile>>,
@@ -324,6 +373,27 @@ export interface _SERVICE {
   'updateArtistDevelopment' : ActorMethod<
     [ArtistDevelopmentId, CreateArtistDevelopmentRequest],
     ArtistDevelopment
+  >,
+  'updateDeal' : ActorMethod<
+    [
+      DealId,
+      string,
+      string,
+      string,
+      bigint,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      Array<MemberId>,
+      Array<ArtistDevelopmentId>,
+    ],
+    Deal
   >,
   'updateKnownUserRole' : ActorMethod<[], undefined>,
   'updateMembership' : ActorMethod<

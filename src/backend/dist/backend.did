@@ -1,0 +1,401 @@
+type _ImmutableObjectStorageRefillResult = 
+ record {
+   success: opt bool;
+   topped_up_amount: opt nat;
+ };
+type _ImmutableObjectStorageRefillInformation = record {
+                                                  proposed_top_up_amount:
+                                                   opt nat;};
+type _ImmutableObjectStorageCreateCertificateResult = 
+ record {
+   blob_hash: text;
+   method: text;
+ };
+type UserRole = 
+ variant {
+   admin;
+   guest;
+   user;
+ };
+type UserProfile = 
+ record {
+   bio: text;
+   email: text;
+   name: text;
+ };
+type UserApprovalInfo = 
+ record {
+   "principal": principal;
+   status: ApprovalStatus;
+ };
+type Time = int;
+type T = 
+ variant {
+   active;
+   applicant;
+   inactive;
+   paused;
+ };
+type SignedInUser = 
+ record {
+   "principal": principal;
+   profile: opt UserProfile;
+   role: UserRole;
+ };
+type Release = 
+ record {
+   created_at: Time;
+   id: LabelEntityId;
+   keyDates: vec text;
+   linkedArtists: vec ArtistDevelopmentId;
+   linkedMembers: vec MemberId;
+   linkedProjects: vec RecodingId;
+   linkedWorks: vec PublishingId;
+   owner: principal;
+   owners: vec text;
+   releaseType: text;
+   title: text;
+   tracklist: vec text;
+   workflowChecklist: vec text;
+ };
+type RecordingProject = 
+ record {
+   assetReferences: vec text;
+   created_at: Time;
+   id: RecodingId;
+   linkedArtists: vec ArtistDevelopmentId;
+   linkedMembers: vec MemberId;
+   linkedReleases: vec LabelEntityId;
+   linkedWorks: vec PublishingId;
+   notes: text;
+   owner: principal;
+   participants: vec text;
+   sessionDate: Time;
+   status: ProjectStatus;
+   title: text;
+ };
+type RecodingId = text;
+type PublishingWork = 
+ record {
+   contributors: vec text;
+   created_at: Time;
+   id: PublishingId;
+   isrc: opt text;
+   iswc: opt text;
+   linkedArtists: vec ArtistDevelopmentId;
+   linkedMembers: vec MemberId;
+   linkedProjects: vec RecodingId;
+   linkedReleases: vec LabelEntityId;
+   notes: text;
+   owner: principal;
+   ownershipSplits: vec record {
+                          text;
+                          nat;
+                        };
+   registrationStatus: text;
+   title: text;
+ };
+type PublishingId = text;
+type ProjectStatus = 
+ variant {
+   archived;
+   completed;
+   in_progress;
+   planned;
+ };
+type MembershipTier = 
+ record {
+   benefits: vec text;
+   description: text;
+   fee: nat;
+   name: text;
+ };
+type MembershipProfile = 
+ record {
+   agreements: vec text;
+   created_at: Time;
+   email: text;
+   id: MemberId;
+   name: text;
+   notes: text;
+   "principal": principal;
+   status: T;
+   tier: text;
+   updated_at: Time;
+ };
+type Membership = 
+ record {
+   linkedArtists: vec ArtistDevelopmentId;
+   linkedProjects: vec RecodingId;
+   linkedReleases: vec LabelEntityId;
+   linkedWorks: vec PublishingId;
+   profile: MembershipProfile;
+   tier: MembershipTier;
+ };
+type MemberId = text;
+type LabelEntityId = text;
+type DealId = text;
+type Deal = 
+ record {
+   advanceAmount: int;
+   contractDocUrl: text;
+   createdAt: int;
+   createdBy: principal;
+   dealType: text;
+   endDate: text;
+   id: DealId;
+   linkedArtists: vec ArtistDevelopmentId;
+   linkedMembers: vec MemberId;
+   notes: text;
+   optionPeriods: text;
+   parties: text;
+   royaltyRate: text;
+   startDate: text;
+   status: text;
+   termLength: text;
+   territory: text;
+   title: text;
+   updatedAt: int;
+ };
+type DashboardStats = 
+ record {
+   membershipStatusCounts: vec record {
+                                 T;
+                                 nat;
+                               };
+   projectStatusCounts: vec record {
+                              ProjectStatus;
+                              nat;
+                            };
+   releaseTypeCounts: vec record {
+                            text;
+                            nat;
+                          };
+   totalArtistDevelopment: nat;
+   totalDeals: nat;
+   totalMemberships: nat;
+   totalPublishingWorks: nat;
+   totalRecordingProjects: nat;
+   totalReleases: nat;
+ };
+type CreateReleaseRequest = 
+ record {
+   keyDates: vec text;
+   linkedArtists: vec ArtistDevelopmentId;
+   linkedMembers: vec MemberId;
+   linkedProjects: vec RecodingId;
+   linkedWorks: vec PublishingId;
+   owners: vec text;
+   releaseType: text;
+   title: text;
+   tracklist: vec text;
+   workflowChecklist: vec text;
+ };
+type CreateRecordingProjectRequest = 
+ record {
+   assetReferences: vec text;
+   linkedArtists: vec ArtistDevelopmentId;
+   linkedMembers: vec MemberId;
+   linkedReleases: vec LabelEntityId;
+   linkedWorks: vec PublishingId;
+   notes: text;
+   participants: vec text;
+   sessionDate: Time;
+   status: ProjectStatus;
+   title: text;
+ };
+type CreatePublishingWorkRequest = 
+ record {
+   contributors: vec text;
+   isrc: opt text;
+   iswc: opt text;
+   linkedArtists: vec ArtistDevelopmentId;
+   linkedMembers: vec MemberId;
+   linkedProjects: vec RecodingId;
+   linkedReleases: vec LabelEntityId;
+   notes: text;
+   ownershipSplits: vec record {
+                          text;
+                          nat;
+                        };
+   registrationStatus: text;
+   title: text;
+ };
+type CreateArtistDevelopmentResponse = 
+ record {
+   artistId: text;
+   created_at: Time;
+   goals: vec text;
+   id: ArtistDevelopmentId;
+   internalNotes: text;
+   milestones: vec text;
+   owner: principal;
+   plans: vec text;
+   relatedArtistDevelopment: vec ArtistDevelopmentId;
+   relatedLabelEntities: vec LabelEntityId;
+   relatedMemberships: vec MemberId;
+   relatedPublishing: vec PublishingId;
+   relatedRecordingProjects: vec RecodingId;
+ };
+type CreateArtistDevelopmentRequest = 
+ record {
+   artistId: text;
+   goals: vec text;
+   internalNotes: text;
+   milestones: vec text;
+   plans: vec text;
+   relatedArtistDevelopment: vec ArtistDevelopmentId;
+   relatedLabelEntities: vec LabelEntityId;
+   relatedMemberships: vec MemberId;
+   relatedPublishing: vec PublishingId;
+   relatedRecordingProjects: vec RecodingId;
+ };
+type Comment = 
+ record {
+   author: principal;
+   createdAt: Time;
+   id: nat;
+   recordId: text;
+   "text": text;
+ };
+type ChangeEvent = 
+ record {
+   author: principal;
+   changedFields: vec text;
+   id: nat;
+   operationType: variant {
+                    create;
+                    link;
+                    update;
+                  };
+   recordId: text;
+   timestamp: int;
+ };
+type ArtistDevelopmentId = text;
+type ArtistDevelopment = 
+ record {
+   artistId: text;
+   created_at: Time;
+   goals: vec text;
+   id: ArtistDevelopmentId;
+   internalNotes: text;
+   milestones: vec text;
+   owner: principal;
+   plans: vec text;
+   relatedArtistDevelopment: vec ArtistDevelopmentId;
+   relatedLabelEntities: vec LabelEntityId;
+   relatedMemberships: vec MemberId;
+   relatedPublishing: vec PublishingId;
+   relatedRecordingProjects: vec RecodingId;
+ };
+type ApprovalStatus = 
+ variant {
+   approved;
+   pending;
+   rejected;
+ };
+service : {
+  _immutableObjectStorageBlobsAreLive: (hashes: vec blob) -> (vec bool) query;
+  _immutableObjectStorageBlobsToDelete: () -> (vec blob) query;
+  _immutableObjectStorageConfirmBlobDeletion: (blobs: vec blob) -> ();
+  _immutableObjectStorageCreateCertificate: (blobHash: text) ->
+   (_ImmutableObjectStorageCreateCertificateResult);
+  _immutableObjectStorageRefillCashier: (refillInformation:
+   opt _ImmutableObjectStorageRefillInformation) ->
+   (_ImmutableObjectStorageRefillResult);
+  _immutableObjectStorageUpdateGatewayPrincipals: () -> ();
+  _initializeAccessControl: () -> ();
+  addComment: (recordId: text, "text": text) -> (Comment);
+  assignCallerUserRole: (user: principal, role: UserRole) -> ();
+  bulkDeleteMembershipProfiles: (ids: vec MemberId) ->
+   (record {
+      deleted: vec MemberId;
+      failed: vec MemberId;
+    });
+  createArtistDevelopment: (request: CreateArtistDevelopmentRequest) ->
+   (CreateArtistDevelopmentResponse);
+  createDeal: (title: text, dealType: text, parties: text, advanceAmount:
+   int, royaltyRate: text, territory: text, termLength: text, startDate:
+   text, endDate: text, optionPeriods: text, status: text, notes: text,
+   contractDocUrl: text, linkedMembers: vec MemberId, linkedArtists:
+   vec ArtistDevelopmentId) -> (Deal);
+  createMembershipProfile: (id: MemberId, name: text, email: text) ->
+   (MembershipProfile);
+  createPublishingWork: (request: CreatePublishingWorkRequest) ->
+   (PublishingWork);
+  createRecordingProject: (request: CreateRecordingProjectRequest) ->
+   (RecordingProject);
+  createRelease: (request: CreateReleaseRequest) -> (Release);
+  deleteArtistDevelopment: (id: ArtistDevelopmentId) -> ();
+  deleteComment: (recordId: text, commentId: nat) -> ();
+  deleteDeal: (id: DealId) -> ();
+  deleteMembership: (id: MemberId) -> ();
+  deletePublishingWork: (id: PublishingId) -> ();
+  deleteRecordingProject: (id: RecodingId) -> ();
+  deleteRelease: (id: LabelEntityId) -> ();
+  duplicateArtistDevelopment: (id: ArtistDevelopmentId) ->
+   (ArtistDevelopment);
+  duplicateMembership: (id: MemberId) -> (Membership);
+  duplicatePublishingWork: (id: PublishingId) -> (PublishingWork);
+  duplicateRecordingProject: (id: RecodingId) -> (RecordingProject);
+  duplicateRelease: (id: LabelEntityId) -> (Release);
+  getAllArtistDevelopments: () -> (vec ArtistDevelopment) query;
+  getAllKnownUsers: () -> (vec SignedInUser) query;
+  getAllMembershipProfiles: () -> (vec MembershipProfile) query;
+  getAllPublishingWorks: () -> (vec PublishingWork) query;
+  getAllRecordingProjects: () -> (vec RecordingProject) query;
+  getAllReleases: () -> (vec Release) query;
+  getArtistDevelopment: (id: ArtistDevelopmentId) ->
+   (ArtistDevelopment) query;
+  getCallerArtistDevelopments: () -> (vec ArtistDevelopment) query;
+  getCallerMemberships: () -> (vec Membership) query;
+  getCallerPublishingWorks: () -> (vec PublishingWork) query;
+  getCallerRecordingProjects: () -> (vec RecordingProject) query;
+  getCallerReleases: () -> (vec Release) query;
+  getCallerUserProfile: () -> (opt UserProfile) query;
+  getCallerUserRole: () -> (UserRole) query;
+  getChangeHistory: (recordId: text) -> (vec ChangeEvent) query;
+  getComments: (recordId: text) -> (vec Comment) query;
+  getDashboardStats: () -> (DashboardStats) query;
+  getDealDetails: (id: DealId) -> (Deal);
+  getDeals: () -> (vec Deal);
+  getMembershipDetails: (id: MemberId) -> (Membership) query;
+  getMembershipProfile: (id: MemberId) -> (MembershipProfile) query;
+  getMembershipProfilesByStatus: (status: T) -> (vec MembershipProfile) query;
+  getPublishingWork: (id: PublishingId) -> (PublishingWork) query;
+  getRecordingProject: (id: RecodingId) -> (RecordingProject) query;
+  getRelease: (id: LabelEntityId) -> (Release) query;
+  getRemainingRolloutSteps: () -> (vec record {
+                                         text;
+                                         text;
+                                       });
+  getUserProfile: (user: principal) -> (opt UserProfile) query;
+  isCallerAdmin: () -> (bool) query;
+  isCallerApproved: () -> (bool) query;
+  listApprovals: () -> (vec UserApprovalInfo) query;
+  requestApproval: () -> ();
+  saveCallerUserProfile: (profile: UserProfile) -> ();
+  setApproval: (user: principal, status: ApprovalStatus) -> ();
+  updateArtistDevelopment: (id: ArtistDevelopmentId, request:
+   CreateArtistDevelopmentRequest) -> (ArtistDevelopment);
+  updateDeal: (id: DealId, title: text, dealType: text, parties: text,
+   advanceAmount: int, royaltyRate: text, territory: text, termLength: 
+   text, startDate: text, endDate: text, optionPeriods: text, status: 
+   text, notes: text, contractDocUrl: text, linkedMembers: vec MemberId,
+   linkedArtists: vec ArtistDevelopmentId) -> (Deal);
+  updateKnownUserRole: () -> ();
+  updateMembership: (id: MemberId, name: text, email: text, status: T) ->
+   (MembershipProfile);
+  updateMembershipLinks: (id: MemberId, artistIds: vec ArtistDevelopmentId,
+   workIds: vec PublishingId, releaseIds: vec LabelEntityId, projectIds:
+   vec RecodingId) -> ();
+  updateMembershipProfileFields: (id: MemberId, name: text, email: text) ->
+   (MembershipProfile);
+  updateMembershipStatus: (id: MemberId, status: T) -> (MembershipProfile);
+  updatePublishingWork: (id: PublishingId, request:
+   CreatePublishingWorkRequest) -> (PublishingWork);
+  updateRecordingProject: (id: RecodingId, request:
+   CreateRecordingProjectRequest) -> (RecordingProject);
+  updateRelease: (id: LabelEntityId, request: CreateReleaseRequest) ->
+   (Release);
+}

@@ -10,12 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useLinkableEntityOptions } from "@/hooks/useLinkableEntityOptions";
 import { normalizeToArray } from "@/utils/arrays";
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { ArrowLeft, Edit2, Loader2, Save, Trash2, X } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useCurrentUser } from "../../../hooks/useCurrentUser";
-import { useInternetIdentity } from "../../../hooks/useInternetIdentity";
 import {
   type PublishingWork,
   useDeletePublishingWork,

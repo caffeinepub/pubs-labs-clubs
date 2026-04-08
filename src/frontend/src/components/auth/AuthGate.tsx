@@ -1,7 +1,7 @@
 import { useDemoMode } from "@/contexts/DemoModeContext";
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { useInternetIdentity } from "../../hooks/useInternetIdentity";
 
 interface AuthGateProps {
   children: React.ReactNode;

@@ -10,7 +10,7 @@ import {
   useGetComments,
 } from "@/hooks/useComments";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
-import { useInternetIdentity } from "@/hooks/useInternetIdentity";
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import {
   CheckCheck,
   Edit3,

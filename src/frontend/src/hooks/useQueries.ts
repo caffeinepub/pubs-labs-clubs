@@ -496,6 +496,7 @@ const PUBLISHING_KEY = "publishingWorks";
 const RELEASES_KEY = "releases";
 const RECORDING_PROJECTS_KEY = "recordingProjects";
 const ARTIST_DEVELOPMENT_KEY = "artistDevelopment";
+const DEALS_KEY = "higgins_deals";
 
 function loadFromStorage<T>(key: string): T[] {
   try {
@@ -1024,7 +1025,148 @@ export function useDuplicateArtistDevelopment() {
   });
 }
 
-// ─── Authorization / Approval ─────────────────────────────────────────────────
+// ─── Deal Hooks ───────────────────────────────────────────────────────────────
+
+export interface Deal {
+  id: string;
+  title: string;
+  dealType: string;
+  parties: string;
+  advanceAmount: bigint;
+  royaltyRate: string;
+  territory: string;
+  termLength: string;
+  startDate: string;
+  endDate: string;
+  optionPeriods: string;
+  status: string;
+  notes: string;
+  contractDocUrl: string;
+  linkedMembers: string[];
+  linkedArtists: string[];
+  createdAt: bigint;
+  updatedAt: bigint;
+}
+
+export function useGetDeals() {
+  return useQuery<Deal[]>({
+    queryKey: ["deals"],
+    queryFn: () => loadFromStorage<Deal>(DEALS_KEY),
+    staleTime: 0,
+  });
+}
+
+export function useCreateDeal() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
+
+  return useMutation({
+    mutationFn: async (data: Omit<Deal, "id" | "createdAt" | "updatedAt">) => {
+      const items = loadFromStorage<Deal>(DEALS_KEY);
+      const now = BigInt(Date.now()) * BigInt(1_000_000);
+      const newItem: Deal = {
+        ...data,
+        id: generateId(),
+        createdAt: now,
+        updatedAt: now,
+      };
+      saveToStorage(DEALS_KEY, [...items, newItem]);
+      return newItem;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["deals"] });
+      addNotification({
+        type: "created",
+        section: "deals",
+        recordTitle: data.title,
+      });
+    },
+  });
+}
+
+export function useUpdateDeal() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
+
+  return useMutation({
+    mutationFn: async ({
+      dealId,
+      updates,
+    }: { dealId: string; updates: Partial<Deal> }) => {
+      const items = loadFromStorage<Deal>(DEALS_KEY);
+      const updated = items.map((item) =>
+        item.id === dealId
+          ? {
+              ...item,
+              ...updates,
+              updatedAt: BigInt(Date.now()) * BigInt(1_000_000),
+            }
+          : item,
+      );
+      saveToStorage(DEALS_KEY, updated);
+      return updated.find((i) => i.id === dealId);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["deals"] });
+      addNotification({
+        type: "updated",
+        section: "deals",
+        recordTitle: data?.title ?? "Deal",
+      });
+    },
+  });
+}
+
+export function useDeleteDeal() {
+  const queryClient = useQueryClient();
+  const { addNotification } = useNotifications();
+
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const items = loadFromStorage<Deal>(DEALS_KEY);
+      saveToStorage(
+        DEALS_KEY,
+        items.filter((i) => !ids.includes(i.id)),
+      );
+      return ids;
+    },
+    onSuccess: (_data, ids) => {
+      queryClient.invalidateQueries({ queryKey: ["deals"] });
+      addNotification({
+        type: "deleted",
+        section: "deals",
+        recordTitle: `${ids.length} deal(s)`,
+      });
+    },
+  });
+}
+
+export const useBulkDeleteDeals = useDeleteDeal;
+
+export function useDuplicateDeal() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const items = loadFromStorage<Deal>(DEALS_KEY);
+      const original = items.find((i) => i.id === id);
+      if (!original) throw new Error("Deal not found");
+      const now = BigInt(Date.now()) * BigInt(1_000_000);
+      const copy: Deal = {
+        ...original,
+        id: generateId(),
+        title: `Copy of ${original.title}`,
+        createdAt: now,
+        updatedAt: now,
+      };
+      saveToStorage(DEALS_KEY, [...items, copy]);
+      return copy;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["deals"] });
+    },
+  });
+}
 
 export function useIsCallerApproved() {
   const { actor, isFetching } = useActor();

@@ -7,13 +7,13 @@ import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
-import MixinAuthorization "authorization/MixinAuthorization";
-import AccessControl "authorization/access-control";
-import UserApproval "user-approval/approval";
-import MixinStorage "blob-storage/Mixin";
+import MixinAuthorization "mo:caffeineai-authorization/MixinAuthorization";
+import AccessControl "mo:caffeineai-authorization/access-control";
+import UserApproval "mo:caffeineai-user-approval/approval";
+import MixinObjectStorage "mo:caffeineai-object-storage/Mixin";
 
 actor {
-  include MixinStorage();
+  include MixinObjectStorage();
 
   public type MemberId = Text;
   public type PublishingId = Text;
@@ -255,12 +255,38 @@ actor {
     };
   };
 
+  // DEALS (Label & Publishing Operations — Part 11.1)
+  public type DealId = Text;
+
+  public type Deal = {
+    id : DealId;
+    title : Text;
+    dealType : Text;
+    parties : Text;
+    advanceAmount : Int;
+    royaltyRate : Text;
+    territory : Text;
+    termLength : Text;
+    startDate : Text;
+    endDate : Text;
+    optionPeriods : Text;
+    status : Text;
+    notes : Text;
+    contractDocUrl : Text;
+    createdAt : Int;
+    updatedAt : Int;
+    createdBy : Principal;
+    linkedMembers : [MemberId];
+    linkedArtists : [ArtistDevelopmentId];
+  };
+
   public type DashboardStats = {
     totalMemberships : Nat;
     totalPublishingWorks : Nat;
     totalReleases : Nat;
     totalRecordingProjects : Nat;
     totalArtistDevelopment : Nat;
+    totalDeals : Nat;
     membershipStatusCounts : [(MemberStatus.T, Nat)];
     releaseTypeCounts : [(Text, Nat)];
     projectStatusCounts : [(ProjectStatus, Nat)];
@@ -279,6 +305,7 @@ actor {
   let releases = Map.empty<LabelEntityId, Release>();
   let recordingProjects = Map.empty<RecodingId, RecordingProject>();
   let artistDevelopment = Map.empty<ArtistDevelopmentId, ArtistDevelopment>();
+  let deals = Map.empty<DealId, Deal>();
   let knownUsers = Map.empty<Principal, SignedInUser>();
   let changeHistory = Map.empty<Text, [ChangeEvent]>();
 
@@ -407,8 +434,13 @@ actor {
         case (?a) { a.owner == caller };
         case (null) { false };
       };
+      // Check deal ownership
+      let dealOwned = switch (deals.get(recordId)) {
+        case (?d) { d.createdBy == caller };
+        case (null) { false };
+      };
 
-      if (not (membershipOwned or publishingOwned or releaseOwned or projectOwned or artistOwned)) {
+      if (not (membershipOwned or publishingOwned or releaseOwned or projectOwned or artistOwned or dealOwned)) {
         Runtime.trap("Unauthorized: You can only view change history for your own records");
       };
     };
@@ -1403,6 +1435,167 @@ actor {
   };
 
   // ==================
+  // DEAL FUNCTIONS
+  // ==================
+  public shared ({ caller }) func createDeal(
+    title : Text,
+    dealType : Text,
+    parties : Text,
+    advanceAmount : Int,
+    royaltyRate : Text,
+    territory : Text,
+    termLength : Text,
+    startDate : Text,
+    endDate : Text,
+    optionPeriods : Text,
+    status : Text,
+    notes : Text,
+    contractDocUrl : Text,
+    linkedMembers : [MemberId],
+    linkedArtists : [ArtistDevelopmentId],
+  ) : async Deal {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can create deals");
+    };
+
+    nextEntityId += 1;
+    let id = nextEntityId.toText();
+    let now = Time.now();
+
+    let newDeal : Deal = {
+      id;
+      title;
+      dealType;
+      parties;
+      advanceAmount;
+      royaltyRate;
+      territory;
+      termLength;
+      startDate;
+      endDate;
+      optionPeriods;
+      status;
+      notes;
+      contractDocUrl;
+      createdAt = now;
+      updatedAt = now;
+      createdBy = caller;
+      linkedMembers;
+      linkedArtists;
+    };
+
+    deals.add(id, newDeal);
+    processEntitiesForChangeEvent(id, ["title", "dealType", "parties", "advanceAmount", "status"], #create, caller);
+    newDeal;
+  };
+
+  public shared ({ caller }) func getDeals() : async [Deal] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view deals");
+    };
+    let isAdmin = AccessControl.isAdmin(accessControlState, caller);
+    if (isAdmin) {
+      deals.values().toArray();
+    } else {
+      deals.values().toArray().filter(func(d) {
+        d.createdBy == caller or
+        d.linkedMembers.find(func(m) { m == caller.toText() }) != null or
+        d.linkedArtists.find(func(a) { a == caller.toText() }) != null
+      });
+    };
+  };
+
+  public shared ({ caller }) func getDealDetails(id : DealId) : async Deal {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view deals");
+    };
+    switch (deals.get(id)) {
+      case (null) { Runtime.trap("Deal not found") };
+      case (?deal) {
+        let isAdmin = AccessControl.isAdmin(accessControlState, caller);
+        let isOwner = deal.createdBy == caller;
+        let isLinked =
+          deal.linkedMembers.find(func(m) { m == caller.toText() }) != null or
+          deal.linkedArtists.find(func(a) { a == caller.toText() }) != null;
+        if (not isAdmin and not isOwner and not isLinked) {
+          Runtime.trap("Unauthorized: You can only view deals you are associated with");
+        };
+        deal;
+      };
+    };
+  };
+
+  public shared ({ caller }) func updateDeal(
+    id : DealId,
+    title : Text,
+    dealType : Text,
+    parties : Text,
+    advanceAmount : Int,
+    royaltyRate : Text,
+    territory : Text,
+    termLength : Text,
+    startDate : Text,
+    endDate : Text,
+    optionPeriods : Text,
+    status : Text,
+    notes : Text,
+    contractDocUrl : Text,
+    linkedMembers : [MemberId],
+    linkedArtists : [ArtistDevelopmentId],
+  ) : async Deal {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can update deals");
+    };
+    switch (deals.get(id)) {
+      case (null) { Runtime.trap("Deal not found") };
+      case (?existing) {
+        if (existing.createdBy != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: You can only update your own deals");
+        };
+        let updated : Deal = {
+          id;
+          title;
+          dealType;
+          parties;
+          advanceAmount;
+          royaltyRate;
+          territory;
+          termLength;
+          startDate;
+          endDate;
+          optionPeriods;
+          status;
+          notes;
+          contractDocUrl;
+          createdAt = existing.createdAt;
+          updatedAt = Time.now();
+          createdBy = existing.createdBy;
+          linkedMembers;
+          linkedArtists;
+        };
+        deals.add(id, updated);
+        processEntitiesForChangeEvent(id, ["title", "dealType", "parties", "advanceAmount", "status", "notes"], #update, caller);
+        updated;
+      };
+    };
+  };
+
+  public shared ({ caller }) func deleteDeal(id : DealId) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can delete deals");
+    };
+    switch (deals.get(id)) {
+      case (null) { Runtime.trap("Deal not found") };
+      case (?deal) {
+        if (deal.createdBy != caller and not AccessControl.isAdmin(accessControlState, caller)) {
+          Runtime.trap("Unauthorized: You can only delete your own deals");
+        };
+        deals.remove(id);
+      };
+    };
+  };
+
+  // ==================
   // DASHBOARD STATS
   // ==================
   public query ({ caller }) func getDashboardStats() : async DashboardStats {
@@ -1415,6 +1608,7 @@ actor {
     let totalReleases = releases.size();
     let totalRecordingProjects = recordingProjects.size();
     let totalArtistDevelopment = artistDevelopment.size();
+    let totalDeals = deals.size();
 
     let membershipStatusCounts = [
       (#applicant, 0),
@@ -1438,6 +1632,7 @@ actor {
       totalReleases;
       totalRecordingProjects;
       totalArtistDevelopment;
+      totalDeals;
       membershipStatusCounts;
       releaseTypeCounts = releaseTypes.map(func(rt) { (rt, 0) });
       projectStatusCounts;

@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { AlertCircle, ArrowLeft, Loader2, Save } from "lucide-react";
 import React, { useState, useEffect } from "react";
@@ -25,7 +26,6 @@ import RelatedRecordsSection from "../../../components/related/RelatedRecordsSec
 import { canEditMembership } from "../../../components/related/relatedRecordsPermissions";
 import { useActor } from "../../../hooks/useActor";
 import { useCurrentUser } from "../../../hooks/useCurrentUser";
-import { useInternetIdentity } from "../../../hooks/useInternetIdentity";
 import { useLinkableEntityOptions } from "../../../hooks/useLinkableEntityOptions";
 import { useMembershipSupplementalData } from "../../../hooks/useMembershipSupplementalData";
 import {

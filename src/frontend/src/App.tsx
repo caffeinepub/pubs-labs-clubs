@@ -26,6 +26,8 @@ import RoleAssignmentPage from "./pages/portal/admin/RoleAssignmentPage";
 import RolloutWizardPage from "./pages/portal/admin/RolloutWizardPage";
 import ArtistDevelopmentDetail from "./pages/portal/artists/ArtistDevelopmentDetail";
 import ArtistDevelopmentPage from "./pages/portal/artists/ArtistDevelopmentPage";
+import DealDetail from "./pages/portal/deals/DealDetail";
+import DealsPage from "./pages/portal/deals/DealsPage";
 import ReleaseDetail from "./pages/portal/label/ReleaseDetail";
 import ReleasesPage from "./pages/portal/label/ReleasesPage";
 import MembershipDetail from "./pages/portal/memberships/MembershipDetail";
@@ -148,6 +150,19 @@ const artistDetailRoute = createRoute({
   component: ArtistDevelopmentDetail,
 });
 
+// Deals
+const dealsRoute = createRoute({
+  getParentRoute: () => portalRoute,
+  path: "/deals",
+  component: DealsPage,
+});
+
+const dealDetailRoute = createRoute({
+  getParentRoute: () => portalRoute,
+  path: "/deals/$id",
+  component: DealDetail,
+});
+
 // Admin routes
 const adminDashboardRoute = createRoute({
   getParentRoute: () => portalRoute,
@@ -194,6 +209,8 @@ const routeTree = rootRoute.addChildren([
     recordingDetailRoute,
     artistsRoute,
     artistDetailRoute,
+    dealsRoute,
+    dealDetailRoute,
     adminDashboardRoute,
     roleAssignmentRoute,
     adminBootstrapRoute,

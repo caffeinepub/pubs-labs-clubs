@@ -97,6 +97,27 @@ export interface CreateArtistDevelopmentRequest {
     relatedPublishing: Array<PublishingId>;
     milestones: Array<string>;
 }
+export interface Deal {
+    id: DealId;
+    territory: string;
+    status: string;
+    contractDocUrl: string;
+    title: string;
+    endDate: string;
+    createdAt: bigint;
+    createdBy: Principal;
+    termLength: string;
+    updatedAt: bigint;
+    advanceAmount: bigint;
+    optionPeriods: string;
+    linkedMembers: Array<MemberId>;
+    notes: string;
+    linkedArtists: Array<ArtistDevelopmentId>;
+    parties: string;
+    dealType: string;
+    royaltyRate: string;
+    startDate: string;
+}
 export interface ChangeEvent {
     id: bigint;
     operationType: Variant_link_create_update;
@@ -135,6 +156,7 @@ export interface MembershipProfile {
     email: string;
     notes: string;
 }
+export type DealId = string;
 export interface Comment {
     id: bigint;
     createdAt: Time;
@@ -152,6 +174,7 @@ export interface DashboardStats {
     totalArtistDevelopment: bigint;
     releaseTypeCounts: Array<[string, bigint]>;
     totalReleases: bigint;
+    totalDeals: bigint;
 }
 export type RecodingId = string;
 export interface UserApprovalInfo {
@@ -238,12 +261,14 @@ export interface backendInterface {
         failed: Array<MemberId>;
     }>;
     createArtistDevelopment(request: CreateArtistDevelopmentRequest): Promise<CreateArtistDevelopmentResponse>;
+    createDeal(title: string, dealType: string, parties: string, advanceAmount: bigint, royaltyRate: string, territory: string, termLength: string, startDate: string, endDate: string, optionPeriods: string, status: string, notes: string, contractDocUrl: string, linkedMembers: Array<MemberId>, linkedArtists: Array<ArtistDevelopmentId>): Promise<Deal>;
     createMembershipProfile(id: MemberId, name: string, email: string): Promise<MembershipProfile>;
     createPublishingWork(request: CreatePublishingWorkRequest): Promise<PublishingWork>;
     createRecordingProject(request: CreateRecordingProjectRequest): Promise<RecordingProject>;
     createRelease(request: CreateReleaseRequest): Promise<Release>;
     deleteArtistDevelopment(id: ArtistDevelopmentId): Promise<void>;
     deleteComment(recordId: string, commentId: bigint): Promise<void>;
+    deleteDeal(id: DealId): Promise<void>;
     deleteMembership(id: MemberId): Promise<void>;
     deletePublishingWork(id: PublishingId): Promise<void>;
     deleteRecordingProject(id: RecodingId): Promise<void>;
@@ -270,6 +295,8 @@ export interface backendInterface {
     getChangeHistory(recordId: string): Promise<Array<ChangeEvent>>;
     getComments(recordId: string): Promise<Array<Comment>>;
     getDashboardStats(): Promise<DashboardStats>;
+    getDealDetails(id: DealId): Promise<Deal>;
+    getDeals(): Promise<Array<Deal>>;
     getMembershipDetails(id: MemberId): Promise<Membership>;
     getMembershipProfile(id: MemberId): Promise<MembershipProfile>;
     getMembershipProfilesByStatus(status: T): Promise<Array<MembershipProfile>>;
@@ -285,6 +312,7 @@ export interface backendInterface {
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setApproval(user: Principal, status: ApprovalStatus): Promise<void>;
     updateArtistDevelopment(id: ArtistDevelopmentId, request: CreateArtistDevelopmentRequest): Promise<ArtistDevelopment>;
+    updateDeal(id: DealId, title: string, dealType: string, parties: string, advanceAmount: bigint, royaltyRate: string, territory: string, termLength: string, startDate: string, endDate: string, optionPeriods: string, status: string, notes: string, contractDocUrl: string, linkedMembers: Array<MemberId>, linkedArtists: Array<ArtistDevelopmentId>): Promise<Deal>;
     updateKnownUserRole(): Promise<void>;
     updateMembership(id: MemberId, name: string, email: string, status: T): Promise<MembershipProfile>;
     updateMembershipLinks(id: MemberId, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, releaseIds: Array<LabelEntityId>, projectIds: Array<RecodingId>): Promise<void>;

@@ -1,0 +1,231 @@
+// Version: 1.0.0
+type ApprovalStatus__575141016 = {#approved; #pending; #rejected};
+type ArtistDevelopmentId__461198800 = Text;
+type ArtistDevelopment__387553294 =
+  {
+    artistId : Text;
+    created_at : Time__900049286;
+    goals : [Text];
+    id : ArtistDevelopmentId__461198800;
+    internalNotes : Text;
+    milestones : [Text];
+    owner : Principal;
+    plans : [Text];
+    relatedArtistDevelopment : [ArtistDevelopmentId__461198800];
+    relatedLabelEntities : [LabelEntityId__934938711];
+    relatedMemberships : [MemberId__987337452];
+    relatedPublishing : [PublishingId__629896764];
+    relatedRecordingProjects : [RecodingId__265413625]
+  };
+type ChangeEvent__610282223 =
+  {
+    author : Principal;
+    changedFields : [Text];
+    id : Nat;
+    operationType : {#create; #link; #update};
+    recordId : Text;
+    timestamp : Int
+  };
+type Comment__473346131 =
+  {
+    author : Principal;
+    createdAt : Time__900049286;
+    id : Nat;
+    recordId : Text;
+    text : Text
+  };
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type DealId__88613402 = Text;
+type Deal__986256399 =
+  {
+    advanceAmount : Int;
+    contractDocUrl : Text;
+    createdAt : Int;
+    createdBy : Principal;
+    dealType : Text;
+    endDate : Text;
+    id : DealId__88613402;
+    linkedArtists : [ArtistDevelopmentId__461198800];
+    linkedMembers : [MemberId__987337452];
+    notes : Text;
+    optionPeriods : Text;
+    parties : Text;
+    royaltyRate : Text;
+    startDate : Text;
+    status : Text;
+    termLength : Text;
+    territory : Text;
+    title : Text;
+    updatedAt : Int
+  };
+type Int__270357528 = Int__616954475;
+type Int__616954475 = Int;
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type LabelEntityId__934938711 = Text;
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type Map__158565046<K, V> = Map__297112838<K, V>;
+type Map__297112838<K, V> =
+  {var root : Node__46230540<K, V>; var size : Nat__490723111};
+type Map__605269027<K, V> = Map__158565046<K, V>;
+type MemberId__987337452 = Text;
+type MembershipProfile__465369391 =
+  {
+    agreements : [Text];
+    created_at : Time__900049286;
+    email : Text;
+    id : MemberId__987337452;
+    name : Text;
+    notes : Text;
+    principal : Principal;
+    status : T__618344784;
+    tier : Text;
+    updated_at : Time__900049286
+  };
+type MembershipTier__893853907 =
+  {benefits : [Text]; description : Text; fee : Nat; name : Text};
+type Membership__804039561 =
+  {
+    linkedArtists : [ArtistDevelopmentId__461198800];
+    linkedProjects : [RecodingId__265413625];
+    linkedReleases : [LabelEntityId__934938711];
+    linkedWorks : [PublishingId__629896764];
+    profile : MembershipProfile__465369391;
+    tier : MembershipTier__893853907
+  };
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type ProjectStatus__864668988 =
+  {#archived; #completed; #in_progress; #planned};
+type PublishingId__629896764 = Text;
+type PublishingWork__639071722 =
+  {
+    contributors : [Text];
+    created_at : Time__900049286;
+    id : PublishingId__629896764;
+    isrc : ?Text;
+    iswc : ?Text;
+    linkedArtists : [ArtistDevelopmentId__461198800];
+    linkedMembers : [MemberId__987337452];
+    linkedProjects : [RecodingId__265413625];
+    linkedReleases : [LabelEntityId__934938711];
+    notes : Text;
+    owner : Principal;
+    ownershipSplits : [(Text, Nat)];
+    registrationStatus : Text;
+    title : Text
+  };
+type RecodingId__265413625 = Text;
+type RecordingProject__438575902 =
+  {
+    assetReferences : [Text];
+    created_at : Time__900049286;
+    id : RecodingId__265413625;
+    linkedArtists : [ArtistDevelopmentId__461198800];
+    linkedMembers : [MemberId__987337452];
+    linkedReleases : [LabelEntityId__934938711];
+    linkedWorks : [PublishingId__629896764];
+    notes : Text;
+    owner : Principal;
+    participants : [Text];
+    sessionDate : Time__900049286;
+    status : ProjectStatus__864668988;
+    title : Text
+  };
+type Release__39174606 =
+  {
+    created_at : Time__900049286;
+    id : LabelEntityId__934938711;
+    keyDates : [Text];
+    linkedArtists : [ArtistDevelopmentId__461198800];
+    linkedMembers : [MemberId__987337452];
+    linkedProjects : [RecodingId__265413625];
+    linkedWorks : [PublishingId__629896764];
+    owner : Principal;
+    owners : [Text];
+    releaseType : Text;
+    title : Text;
+    tracklist : [Text];
+    workflowChecklist : [Text]
+  };
+type SignedInUser__536474073 =
+  {
+    principal : Principal;
+    profile : ?UserProfile__491224006;
+    role : UserRole__1054455867
+  };
+type T__618344784 = {#active; #applicant; #inactive; #paused};
+type Time__796480547 = Int__270357528;
+type Time__900049286 = Time__796480547;
+type UserProfile__491224006 = {bio : Text; email : Text; name : Text};
+type UserRole__1054455867 = {#admin; #guest; #user};
+actor {
+  stable accessControlState :
+    {
+      var adminAssigned : Bool;
+      userRoles : Map__605269027<Principal, UserRole__1054455867>
+    };
+  stable approvalState :
+    {
+      var approvalStatus :
+        Map__605269027<Principal, ApprovalStatus__575141016>
+    };
+  stable artistDevelopment :
+    {
+      var root :
+        Node__46230540<ArtistDevelopmentId__461198800,
+                        ArtistDevelopment__387553294>;
+      var size : Nat__490723111
+    };
+  stable changeHistory :
+    {
+      var root : Node__46230540<Text, [ChangeEvent__610282223]>;
+      var size : Nat__490723111
+    };
+  stable comments :
+    {
+      var root : Node__46230540<Text, [Comment__473346131]>;
+      var size : Nat__490723111
+    };
+  stable deals :
+    {
+      var root : Node__46230540<DealId__88613402, Deal__986256399>;
+      var size : Nat__490723111
+    };
+  stable knownUsers :
+    {
+      var root : Node__46230540<Principal, SignedInUser__536474073>;
+      var size : Nat__490723111
+    };
+  stable memberships :
+    {
+      var root : Node__46230540<MemberId__987337452, Membership__804039561>;
+      var size : Nat__490723111
+    };
+  stable var nextEntityId : Nat;
+  stable publishingCatalog :
+    {
+      var root :
+        Node__46230540<PublishingId__629896764, PublishingWork__639071722>;
+      var size : Nat__490723111
+    };
+  stable recordingProjects :
+    {
+      var root :
+        Node__46230540<RecodingId__265413625, RecordingProject__438575902>;
+      var size : Nat__490723111
+    };
+  stable releases :
+    {
+      var root : Node__46230540<LabelEntityId__934938711, Release__39174606>;
+      var size : Nat__490723111
+    };
+  stable userProfiles :
+    {
+      var root : Node__46230540<Principal, UserProfile__491224006>;
+      var size : Nat__490723111
+    }
+};

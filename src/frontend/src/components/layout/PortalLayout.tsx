@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { useDemoMode } from "@/contexts/DemoModeContext";
+import { useInternetIdentity } from "@caffeineai/core-infrastructure";
 import { useQueryClient } from "@tanstack/react-query";
 import { Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import {
   ChevronRight,
   Disc,
   FlaskConical,
+  Handshake,
   Home,
   LayoutDashboard,
   LogOut,
@@ -23,7 +25,6 @@ import { useState } from "react";
 import { UserRole } from "../../backend";
 import { usePortalSettings } from "../../contexts/PortalSettingsContext";
 import { useBrandingStyles } from "../../hooks/useBrandingStyles";
-import { useInternetIdentity } from "../../hooks/useInternetIdentity";
 import { useGetCallerUserRole } from "../../hooks/useQueries";
 import ApprovalGate from "../auth/ApprovalGate";
 import NotificationsBell from "../notifications/NotificationsBell";
@@ -44,6 +45,7 @@ const SECTION_ICONS: Record<string, React.ReactNode> = {
   releases: <Disc size={18} />,
   recordings: <Mic2 size={18} />,
   artists: <TrendingUp size={18} />,
+  deals: <Handshake size={18} />,
   admin: <LayoutDashboard size={18} />,
   roles: <Shield size={18} />,
   bootstrap: <Settings size={18} />,

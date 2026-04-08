@@ -92,13 +92,6 @@ export class ExternalBlob {
 export type PublishingId = string;
 export type Time = bigint;
 export type LabelEntityId = string;
-export interface _CaffeineStorageRefillInformation {
-    proposed_top_up_amount?: bigint;
-}
-export interface _CaffeineStorageCreateCertificateResult {
-    method: string;
-    blob_hash: string;
-}
 export interface ArtistDevelopment {
     id: ArtistDevelopmentId;
     relatedRecordingProjects: Array<RecodingId>;
@@ -128,6 +121,10 @@ export interface RecordingProject {
     linkedMembers: Array<MemberId>;
     notes: string;
     linkedArtists: Array<ArtistDevelopmentId>;
+}
+export interface _ImmutableObjectStorageRefillResult {
+    success?: boolean;
+    topped_up_amount?: bigint;
 }
 export type ArtistDevelopmentId = string;
 export interface PublishingWork {
@@ -186,6 +183,27 @@ export interface CreateArtistDevelopmentRequest {
     relatedPublishing: Array<PublishingId>;
     milestones: Array<string>;
 }
+export interface Deal {
+    id: DealId;
+    territory: string;
+    status: string;
+    contractDocUrl: string;
+    title: string;
+    endDate: string;
+    createdAt: bigint;
+    createdBy: Principal;
+    termLength: string;
+    updatedAt: bigint;
+    advanceAmount: bigint;
+    optionPeriods: string;
+    linkedMembers: Array<MemberId>;
+    notes: string;
+    linkedArtists: Array<ArtistDevelopmentId>;
+    parties: string;
+    dealType: string;
+    royaltyRate: string;
+    startDate: string;
+}
 export interface ChangeEvent {
     id: bigint;
     operationType: Variant_link_create_update;
@@ -224,6 +242,7 @@ export interface MembershipProfile {
     email: string;
     notes: string;
 }
+export type DealId = string;
 export interface Comment {
     id: bigint;
     createdAt: Time;
@@ -231,7 +250,14 @@ export interface Comment {
     author: Principal;
     recordId: string;
 }
+export interface _ImmutableObjectStorageRefillInformation {
+    proposed_top_up_amount?: bigint;
+}
 export type MemberId = string;
+export interface _ImmutableObjectStorageCreateCertificateResult {
+    method: string;
+    blob_hash: string;
+}
 export interface DashboardStats {
     totalMemberships: bigint;
     membershipStatusCounts: Array<[T, bigint]>;
@@ -241,6 +267,7 @@ export interface DashboardStats {
     totalArtistDevelopment: bigint;
     releaseTypeCounts: Array<[string, bigint]>;
     totalReleases: bigint;
+    totalDeals: bigint;
 }
 export type RecodingId = string;
 export interface UserApprovalInfo {
@@ -292,10 +319,6 @@ export interface UserProfile {
     name: string;
     email: string;
 }
-export interface _CaffeineStorageRefillResult {
-    success?: boolean;
-    topped_up_amount?: bigint;
-}
 export enum ApprovalStatus {
     pending = "pending",
     approved = "approved",
@@ -324,13 +347,13 @@ export enum Variant_link_create_update {
     update = "update"
 }
 export interface backendInterface {
-    _caffeineStorageBlobIsLive(hash: Uint8Array): Promise<boolean>;
-    _caffeineStorageBlobsToDelete(): Promise<Array<Uint8Array>>;
-    _caffeineStorageConfirmBlobDeletion(blobs: Array<Uint8Array>): Promise<void>;
-    _caffeineStorageCreateCertificate(blobHash: string): Promise<_CaffeineStorageCreateCertificateResult>;
-    _caffeineStorageRefillCashier(refillInformation: _CaffeineStorageRefillInformation | null): Promise<_CaffeineStorageRefillResult>;
-    _caffeineStorageUpdateGatewayPrincipals(): Promise<void>;
-    _initializeAccessControlWithSecret(userSecret: string): Promise<void>;
+    _immutableObjectStorageBlobsAreLive(hashes: Array<Uint8Array>): Promise<Array<boolean>>;
+    _immutableObjectStorageBlobsToDelete(): Promise<Array<Uint8Array>>;
+    _immutableObjectStorageConfirmBlobDeletion(blobs: Array<Uint8Array>): Promise<void>;
+    _immutableObjectStorageCreateCertificate(blobHash: string): Promise<_ImmutableObjectStorageCreateCertificateResult>;
+    _immutableObjectStorageRefillCashier(refillInformation: _ImmutableObjectStorageRefillInformation | null): Promise<_ImmutableObjectStorageRefillResult>;
+    _immutableObjectStorageUpdateGatewayPrincipals(): Promise<void>;
+    _initializeAccessControl(): Promise<void>;
     addComment(recordId: string, text: string): Promise<Comment>;
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     bulkDeleteMembershipProfiles(ids: Array<MemberId>): Promise<{
@@ -338,12 +361,14 @@ export interface backendInterface {
         failed: Array<MemberId>;
     }>;
     createArtistDevelopment(request: CreateArtistDevelopmentRequest): Promise<CreateArtistDevelopmentResponse>;
+    createDeal(title: string, dealType: string, parties: string, advanceAmount: bigint, royaltyRate: string, territory: string, termLength: string, startDate: string, endDate: string, optionPeriods: string, status: string, notes: string, contractDocUrl: string, linkedMembers: Array<MemberId>, linkedArtists: Array<ArtistDevelopmentId>): Promise<Deal>;
     createMembershipProfile(id: MemberId, name: string, email: string): Promise<MembershipProfile>;
     createPublishingWork(request: CreatePublishingWorkRequest): Promise<PublishingWork>;
     createRecordingProject(request: CreateRecordingProjectRequest): Promise<RecordingProject>;
     createRelease(request: CreateReleaseRequest): Promise<Release>;
     deleteArtistDevelopment(id: ArtistDevelopmentId): Promise<void>;
     deleteComment(recordId: string, commentId: bigint): Promise<void>;
+    deleteDeal(id: DealId): Promise<void>;
     deleteMembership(id: MemberId): Promise<void>;
     deletePublishingWork(id: PublishingId): Promise<void>;
     deleteRecordingProject(id: RecodingId): Promise<void>;
@@ -370,6 +395,8 @@ export interface backendInterface {
     getChangeHistory(recordId: string): Promise<Array<ChangeEvent>>;
     getComments(recordId: string): Promise<Array<Comment>>;
     getDashboardStats(): Promise<DashboardStats>;
+    getDealDetails(id: DealId): Promise<Deal>;
+    getDeals(): Promise<Array<Deal>>;
     getMembershipDetails(id: MemberId): Promise<Membership>;
     getMembershipProfile(id: MemberId): Promise<MembershipProfile>;
     getMembershipProfilesByStatus(status: T): Promise<Array<MembershipProfile>>;
@@ -385,6 +412,7 @@ export interface backendInterface {
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setApproval(user: Principal, status: ApprovalStatus): Promise<void>;
     updateArtistDevelopment(id: ArtistDevelopmentId, request: CreateArtistDevelopmentRequest): Promise<ArtistDevelopment>;
+    updateDeal(id: DealId, title: string, dealType: string, parties: string, advanceAmount: bigint, royaltyRate: string, territory: string, termLength: string, startDate: string, endDate: string, optionPeriods: string, status: string, notes: string, contractDocUrl: string, linkedMembers: Array<MemberId>, linkedArtists: Array<ArtistDevelopmentId>): Promise<Deal>;
     updateKnownUserRole(): Promise<void>;
     updateMembership(id: MemberId, name: string, email: string, status: T): Promise<MembershipProfile>;
     updateMembershipLinks(id: MemberId, artistIds: Array<ArtistDevelopmentId>, workIds: Array<PublishingId>, releaseIds: Array<LabelEntityId>, projectIds: Array<RecodingId>): Promise<void>;
@@ -394,104 +422,104 @@ export interface backendInterface {
     updateRecordingProject(id: RecodingId, request: CreateRecordingProjectRequest): Promise<RecordingProject>;
     updateRelease(id: LabelEntityId, request: CreateReleaseRequest): Promise<Release>;
 }
-import type { ApprovalStatus as _ApprovalStatus, ArtistDevelopmentId as _ArtistDevelopmentId, ChangeEvent as _ChangeEvent, CreatePublishingWorkRequest as _CreatePublishingWorkRequest, CreateRecordingProjectRequest as _CreateRecordingProjectRequest, DashboardStats as _DashboardStats, LabelEntityId as _LabelEntityId, MemberId as _MemberId, Membership as _Membership, MembershipProfile as _MembershipProfile, MembershipTier as _MembershipTier, ProjectStatus as _ProjectStatus, PublishingId as _PublishingId, PublishingWork as _PublishingWork, RecodingId as _RecodingId, RecordingProject as _RecordingProject, SignedInUser as _SignedInUser, T as _T, Time as _Time, UserApprovalInfo as _UserApprovalInfo, UserProfile as _UserProfile, UserRole as _UserRole, _CaffeineStorageRefillInformation as __CaffeineStorageRefillInformation, _CaffeineStorageRefillResult as __CaffeineStorageRefillResult } from "./declarations/backend.did.d.ts";
+import type { ApprovalStatus as _ApprovalStatus, ArtistDevelopmentId as _ArtistDevelopmentId, ChangeEvent as _ChangeEvent, CreatePublishingWorkRequest as _CreatePublishingWorkRequest, CreateRecordingProjectRequest as _CreateRecordingProjectRequest, DashboardStats as _DashboardStats, LabelEntityId as _LabelEntityId, MemberId as _MemberId, Membership as _Membership, MembershipProfile as _MembershipProfile, MembershipTier as _MembershipTier, ProjectStatus as _ProjectStatus, PublishingId as _PublishingId, PublishingWork as _PublishingWork, RecodingId as _RecodingId, RecordingProject as _RecordingProject, SignedInUser as _SignedInUser, T as _T, Time as _Time, UserApprovalInfo as _UserApprovalInfo, UserProfile as _UserProfile, UserRole as _UserRole, _ImmutableObjectStorageRefillInformation as __ImmutableObjectStorageRefillInformation, _ImmutableObjectStorageRefillResult as __ImmutableObjectStorageRefillResult } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
-    async _caffeineStorageBlobIsLive(arg0: Uint8Array): Promise<boolean> {
+    async _immutableObjectStorageBlobsAreLive(arg0: Array<Uint8Array>): Promise<Array<boolean>> {
         if (this.processError) {
             try {
-                const result = await this.actor._caffeineStorageBlobIsLive(arg0);
+                const result = await this.actor._immutableObjectStorageBlobsAreLive(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor._caffeineStorageBlobIsLive(arg0);
+            const result = await this.actor._immutableObjectStorageBlobsAreLive(arg0);
             return result;
         }
     }
-    async _caffeineStorageBlobsToDelete(): Promise<Array<Uint8Array>> {
+    async _immutableObjectStorageBlobsToDelete(): Promise<Array<Uint8Array>> {
         if (this.processError) {
             try {
-                const result = await this.actor._caffeineStorageBlobsToDelete();
+                const result = await this.actor._immutableObjectStorageBlobsToDelete();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor._caffeineStorageBlobsToDelete();
+            const result = await this.actor._immutableObjectStorageBlobsToDelete();
             return result;
         }
     }
-    async _caffeineStorageConfirmBlobDeletion(arg0: Array<Uint8Array>): Promise<void> {
+    async _immutableObjectStorageConfirmBlobDeletion(arg0: Array<Uint8Array>): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor._caffeineStorageConfirmBlobDeletion(arg0);
+                const result = await this.actor._immutableObjectStorageConfirmBlobDeletion(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor._caffeineStorageConfirmBlobDeletion(arg0);
+            const result = await this.actor._immutableObjectStorageConfirmBlobDeletion(arg0);
             return result;
         }
     }
-    async _caffeineStorageCreateCertificate(arg0: string): Promise<_CaffeineStorageCreateCertificateResult> {
+    async _immutableObjectStorageCreateCertificate(arg0: string): Promise<_ImmutableObjectStorageCreateCertificateResult> {
         if (this.processError) {
             try {
-                const result = await this.actor._caffeineStorageCreateCertificate(arg0);
+                const result = await this.actor._immutableObjectStorageCreateCertificate(arg0);
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor._caffeineStorageCreateCertificate(arg0);
+            const result = await this.actor._immutableObjectStorageCreateCertificate(arg0);
             return result;
         }
     }
-    async _caffeineStorageRefillCashier(arg0: _CaffeineStorageRefillInformation | null): Promise<_CaffeineStorageRefillResult> {
+    async _immutableObjectStorageRefillCashier(arg0: _ImmutableObjectStorageRefillInformation | null): Promise<_ImmutableObjectStorageRefillResult> {
         if (this.processError) {
             try {
-                const result = await this.actor._caffeineStorageRefillCashier(to_candid_opt_n1(this._uploadFile, this._downloadFile, arg0));
-                return from_candid__CaffeineStorageRefillResult_n4(this._uploadFile, this._downloadFile, result);
+                const result = await this.actor._immutableObjectStorageRefillCashier(to_candid_opt_n1(this._uploadFile, this._downloadFile, arg0));
+                return from_candid__ImmutableObjectStorageRefillResult_n4(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor._caffeineStorageRefillCashier(to_candid_opt_n1(this._uploadFile, this._downloadFile, arg0));
-            return from_candid__CaffeineStorageRefillResult_n4(this._uploadFile, this._downloadFile, result);
+            const result = await this.actor._immutableObjectStorageRefillCashier(to_candid_opt_n1(this._uploadFile, this._downloadFile, arg0));
+            return from_candid__ImmutableObjectStorageRefillResult_n4(this._uploadFile, this._downloadFile, result);
         }
     }
-    async _caffeineStorageUpdateGatewayPrincipals(): Promise<void> {
+    async _immutableObjectStorageUpdateGatewayPrincipals(): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor._caffeineStorageUpdateGatewayPrincipals();
+                const result = await this.actor._immutableObjectStorageUpdateGatewayPrincipals();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor._caffeineStorageUpdateGatewayPrincipals();
+            const result = await this.actor._immutableObjectStorageUpdateGatewayPrincipals();
             return result;
         }
     }
-    async _initializeAccessControlWithSecret(arg0: string): Promise<void> {
+    async _initializeAccessControl(): Promise<void> {
         if (this.processError) {
             try {
-                const result = await this.actor._initializeAccessControlWithSecret(arg0);
+                const result = await this.actor._initializeAccessControl();
                 return result;
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
-            const result = await this.actor._initializeAccessControlWithSecret(arg0);
+            const result = await this.actor._initializeAccessControl();
             return result;
         }
     }
@@ -551,6 +579,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.createArtistDevelopment(arg0);
+            return result;
+        }
+    }
+    async createDeal(arg0: string, arg1: string, arg2: string, arg3: bigint, arg4: string, arg5: string, arg6: string, arg7: string, arg8: string, arg9: string, arg10: string, arg11: string, arg12: string, arg13: Array<MemberId>, arg14: Array<ArtistDevelopmentId>): Promise<Deal> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.createDeal(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.createDeal(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14);
             return result;
         }
     }
@@ -635,6 +677,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.deleteComment(arg0, arg1);
+            return result;
+        }
+    }
+    async deleteDeal(arg0: DealId): Promise<void> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.deleteDeal(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.deleteDeal(arg0);
             return result;
         }
     }
@@ -1002,6 +1058,34 @@ export class Backend implements backendInterface {
             return from_candid_DashboardStats_n43(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getDealDetails(arg0: DealId): Promise<Deal> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getDealDetails(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getDealDetails(arg0);
+            return result;
+        }
+    }
+    async getDeals(): Promise<Array<Deal>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getDeals();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getDeals();
+            return result;
+        }
+    }
     async getMembershipDetails(arg0: MemberId): Promise<Membership> {
         if (this.processError) {
             try {
@@ -1212,6 +1296,20 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async updateDeal(arg0: DealId, arg1: string, arg2: string, arg3: string, arg4: bigint, arg5: string, arg6: string, arg7: string, arg8: string, arg9: string, arg10: string, arg11: string, arg12: string, arg13: string, arg14: Array<MemberId>, arg15: Array<ArtistDevelopmentId>): Promise<Deal> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateDeal(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateDeal(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15);
+            return result;
+        }
+    }
     async updateKnownUserRole(): Promise<void> {
         if (this.processError) {
             try {
@@ -1361,7 +1459,7 @@ function from_candid_UserApprovalInfo_n52(_uploadFile: (file: ExternalBlob) => P
 function from_candid_UserRole_n32(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _UserRole): UserRole {
     return from_candid_variant_n33(_uploadFile, _downloadFile, value);
 }
-function from_candid__CaffeineStorageRefillResult_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: __CaffeineStorageRefillResult): _CaffeineStorageRefillResult {
+function from_candid__ImmutableObjectStorageRefillResult_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: __ImmutableObjectStorageRefillResult): _ImmutableObjectStorageRefillResult {
     return from_candid_record_n5(_uploadFile, _downloadFile, value);
 }
 function from_candid_opt_n18(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [string]): string | null {
@@ -1583,6 +1681,7 @@ function from_candid_record_n44(_uploadFile: (file: ExternalBlob) => Promise<Uin
     totalArtistDevelopment: bigint;
     releaseTypeCounts: Array<[string, bigint]>;
     totalReleases: bigint;
+    totalDeals: bigint;
 }): {
     totalMemberships: bigint;
     membershipStatusCounts: Array<[T, bigint]>;
@@ -1592,6 +1691,7 @@ function from_candid_record_n44(_uploadFile: (file: ExternalBlob) => Promise<Uin
     totalArtistDevelopment: bigint;
     releaseTypeCounts: Array<[string, bigint]>;
     totalReleases: bigint;
+    totalDeals: bigint;
 } {
     return {
         totalMemberships: value.totalMemberships,
@@ -1601,7 +1701,8 @@ function from_candid_record_n44(_uploadFile: (file: ExternalBlob) => Promise<Uin
         totalPublishingWorks: value.totalPublishingWorks,
         totalArtistDevelopment: value.totalArtistDevelopment,
         releaseTypeCounts: value.releaseTypeCounts,
-        totalReleases: value.totalReleases
+        totalReleases: value.totalReleases,
+        totalDeals: value.totalDeals
     };
 }
 function from_candid_record_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
@@ -1734,11 +1835,11 @@ function to_candid_T_n49(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array
 function to_candid_UserRole_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: UserRole): _UserRole {
     return to_candid_variant_n9(_uploadFile, _downloadFile, value);
 }
-function to_candid__CaffeineStorageRefillInformation_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CaffeineStorageRefillInformation): __CaffeineStorageRefillInformation {
+function to_candid__ImmutableObjectStorageRefillInformation_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ImmutableObjectStorageRefillInformation): __ImmutableObjectStorageRefillInformation {
     return to_candid_record_n3(_uploadFile, _downloadFile, value);
 }
-function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _CaffeineStorageRefillInformation | null): [] | [__CaffeineStorageRefillInformation] {
-    return value === null ? candid_none() : candid_some(to_candid__CaffeineStorageRefillInformation_n2(_uploadFile, _downloadFile, value));
+function to_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: _ImmutableObjectStorageRefillInformation | null): [] | [__ImmutableObjectStorageRefillInformation] {
+    return value === null ? candid_none() : candid_some(to_candid__ImmutableObjectStorageRefillInformation_n2(_uploadFile, _downloadFile, value));
 }
 function to_candid_record_n15(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: {
     title: string;

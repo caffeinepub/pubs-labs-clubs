@@ -21,7 +21,8 @@ export type NotificationSection =
   | "publishing"
   | "releases"
   | "recordings"
-  | "artists";
+  | "artists"
+  | "deals";
 
 export interface NotificationEntry {
   id: string;
